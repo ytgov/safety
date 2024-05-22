@@ -1,0 +1,33 @@
+{
+  "name": "safety-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@auth0/auth0-vue": "^2.0.0",
+    "@mdi/font": "^7.4.47",
+    "axios": "^1.6.5",
+    "lodash": "^4.17.21",
+    "markdown-it": "^14.0.0",
+    "moment": "^2.29.4",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.8",
+    "vue-router": "^4.2.5",
+    "vuetify": "^3.5.4"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.195",
+    "@types/markdown-it": "^14.1.1",
+    "@types/node": "^20.11.24",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "typescript": "^5.4.5",
+    "vite": "^5.2.11",
+    "vite-plugin-vuetify": "^2.0.3",
+    "vue-tsc": "^2.0.19"
+  }
+}

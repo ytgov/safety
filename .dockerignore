@@ -1,0 +1,7 @@
+src/api/node_modules
+src/web/node_modules
+src/web/dist
+emailer/node_modules
+dist
+npm-debug.log
+docs
