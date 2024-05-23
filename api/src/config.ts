@@ -1,6 +1,6 @@
 import * as dotenv from "dotenv";
 
-export const NODE_ENV = process.env.NODE_ENV;
+export const NODE_ENV = process.env.NODE_ENV || "development";
 
 let path;
 switch (process.env.NODE_ENV) {
@@ -13,7 +13,7 @@ switch (process.env.NODE_ENV) {
   default:
     path = `.env.development`;
 }
-dotenv.config({ path: path });
+dotenv.config({ path: path, override: true });
 
 console.log(`LOADING ${NODE_ENV} CONFIG FROM ${path}`);
 

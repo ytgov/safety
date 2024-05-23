@@ -22,8 +22,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     environment:
-      PGADMIN_DEFAULT_EMAIL: michael@icefoganalytics.com
-      PGADMIN_DEFAULT_PASSWORD: sugaray99
+      PGADMIN_DEFAULT_EMAIL: info@icefoganalytics.com
+      PGADMIN_DEFAULT_PASSWORD: testing1122
     ports:
       - "8111:80"
     volumes:

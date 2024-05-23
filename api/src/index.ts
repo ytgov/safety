@@ -55,5 +55,5 @@ app.use((req: Request, res: Response) => {
 const PORT: number = parseInt(API_PORT as string);
 
 app.listen(PORT, async () => {
-  console.log(`PMAP SRVT API listenting on port ${PORT}`);
+  console.log(`Safety API listenting on port ${PORT}`);
 });
