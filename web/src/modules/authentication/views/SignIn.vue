@@ -39,13 +39,14 @@
 
 <script lang="ts" setup>
 import { waitForUserToLoad } from "@/modules/administration/router";
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { router } from "@/routes";
+import { applicationName } from "@/config";
 
 const { loginWithRedirect } = useAuth0();
 
-const applicationTitle = "Polus Surveys";
+const applicationTitle = ref(applicationName);
 const applicationSubtitle = "Public Service Commission";
 
 onMounted(async () => {

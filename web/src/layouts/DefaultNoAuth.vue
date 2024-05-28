@@ -24,6 +24,8 @@
 </template>
 
 <script lang="ts">
+import { applicationName } from '@/config';
+
 export default {
   name: "DefaultNoAuth",
 
@@ -34,7 +36,7 @@ export default {
   },
   computed: {
     title() {
-      return "Polus Surveys";
+      return applicationName;
     },
   },
 

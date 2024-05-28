@@ -12,7 +12,14 @@ const routes: Array<RouteRecordRaw> = [
         path: "",
         component: () => import("@/views/Home.vue"),
       },
-     
+      {
+        path: "report-a-hazard",
+        component: () => import("@/components/hazard/CreatePage.vue"),
+      },
+      {
+        path: "report-an-incident",
+        component: () => import("@/components/incident/CreatePage.vue"),
+      },
     ],
   },
   {

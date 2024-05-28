@@ -52,6 +52,7 @@ import { useUserStore } from "@/store/UserStore";
 import { useNotificationStore } from "@/store/NotificationStore";
 import { mapState, mapActions, mapWritableState } from "pinia";
 import Notifications from "@/components/Notifications.vue";
+import { applicationName } from "@/config";
 
 export default {
   name: "Default",
@@ -68,7 +69,7 @@ export default {
     ...mapState(useUserStore, ["user", "isAdmin"]),
 
     title() {
-      return "Polus Surveys";
+      return applicationName;
     },
     username() {
       if (this.authUser) return this.authUser.name || "";
