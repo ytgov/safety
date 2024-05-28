@@ -6,6 +6,7 @@ import { API_PORT, AUTH0_DOMAIN, FRONTEND_URL } from "./config";
 import { doHealthCheck } from "./utils/healthCheck";
 import { userRouter } from "./routes";
 import { checkJwt, loadUser } from "./middleware/authz.middleware";
+import migrator from "./data/migrator";
 
 const app = express();
 app.use(express.json()); // for parsing application/json
@@ -41,6 +42,8 @@ app.use(
 app.get("/api/healthCheck", (req: Request, res: Response) => {
   doHealthCheck(req, res);
 });
+
+app.use("/migrate", migrator.migrationRouter);
 
 app.use("/api/user", checkJwt, loadUser, userRouter);
 
