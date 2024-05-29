@@ -7,7 +7,7 @@ p {
 }
 
 * {
-  font-family: Montserrat, Helvetica, Arial, sans-serif;
+  font-family: Montserrat, Helvetica, Arial, sans-serif !important;
 }
 
 h1 {
@@ -24,6 +24,11 @@ h3 {
 
 a {
   text-decoration: none;
+  color: #0097a9;
+}
+
+.title-link {
+  color: #323232;
 }
 
 .v-main .v-btn,
@@ -147,4 +152,8 @@ ul.v-breadcrumbs {
 }
 .markdown li {
   margin-left: 20px;
+}
+
+.bg-sun {
+  background-color: #f2a90055;
 }

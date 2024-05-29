@@ -4,7 +4,6 @@ import axios from "axios";
 import jwksRsa, { type GetVerificationKey } from "jwks-rsa";
 import { AUTH0_DOMAIN, AUTH0_AUDIENCE } from "../config";
 import { UserService } from "../services";
-import { UserStatus } from "../data/models";
 
 console.log(AUTH0_AUDIENCE, AUTH0_DOMAIN);
 
@@ -45,39 +44,51 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
 
         let u = await db.getBySub(sub);
 
+        console.log("SUB", sub, u);
+
         if (u) {
           req.user = { ...req.auth, ...u };
         } else {
           if (!email) email = `${first_name}.${last_name}@yukon-no-email.ca`;
 
           let e = await db.getByEmail(email);
+          console.log("EMAIL", email, e);
 
-          if (e && e.USER_ID == "SUB_MISSING") {
+          if (e && e.auth_subject == "SUB_MISSING") {
             req.user = { ...req.auth, ...e };
 
             await db.update(email, {
-              USER_ID: sub,
-              FIRST_NAME: e.FIRST_NAME,
-              LAST_NAME: e.LAST_NAME,
-              ROLE: e.ROLE,
-              STATUS: e.STATUS,
-              YNET_ID: e.YNET_ID,
+              auth_subject: sub,
+              first_name: e.first_name,
+              last_name: e.last_name,
+              display_name: `${first_name} ${last_name}`,
+              department: "",
+              division: "",
+              branch: "",
+              unit: "",
+              is_active: true,
+              title: "",
             });
 
             return next();
           }
 
-          /*  u = await db.create({
-            EMAIL: email,
-            USER_ID: sub,
-            STATUS: UserStatus.INACTIVE,
-            FIRST_NAME: first_name,
-            LAST_NAME: last_name,
-            CREATE_DATE: new Date(),
-            IS_ADMIN: "N",
-            ROLE: "",
-          });
-          req.user = { ...req.user, ...u }; */
+          let newUser = {
+            email: email,
+            auth_subject: sub,
+            first_name: first_name,
+            last_name: last_name,
+            display_name: `${first_name} ${last_name}`,
+            department: "",
+            division: "",
+            branch: "",
+            unit: "",
+            is_active: true,
+            title: "",
+          };
+
+          await db.create(newUser);
+          req.user = { ...req.user, ...newUser };
         }
       } else {
         console.log("Payload from Auth0 is strange or failed for", req.auth);

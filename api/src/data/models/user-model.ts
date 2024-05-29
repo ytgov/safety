@@ -1,49 +1,45 @@
 export interface User {
-  EMAIL: string;
-  USER_ID: string;
-  FIRST_NAME: string;
-  LAST_NAME: string;
-  STATUS: UserStatus;
-  IS_ADMIN: boolean | string;
-  YNET_ID: string;
-  CREATE_DATE: Date;
-  ROLE: string;
-
-  display_name?: string;
-  surveys?: number[];
-}
-
-export enum UserStatus {
-  ACTIVE = "Active",
-  INACTIVE = "Inactive",
+  email: string;
+  auth_subject: string;
+  first_name: string;
+  last_name: string;
+  display_name: string;
+  title: string;
+  department: string;
+  division: string;
+  branch: string;
+  unit: string;
+  is_active: boolean | string;
 }
 
 export interface User_Create {
-  EMAIL: string;
-  USER_ID: string;
-  FIRST_NAME: string;
-  LAST_NAME: string;
-  STATUS: UserStatus;
-  CREATE_DATE: Date;
-  IS_ADMIN: string;
-  ROLE: string;
+  email: string;
+  auth_subject: string;
+  first_name: string;
+  last_name: string;
+  display_name: string;
+  title: string;
+  department: string;
+  division: string;
+  branch: string;
+  unit: string;
+  is_active: boolean | string;
 }
 
 export interface User_Update {
-  FIRST_NAME: string;
-  LAST_NAME: string;
-  STATUS: UserStatus;
-  YNET_ID: string;
-  ROLE: string;
-  USER_ID?: string;
+  auth_subject: string;
+  first_name: string;
+  last_name: string;
+  display_name: string;
+  title: string;
+  department: string;
+  division: string;
+  branch: string;
+  unit: string;
+  is_active: boolean | string;
 }
 
-export interface UserRole {
-  email: string;
-  role: string;
-}
-
-export class UserHelper {
+/* export class UserHelper {
   fromDTO(dto: any): User {
     return {
       EMAIL: dto.EMAIL,
@@ -58,3 +54,4 @@ export class UserHelper {
     };
   }
 }
+ */

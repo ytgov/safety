@@ -1,8 +1,10 @@
 <template>
   <v-app-bar app color="#fff" flat height="70" style="left: 0; border-bottom: 3px #f3b228 solid">
-    <img src="/yukon.svg" style="margin: -10px 85px 0 14px" height="44" />
+    <router-link to="/"><img src="/yukon.svg" style="margin: -10px 85px 0 14px" height="44" /></router-link>
     <!-- <v-img class="ml-0m pl-0" src="src/assets/yukon.svg" height="44" /> -->
-    <v-app-bar-title class="pt-0 font-weight-bold" style="margin-left: -20px">{{ title }}</v-app-bar-title>
+    <v-app-bar-title class="pt-0 font-weight-bold" style="margin-left: -20px">
+      <router-link to="/" class="title-link">{{ title }}</router-link>
+    </v-app-bar-title>
 
     <template v-slot:append></template>
   </v-app-bar>
@@ -24,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { applicationName } from '@/config';
+import { applicationName } from "@/config";
 
 export default {
   name: "DefaultNoAuth",

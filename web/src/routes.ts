@@ -20,6 +20,10 @@ const routes: Array<RouteRecordRaw> = [
         path: "report-an-incident",
         component: () => import("@/components/incident/CreatePage.vue"),
       },
+      {
+        path: "report-an-incident/complete",
+        component: () => import("@/components/incident/CreateCompletePage.vue"),
+      },
     ],
   },
   {
@@ -52,7 +56,7 @@ async function requireLogin(to: RouteLocation): Promise<boolean | string> {
     return true;
   }
 
-  return "/survey/not-found";
+  return "/";
 }
 
 export const router = createRouter({
