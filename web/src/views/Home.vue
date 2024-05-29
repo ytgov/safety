@@ -17,7 +17,7 @@
 
       <CreateIncidentButton />
     </v-col>
-    <v-divider vertical />
+    <!-- <v-divider vertical /> -->
 
     <v-col cols="12" sm="6">
       <RouterLink to="/sign-in">
