@@ -8,6 +8,8 @@ import { registerPlugins } from "./plugins";
 import { Auth0Plugin } from "@auth0/auth0-vue";
 import { Router } from "vue-router";
 
+import "@/registerServiceWorker";
+
 const pinia = createPinia();
 
 import App from "./App.vue";
