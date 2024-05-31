@@ -10,10 +10,22 @@ self.addEventListener("message", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
-  console.log("FETCH", event);
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
+  console.log("FETCH", event.request);
+
+  event.respondWith(
+    fetch(event.request)
+      .then((cache) => {
+        return fetch(event.request).then(function (response) {
+          caches.open("basic").put(event.request, response.clone());
+          console.log("ADDING TO CACHE", event.request);
+          return response;
+        });
+      })
+      .catch((err) => {
+        console.log("RETURNING FROM CACHE", event.request, err);
+        return caches.match(event.request);
+      })
+  );
 });
 
 console.log("Loading serviceWorker.js");
