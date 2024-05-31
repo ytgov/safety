@@ -12,7 +12,7 @@ self.addEventListener("message", (event) => {
 self.addEventListener("fetch", (event) => {
   console.log("FETCH", event.request);
 
-  event.respondWith(
+  /* event.respondWith(
     fetch(event.request)
       .then((cache) => {
         return fetch(event.request).then(function (response) {
@@ -25,7 +25,7 @@ self.addEventListener("fetch", (event) => {
         console.log("RETURNING FROM CACHE", event.request, err);
         return caches.match(event.request);
       })
-  );
+  ); */
 });
 
 console.log("Loading serviceWorker.js");
