@@ -23,7 +23,9 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
   console.log(dVal);
   console.log(dVal.toISOTime());
-  req.body.date = dVal.toJSDate();
+  req.body.date = dVal.toISO();
+
+  console.log("INSERTING REPORT", req.body);
 
   await db.create(req.body);
   return res.json({ data: [] });
