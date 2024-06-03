@@ -15,15 +15,24 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   req.body.email = req.user.email;
   req.body.status = "Initial Report";
 
-  let { date } = req.body;
+  let { createDate } = req.body;
 
-  console.log("DATE", date);
+  console.log("CREATEDATE", createDate);
 
-  let dVal = DateTime.fromISO(date);
+  let dVal = DateTime.fromISO(createDate);
+
+  let formatted = dVal.toFormat("YYYY-MM-DD hh");
+
+  //TIMESTAMP 'YYYY-MM-DD HH24:MI:SS.FF'
 
   console.log(dVal);
-  console.log(dVal.toISOTime());
-  req.body.date = dVal.toISO();
+  console.log("ISO", dVal.toISO());
+  console.log("SQL", dVal.toSQL());
+  //req.body.date = dVal.toISO();
+
+  delete req.body.date;
+
+  req.body.createDate = dVal.toSQL();
 
   console.log("INSERTING REPORT", req.body);
 
