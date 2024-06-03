@@ -23,7 +23,7 @@
               hide-details />
             <div>
               <strong>No Loss Incident (near miss)</strong> <br />
-              Something has happened. No damaage or injury occurred, but could have
+              Something has happened. No damage or injury occurred, but could have
             </div>
           </v-col>
 

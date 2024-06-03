@@ -20,7 +20,7 @@ console.log(`LOADING ${NODE_ENV} CONFIG FROM ${path}`);
 export const API_PORT = process.env.API_PORT || "3000";
 export const FRONTEND_URL = process.env.FRONTEND_URL || "";
 export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || "";
-export const AUTH0_DOMAIN = `${process.env.AUTH0_DOMAIN}` || "";
+export const AUTH0_DOMAIN = (`${process.env.AUTH0_DOMAIN}` || "").replace(/\/$/, "");
 export const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
 
 export const DB_USER = process.env.DB_USER || "postgres";
