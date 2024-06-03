@@ -6,7 +6,29 @@
       <router-link to="/" class="title-link">{{ title }}</router-link>
     </v-app-bar-title>
 
-    <template v-slot:append></template>
+    <template #append>
+      <div v-if="user && user.email">
+        <!--  <v-btn color="primary" class="mr-1" to="/administration" icon="mdi-home"></v-btn> -->
+
+        <v-divider class="mr-5" vertical inset></v-divider>
+        <span style="font-size: 0.9rem"> {{ user.display_name }} </span>
+
+        <v-menu offset-y>
+          <template v-slot:activator="{ props }">
+            <v-btn icon="mdi-dots-vertical" color="primary" v-bind="props"></v-btn>
+          </template>
+
+          <v-list density="compact">
+            <v-list-item @click="logoutClick">
+              <template v-slot:prepend>
+                <v-icon>mdi-exit-run</v-icon>
+              </template>
+              <v-list-item-title style="font-size: 0.9rem !important">Sign out</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
+      </div>
+    </template>
   </v-app-bar>
 
   <v-main>
@@ -27,6 +49,10 @@
 
 <script lang="ts">
 import { applicationName } from "@/config";
+import { waitForUserToLoad } from "@/modules/administration/router";
+import { AuthHelper } from "@/plugins/auth";
+import { useUserStore } from "@/store/UserStore";
+import { mapState } from "pinia";
 
 export default {
   name: "DefaultNoAuth",
@@ -37,15 +63,23 @@ export default {
     };
   },
   computed: {
+    ...mapState(useUserStore, ["user"]),
     title() {
       return applicationName;
     },
+
+    currentUser() {},
   },
 
   async mounted() {
     this.showOverlay = false;
+    await waitForUserToLoad();
   },
-  methods: {},
+  methods: {
+    async logoutClick() {
+      await AuthHelper.logout();
+    },
+  },
 };
 </script>
 

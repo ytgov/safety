@@ -24,9 +24,14 @@ const routes: Array<RouteRecordRaw> = [
         path: "report-an-incident/complete",
         component: () => import("@/components/incident/CreateCompletePage.vue"),
       },
+
+      {
+        path: "sign-in",
+        component: () => import("@/modules/authentication/views/SignIn.vue"),
+      },
     ],
   },
-  {
+  /*  {
     path: "/sign-in",
     component: () => import("@/layouts/Blank.vue"),
     children: [
@@ -35,9 +40,9 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import("@/modules/authentication/views/SignIn.vue"),
       },
     ],
-  },
+  }, */
 
-  ...adminRoutes,
+  //...adminRoutes,
 
   {
     path: "/:pathMatch(.*)*",
@@ -47,6 +52,7 @@ const routes: Array<RouteRecordRaw> = [
 ];
 
 import { AuthHelper } from "@/plugins/auth";
+import { useUserStore } from "@/store/UserStore";
 
 async function requireLogin(to: RouteLocation): Promise<boolean | string> {
   let auth = AuthHelper;
@@ -57,6 +63,12 @@ async function requireLogin(to: RouteLocation): Promise<boolean | string> {
   }
 
   return "/";
+}
+
+export async function waitForUserToLoad(): Promise<any> {
+  let u = useUserStore();
+  await u.initialize();
+  return u.user;
 }
 
 export const router = createRouter({

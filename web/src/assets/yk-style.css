@@ -43,6 +43,13 @@ a {
   font-weight: 400;
 }
 
+.v-main .v-date-picker .v-btn {
+  color: #323232;
+}
+.v-main .v-date-picker .v-date-picker-month__day--selected .v-btn {
+  color: #fff;
+}
+
 /* .v-main .v-btn.primary {
     border: 1px #000 solid !important;
 }

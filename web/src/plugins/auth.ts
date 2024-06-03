@@ -16,6 +16,7 @@ export const AuthHelper = createAuth0({
     audience,
     redirect_uri: window.location.origin,
   },
+  cacheLocation: "localstorage",
   // Uncomment the following line to use the config from .env file
   // redirect_uri: REDIRECT_URI,
 });

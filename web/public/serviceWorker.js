@@ -3,14 +3,14 @@
 // This is the code piece that GenerateSW mode can't provide for us.
 // This code listens for the user's confirmation to update the app.
 self.addEventListener("message", (event) => {
-  console.log("MESSAGE", event);
+  //console.log("MESSAGE", event);
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
 
 self.addEventListener("fetch", (event) => {
-  console.log("FETCH", event.request);
+  //console.log("FETCH", event.request);
 
   /* event.respondWith(
     fetch(event.request)

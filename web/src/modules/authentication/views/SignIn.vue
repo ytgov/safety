@@ -1,6 +1,6 @@
 <template>
-  <v-container tag="section" class="mt-10">
-    <v-row justify="center" class="mt-10">
+  <v-container tag="section" class="mt-2">
+    <v-row justify="center" class="mt-2">
       <v-col cols="12">
         <!-- lg="11" sm="8" xl="7" -->
         <v-card class="elevation-5" style="overflow: hidden">
@@ -46,7 +46,7 @@ import { useAuth0 } from "@auth0/auth0-vue";
 import { router } from "@/routes";
 import { applicationName } from "@/config";
 
-const { loginWithRedirect } = useAuth0();
+const { loginWithRedirect, isAuthenticated } = useAuth0();
 
 const applicationTitle = ref(applicationName);
 const applicationSubtitle = "Public Service Commission";
@@ -55,6 +55,16 @@ onMounted(async () => {
   let u = await waitForUserToLoad();
   if (u && u.sub) router.push("/");
 });
+
+function checkAuth() {
+  if (isAuthenticated.value) {
+    console.log("Authenticated already, sending to Dashboard")
+
+    setTimeout(() => {
+      router.push("/dashboard")
+    }, 50)
+  }
+}
 
 function loginClick() {
   loginWithRedirect({

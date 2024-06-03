@@ -15,12 +15,16 @@
         the button below.
       </p>
 
-      <CreateIncidentButton />
+      <CreateIncidentButton block />
     </v-col>
     <!-- <v-divider vertical /> -->
 
     <v-col cols="12" sm="6">
-      <RouterLink to="/sign-in">
+      <div v-if="isAuthenticated == true">
+        <ReportListCard></ReportListCard>
+      </div>
+
+      <RouterLink v-else to="/sign-in">
         <v-alert type="success" prominent color="primary" title="Sign in" icon="mdi-login">
           to see your submissions and cases assigned to you
         </v-alert>
@@ -31,4 +35,16 @@
 
 <script setup>
 import CreateIncidentButton from "@/components/incident/CreateButton.vue";
+import ReportListCard from "@/components/report/ReportListCard.vue";
+import { useAuth0 } from "@auth0/auth0-vue";
+
+const { isAuthenticated } = useAuth0();
+
+/* const user = computed(() => {
+  return AuthHelper.user;
+}); */
+
+/* const isAuthenticated = computed(() => {
+  return AuthHelper.isAuthenticated;
+}); */
 </script>
