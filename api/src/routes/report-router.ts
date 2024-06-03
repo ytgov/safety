@@ -18,20 +18,21 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
   let { createDate } = req.body;
 
-  console.log("CREATEDATE", createDate);
+  //console.log("CREATEDATE", createDate);
 
   let dVal = DateTime.fromISO(createDate);
 
-  let formatted = dVal.toFormat("YYYY-MM-DD hh");
+  //let formatted = dVal.toFormat("YYYY-MM-DD hh");
+  console.log("FORMAT", dVal.toFormat("yyyy-MM-dd HH:mm:ss"));
 
   //TIMESTAMP 'YYYY-MM-DD HH24:MI:SS.FF'
 
-  console.log(dVal);
-  console.log("ISO", dVal.toISO());
-  console.log("SQL", dVal.toSQL());
+  //console.log(dVal);
+  //console.log("ISO", dVal.toISO());
+  //console.log("SQL", dVal.toSQL());
   //req.body.date = dVal.toISO();
 
-  req.body.createDate = dVal.toJSDate(); //  knex.raw("TO_TIMESTAMP()")
+  req.body.createDate = knex.raw(`TO_TIMESTAMP("${dVal.toFormat("yyyy-MM-dd HH:mm:ss")}", "YYYY-MM-DD HH24:MI:SS")`);
   delete req.body.date;
 
   console.log("INSERTING REPORT", req.body);
