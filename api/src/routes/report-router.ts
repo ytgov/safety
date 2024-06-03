@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { ReportService } from "../services";
 import { DateTime } from "luxon";
 import { db as knex } from "../data";
+import { DB_CLIENT } from "../config";
 
 export const reportRouter = express.Router();
 const db = new ReportService();
@@ -16,24 +17,15 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   req.body.email = req.user.email;
   req.body.status = "Initial Report";
 
-  let { createDate } = req.body;
+  let { createDate, date } = req.body;
 
-  //console.log("CREATEDATE", createDate);
+  let cVal = DateTime.fromISO(createDate);
+  let dVal = DateTime.fromISO(date);
 
-  let dVal = DateTime.fromISO(createDate);
-
-  //let formatted = dVal.toFormat("YYYY-MM-DD hh");
-  console.log("FORMAT", dVal.toFormat("yyyy-MM-dd HH:mm:ss"));
-
-  //TIMESTAMP 'YYYY-MM-DD HH24:MI:SS.FF'
-
-  //console.log(dVal);
-  //console.log("ISO", dVal.toISO());
-  //console.log("SQL", dVal.toSQL());
-  //req.body.date = dVal.toISO();
-
-  req.body.createDate = knex.raw(`TO_TIMESTAMP('${dVal.toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`);
-  delete req.body.date;
+  if (DB_CLIENT == "oracledb") {
+    req.body.createDate = knex.raw(`TO_TIMESTAMP('${cVal.toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`);
+    req.body.date = knex.raw(`TO_TIMESTAMP('${dVal.toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`);
+  }
 
   console.log("INSERTING REPORT", req.body);
 

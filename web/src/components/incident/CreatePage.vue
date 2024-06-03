@@ -131,8 +131,8 @@
           <v-label> Was Supervisor notified of this event?</v-label>
 
           <v-radio-group inline v-model="report.supervisorNotified" hide-details>
-            <v-radio value="Yes" label="Yes" class="mr-5" hide-details />
-            <v-radio value="No" label="No" hide-details />
+            <v-radio value="1" label="Yes" class="mr-5" hide-details />
+            <v-radio value="0" label="No" hide-details />
           </v-radio-group>
 
           <div class="d-flex">
