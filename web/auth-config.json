@@ -1,5 +1,12 @@
 {
-  "client_id": "XnOfIQeMeSXwM7SsmLXdvZxuwpgY5lAd",
-  "audience": "testing",
-  "domain": "https://dev-0tc6bn14.eu.auth0.com"
+  "development": {
+    "client_id": "XnOfIQeMeSXwM7SsmLXdvZxuwpgY5lAd",
+    "audience": "testing",
+    "domain": "https://dev-0tc6bn14.eu.auth0.com"
+  },
+  "production": {
+    "client_id": "Li7cgKJiWZSxhjCQp2Gco1mGDcsO7WuU",
+    "audience": "generic-production",
+    "domain": "https://sign-in.service.yukon.ca"
+  }
 }
