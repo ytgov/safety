@@ -28,6 +28,9 @@
           </v-list>
         </v-menu>
       </div>
+      <div v-else class="mr-4">
+        <router-link to="/sign-in">Sign in</router-link>
+      </div>
     </template>
   </v-app-bar>
 

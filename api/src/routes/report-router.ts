@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { ReportService } from "../services";
+import { DateTime } from "luxon";
 
 export const reportRouter = express.Router();
 const db = new ReportService();
@@ -13,6 +14,17 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   const {} = req.body;
   req.body.email = req.user.email;
   req.body.status = "Initial Report";
+
+  let { date } = req.body;
+
+  console.log("DATE", date);
+
+  let dVal = DateTime.fromISO(date);
+
+  console.log(dVal);
+  console.log(dVal.toISOTime());
+  req.body.date = dVal.toJSDate();
+
   await db.create(req.body);
   return res.json({ data: [] });
 });

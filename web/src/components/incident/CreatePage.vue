@@ -98,7 +98,7 @@
           </v-col>
           <v-col cols="12" md="12">
             <v-label class="mb-1" style="white-space: inherit"
-              >General location where the event occurred (such as stree address). Include building number if
+              >General location where the event occurred (such as street address). Include building number if
               possible</v-label
             >
             <v-text-field v-model="report.generalLocation" hide-details />
@@ -136,6 +136,9 @@
           </v-radio-group>
 
           <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
+
+          <span v-if="!auth.isAuthenticated" class="pt-3"> You must be authenticated to submit</span>
+          {{ auth.isAuthenticated }}
         </v-card-text>
       </v-card>
     </section>
@@ -147,6 +150,7 @@ import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import DateSelector from "@/components/DateSelector.vue";
 import { computed, ref } from "vue";
+import { useAuth0 } from "@auth0/auth0-vue";
 
 const reportStore = useReportStore();
 const { addReport } = reportStore;
@@ -154,8 +158,10 @@ const { addReport } = reportStore;
 const report = ref({ eventType: null, date: new Date(), createDate: new Date(), supervisorNotified: null });
 
 const canSave = computed(() => {
-  return report.value.supervisorNotified != null && report.value.eventType;
+  return report.value.supervisorNotified != null && report.value.eventType && auth.isAuthenticated;
 });
+
+const auth = useAuth0();
 
 async function saveReport() {
   report.value.createDate = new Date();
