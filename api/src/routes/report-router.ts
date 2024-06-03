@@ -30,8 +30,6 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   console.log("SQL", dVal.toSQL());
   //req.body.date = dVal.toISO();
 
-  delete req.body.date;
-
   req.body.createDate = dVal.toSQL();
 
   console.log("INSERTING REPORT", req.body);

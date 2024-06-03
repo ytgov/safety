@@ -4,8 +4,8 @@ exports.up = async function (knex: knex.Knex, Promise: any) {
   await knex.schema.createTable("reports", function (table) {
     table.increments("id").notNullable().primary();
     table.string("email", 100).notNullable();
-    table.dateTime("createDate").notNullable();
-    table.dateTime("date").nullable();
+    table.specificType("createDate", "TIMESTAMP(6)").notNullable();
+    table.specificType("date", "TIMESTAMP(6)").nullable();
     table.string("description", 1000);
     table.string("eventType", 1000);
     table.string("generalLocation", 2000);

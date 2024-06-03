@@ -130,15 +130,18 @@
         <v-card-text>
           <v-label> Was Supervisor notified of this event?</v-label>
 
-          <v-radio-group inline v-model="report.supervisorNotified">
+          <v-radio-group inline v-model="report.supervisorNotified" hide-details>
             <v-radio value="Yes" label="Yes" class="mr-5" hide-details />
             <v-radio value="No" label="No" hide-details />
           </v-radio-group>
 
-          <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
+          <div class="d-flex">
+            <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
 
-          <span v-if="!auth.isAuthenticated" class="pt-3"> You must be authenticated to submit</span>
-          {{ auth.isAuthenticated }}
+            <div v-if="isAuthenticated == false" class="pt-6 ml-4 text-warning">
+              * You must be authenticated to submit
+            </div>
+          </div>
         </v-card-text>
       </v-card>
     </section>
@@ -146,11 +149,12 @@
 </template>
 
 <script setup>
+import { computed, ref, watch } from "vue";
+import { useAuth0 } from "@auth0/auth0-vue";
+import { AuthHelper } from "@/plugins/auth";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import DateSelector from "@/components/DateSelector.vue";
-import { computed, ref } from "vue";
-import { useAuth0 } from "@auth0/auth0-vue";
 
 const reportStore = useReportStore();
 const { addReport } = reportStore;
@@ -158,10 +162,21 @@ const { addReport } = reportStore;
 const report = ref({ eventType: null, date: new Date(), createDate: new Date(), supervisorNotified: null });
 
 const canSave = computed(() => {
-  return report.value.supervisorNotified != null && report.value.eventType && auth.isAuthenticated;
+  return report.value.supervisorNotified != null && report.value.eventType && isAuthenticated.value == true;
 });
 
 const auth = useAuth0();
+
+const isAuthenticated = computed(() => {
+  return AuthHelper.isAuthenticated.value;
+});
+
+watch(
+  () => auth.isAuthenticated,
+  (nv, ov) => {
+    console.log("AUTH CHANGED", nv, ov);
+  }
+);
 
 async function saveReport() {
   report.value.createDate = new Date();

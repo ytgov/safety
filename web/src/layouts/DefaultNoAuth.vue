@@ -29,7 +29,7 @@
         </v-menu>
       </div>
       <div v-else class="mr-4">
-        <router-link to="/sign-in">Sign in</router-link>
+        <a @click="loginClick" class="cursor-pointer">Sign in</a>
       </div>
     </template>
   </v-app-bar>
@@ -81,6 +81,12 @@ export default {
   methods: {
     async logoutClick() {
       await AuthHelper.logout();
+    },
+
+    loginClick() {
+      AuthHelper.loginWithRedirect({
+        appState: { target: window.location.pathname },
+      });
     },
   },
 };
