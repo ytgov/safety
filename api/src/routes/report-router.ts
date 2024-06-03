@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import { ReportService } from "../services";
 import { DateTime } from "luxon";
+import { db as knex } from "../data";
 
 export const reportRouter = express.Router();
 const db = new ReportService();
@@ -30,7 +31,8 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   console.log("SQL", dVal.toSQL());
   //req.body.date = dVal.toISO();
 
-  req.body.createDate = dVal.toSQL();
+  req.body.createDate = dVal.toJSDate(); //  knex.raw("TO_TIMESTAMP()")
+  delete req.body.date;
 
   console.log("INSERTING REPORT", req.body);
 
