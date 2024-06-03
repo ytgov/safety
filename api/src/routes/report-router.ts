@@ -32,7 +32,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   //console.log("SQL", dVal.toSQL());
   //req.body.date = dVal.toISO();
 
-  req.body.createDate = knex.raw(`TO_TIMESTAMP("${dVal.toFormat("yyyy-MM-dd HH:mm:ss")}", "YYYY-MM-DD HH24:MI:SS")`);
+  req.body.createDate = knex.raw(`TO_TIMESTAMP('${dVal.toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`);
   delete req.body.date;
 
   console.log("INSERTING REPORT", req.body);
