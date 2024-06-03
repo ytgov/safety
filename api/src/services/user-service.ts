@@ -4,17 +4,17 @@ import { db } from "../data";
 
 export class UserService {
   async getAll(): Promise<User[]> {
-    return db.withSchema(DB_SCHEMA).from("users").orderBy(["first_name", "last_name"]);
+    return db.from("users").orderBy(["first_name", "last_name"]);
   }
 
   async getBySub(auth_subject: string): Promise<User | undefined> {
-    let user = await db<User>("users").withSchema(DB_SCHEMA).where({ auth_subject }).first();
+    let user = await db<User>("users").where({ auth_subject }).first();
     return user;
   }
 
   async getByEmail(email: string): Promise<User | undefined> {
     if (email) {
-      let user = await db<User>("users").withSchema(DB_SCHEMA).where({ email }).first();
+      let user = await db<User>("users").where({ email }).first();
       return user;
     }
 
@@ -22,10 +22,10 @@ export class UserService {
   }
 
   async create(item: User_Create): Promise<any> {
-    return db("users").withSchema(DB_SCHEMA).insert(item);
+    return db("users").insert(item);
   }
 
   async update(EMAIL: string, item: User_Update): Promise<User> {
-    return db("users").withSchema(DB_SCHEMA).where({ EMAIL }).update(item);
+    return db("users").where({ EMAIL }).update(item);
   }
 }
