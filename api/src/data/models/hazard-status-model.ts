@@ -1,4 +1,4 @@
-export interface ActionStatus {
+export interface HazardStatus {
     code: string;
     name: string;
     description?: string;
