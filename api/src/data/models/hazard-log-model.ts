@@ -1,5 +1,5 @@
 export interface HazardLog {
-    hazard_log_id: number;
+    id: number;
     hazard_id: number;
     old_hazard_type: number;
     old_description?: string;

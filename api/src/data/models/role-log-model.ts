@@ -1,5 +1,5 @@
 export interface RoleLog {
-    code: number;
+    id: number;
     role_id: number;
     old_name?: string;
     old_department?: string;

@@ -5,7 +5,7 @@ export interface Incident {
     proxy_role_id?: number;
     description: string;
     sensitivity: string;
-    created_date: Date;
+    created_at: Date;
     status: string;
     department: string;
     supervisor?: string;

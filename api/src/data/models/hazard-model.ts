@@ -1,5 +1,5 @@
 export interface Hazard {
-    hazard_id: number;
+    id: number;
     hazard_type: number;
     description?: string;
     location?: string;
@@ -7,7 +7,7 @@ export interface Hazard {
     department?: string;
     scope?: string;
     sensitivity?: string;
-    created_date?: Date;
+    created_at?: Date;
     status?: string;
     reopen_count: number;
 }

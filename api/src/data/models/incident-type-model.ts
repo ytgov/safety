@@ -5,6 +5,6 @@ export interface IncidentType {
     searchable: boolean;
     added_by: number;
     made_searchable_by?: number;
-    created_date?: Date;
-    searchable_date: Date; // nullable or not ?
+    created_at?: Date;
+    searchable_on?: Date;
 }

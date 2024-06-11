@@ -1,5 +1,5 @@
 export interface ActionLog {
-    action_log_id: number;
+    id: number;
     action_id: number; // nullable or not isnt specified
     hazard_id: number;
     old_actor_employee_id?: number;
