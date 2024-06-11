@@ -1,6 +1,6 @@
 export interface Hazard {
     id: number;
-    hazard_type: number;
+    hazard_type_id: number;
     description?: string;
     location?: string;
     location_detail?: string;

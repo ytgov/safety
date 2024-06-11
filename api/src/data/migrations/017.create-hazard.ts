@@ -3,7 +3,7 @@ import * as knex from "knex";
 exports.up = async function(knex: knex.Knex, Promise: any) {
     await knex.schema.createTable("hazard", function(table) {
         table.increments("id").primary().notNullable();
-        table.integer("hazard_type").notNullable();
+        table.integer("hazard_type_id").notNullable();
         table.string("description", 4096).nullable();
         table.string("location", 8).nullable();
         table.string("location_detail", 8).nullable();
@@ -14,7 +14,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.string("status", 8).nullable();
         table.integer("reopen_count").notNullable();
 
-        table.foreign("hazard_type").references("hazard_type.code");
+        table.foreign("hazard_type_id").references("hazard_type.id");
         table.foreign("location").references("location.code");
         table.foreign("department").references("department.code");
         table.foreign("scope").references("scope.code");

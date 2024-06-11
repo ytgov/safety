@@ -9,5 +9,5 @@ export interface Incident {
     status: string;
     department: string;
     supervisor?: string;
-    incident_type: number;
+    incident_type_id: number;
 }
