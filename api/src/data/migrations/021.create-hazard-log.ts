@@ -29,13 +29,13 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.string("user_action", 8).notNullable();
 
         table.foreign("hazard_id").references("hazard.id");
-        table.foreign("old_hazard_type").references("hazard_type.code");
+        table.foreign("old_hazard_type_id").references("hazard_type.id");
         table.foreign("old_location").references("location.code");
         table.foreign("old_department").references("department.code");
         table.foreign("old_scope").references("scope.code");
         table.foreign("old_sensitivity").references("sensitivity.code");
         table.foreign("old_status").references("hazard_status.code");
-        table.foreign("new_hazard_type").references("hazard_type.code");
+        table.foreign("new_hazard_type_id").references("hazard_type.id");
         table.foreign("new_location").references("location.code");
         table.foreign("new_department").references("department.code");
         table.foreign("new_scope").references("scope.code");

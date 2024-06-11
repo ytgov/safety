@@ -1,7 +1,7 @@
 export interface HazardLog {
     id: number;
     hazard_id: number;
-    old_hazard_type: number;
+    old_hazard_type_id: number;
     old_description?: string;
     old_location?: string;
     old_location_detail?: string;
@@ -10,7 +10,7 @@ export interface HazardLog {
     old_sensitivity?: string;
     old_status?: string;
     old_reopen_count: number;
-    new_hazard_type: number;
+    new_hazard_type_id: number;
     new_description?: string;
     new_location?: string;
     new_location_detail?: string;
