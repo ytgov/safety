@@ -4,7 +4,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
     await knex.schema.createTable("hazard_log", function(table) {
         table.increments("id").primary().notNullable();
         table.integer("hazard_id").notNullable();
-        table.integer("old_hazard_type").notNullable();
+        table.integer("old_hazard_type_id").notNullable();
         table.string("old_description", 4096).nullable();
         table.string("old_location", 8).nullable();
         table.string("old_location_detail", 8).nullable();
@@ -13,7 +13,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.string("old_sensitivity", 8).nullable();
         table.string("old_status", 8).nullable();
         table.integer("old_reopen_count").notNullable();
-        table.integer("new_hazard_type").notNullable();
+        table.integer("new_hazard_type_id").notNullable();
         table.string("new_description", 4096).nullable();
         table.string("new_location", 8).nullable();
         table.string("new_location_detail", 8).nullable();
