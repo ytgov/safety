@@ -15,7 +15,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
 
         table.foreign("department").references("department.code");
         table.foreign("location").references("location.code");
-        table.foreign("role_type_id").references("role_type_id.id");
+        table.foreign("role_type_id").references("role_type.id");
     });
 };
 
