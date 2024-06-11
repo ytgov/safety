@@ -13,7 +13,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.string("department", 8).notNullable();
         table.string("supervisor", 256).nullable();
         table.integer("incident_type").notNullable();
-        
+
         table.foreign("sensitivity").references("sensitivity.code");
         // status foreign keys
         // Why do we have multiple foriegn keys for status? Remove this comment once resolved
@@ -21,7 +21,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.foreign("status", "incident_incident_status_code_fk2").references("incident_status.code");
         table.foreign("department").references("department.code");
         table.foreign("incident_type").references("incident_type.code");
-  });
+    });
 };
 
 exports.down = async function(knex: knex.Knex, Promise: any) {
