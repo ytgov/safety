@@ -2,10 +2,10 @@ import * as knex from "knex";
 
 exports.up = async function(knex: knex.Knex, Promise: any) {
     await knex.schema.createTable("incident", function(table) {
-        table.increments("incident_id").primary().notNullable();
+        table.increments("id").primary().notNullable();
         table.string("reporting_person", 256).nullable();
-        table.string("proxy_emplid", 256).nullable(); // inconsistent syntax, proxy_emplid -> proxy_employee_id
-        table.integer("proxi_role_id").nullable();  // spelling error? proxi -> proxy
+        table.string("proxy_employee_id", 256).nullable();
+        table.integer("proxy_role_id").nullable();
         table.string("description", 4096).notNullable();
         table.string("sensitivity", 8).notNullable().references("sensitivity.code");
         table.datetime("created_date").notNullable();

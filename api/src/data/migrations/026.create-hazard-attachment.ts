@@ -2,10 +2,10 @@ import * as knex from "knex";
 
 exports.up = async function(knex: knex.Knex, Promise: any) {
     await knex.schema.createTable("hazard_attachment", function(table) {
-        table.increments("hazard_attachment_id").primary().notNullable();
+        table.increments("id").primary().notNullable();
         table.integer("hazard_id").notNullable().references("hazard.hazard_id");
-        table.string("added_by", 256).nullable();
-        // thing mediumblob null
+        table.string("added_by", 256).nullable(); // look into renaming this
+        table.binary("thing").nullable(); // look into renaming this
         table.tinyint("deleted", 1).notNullable();
         table.string("deleted_by", 256).nullable();
         table.datetime("added_date").notNullable();

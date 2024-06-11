@@ -22,7 +22,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.string("new_sensitivity", 8).nullable().references("sensitivity.code");
         table.string("new_status", 8).nullable().references("hazard_status.code");
         table.integer("new_reopen_count").notNullable();
-        table.string("changer_emplid", 256).nullable();
+        table.string("changer_employee_id", 256).nullable();
         table.integer("changer_role_id").nullable().references("role.role_id");
         table.datetime("changed_date").notNullable();
         table.string("log_comment", 4096).notNullable();

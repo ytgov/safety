@@ -2,7 +2,7 @@ import * as knex from "knex";
 
 exports.up = async function(knex: knex.Knex, Promise: any) {
     await knex.schema.createTable("incident_log", function(table) {
-        table.increments("incident_log_id").primary().notNullable();
+        table.increments("id").primary().notNullable();
         table.integer("incident_id").notNullable().references("incident.incident_id");
         table.string("old_description", 4096).notNullable();
         table.string("old_sensitivity", 256).nullable().references("sensitivity.code");
@@ -16,7 +16,7 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
         table.datetime("new_created_date").notNullable();
         table.string("new_status", 8).nullable();
         table.integer("new_incident_type").nullable().references("incident_type.code");
-        table.string("changer_emplid", 256).nullable();
+        table.string("changer_employee_id", 256).nullable();
         table.integer("changer_role_id").nullable().references("role.role_id");
         table.datetime("changed_date").notNullable();
         table.string("log_comment", 4096).notNullable();

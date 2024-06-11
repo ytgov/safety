@@ -4,9 +4,9 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
     await knex.schema.createTable("action", function(table) {
         table.increments("action_id").primary().notNullable();
         table.integer("hazard_id").notNullable().references("hazard.hazard_id");
-        table.integer("creator_emplId").nullable();
+        table.integer("creator_employee_id").nullable();
         table.integer("creator_role_id").nullable().references("role.role_id");
-        table.integer("actor_emplId").nullable();
+        table.integer("actor_employee_id").nullable();
         table.integer("actor_role_id").nullable().references("role.role_id");
         table.datetime("created_date").notNullable();
         table.datetime("modified_date").nullable();
