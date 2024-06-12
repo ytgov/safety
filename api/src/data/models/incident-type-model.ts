@@ -1,5 +1,5 @@
 export interface IncidentType {
-    code: string;
+    id: number;
     name: string;
     description?: string;
     searchable: boolean;
