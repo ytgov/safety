@@ -24,4 +24,4 @@ export { Role } from "./role-model";
 export { RoleType } from "./role-type-model";
 export { Scope } from "./scope-model";
 export { Sensitivity } from "./sensitivity-model";
-export { User } from "./user-model";
+export { User, User_Create, User_Update } from "./user-model";
