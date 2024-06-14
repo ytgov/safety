@@ -5,7 +5,7 @@ export async function up(knex: knex.Knex) {
         table.increments("id").primary().notNullable();
         table.integer("action_id").notNullable();
         table.string("added_by", 256).nullable(); // look into renaming this
-        table.binary("thing").nullable(); // look into renaming this
+        table.binary("file").nullable();
         table.tinyint("deleted", 1).notNullable();
         table.string("deleted_by", 256).nullable();
         table.datetime("added_date").notNullable();
