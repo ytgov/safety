@@ -24,14 +24,14 @@ export async function up(knex: knex.Knex) {
         table.string("log_comment", 4096).notNullable();
         table.string("user_action", 8).notNullable();
 
-        table.foreign("role_id").references("role.id");
-        table.foreign("old_department").references("department.code");
-        table.foreign("old_location").references("location.code");
-        table.foreign("old_role_type_id").references("role_type.id");
-        table.foreign("new_department").references("department.code");
-        table.foreign("new_location").references("location.code");
-        table.foreign("new_role_type_id").references("role_type.id");
-        table.foreign("changer_role_id").references("role.id");
+        table.foreign("role_id").references("roles.id");
+        table.foreign("old_department").references("departments.code");
+        table.foreign("old_location").references("locations.code");
+        table.foreign("old_role_type_id").references("role_types.id");
+        table.foreign("new_department").references("departments.code");
+        table.foreign("new_location").references("locations.code");
+        table.foreign("new_role_type_id").references("role_types.id");
+        table.foreign("changer_role_id").references("roles.id");
     });
 };
 

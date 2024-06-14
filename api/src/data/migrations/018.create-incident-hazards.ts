@@ -8,9 +8,9 @@ export async function up(knex: knex.Knex) {
         table.string("incident_hazard_type", 8).notNullable();
         table.integer("priority_order").notNullable();
 
-        table.foreign("incident_id").references("incident.id");
-        table.foreign("hazard_id").references("hazard.id");
-        table.foreign("incident_hazard_type").references("incident_hazard_type.code");
+        table.foreign("incident_id").references("incidents.id");
+        table.foreign("hazard_id").references("hazards.id");
+        table.foreign("incident_hazard_type").references("incident_hazard_types.code");
     });
 };
 

@@ -11,7 +11,7 @@ export async function up(knex: knex.Knex) {
         table.datetime("created_at").nullable().defaultTo(knex.fn.now());
         table.date("searchable_on").nullable();
 
-        table.foreign("added_by").references("role.id");
+        table.foreign("added_by").references("roles.id");
     });
 };
 

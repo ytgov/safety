@@ -25,15 +25,15 @@ export async function up(knex: knex.Knex) {
         table.string("log_comment", 4096).notNullable();
         table.string("user_action", 8).notNullable();
     
-        table.foreign("old_actor_role_id").references("role.id");
-        table.foreign("old_action_type").references("action_type.code");
-        table.foreign("old_sensitivity").references("sensitivity.code");
-        table.foreign("old_status").references("action_status.code");
-        table.foreign("new_actor_role_id").references("role.id");
-        table.foreign("new_action_type").references("action_type.code");
-        table.foreign("new_sensitivity").references("sensitivity.code");
-        table.foreign("new_status").references("action_status.code");
-        table.foreign("changer_role_id").references("role.id");
+        table.foreign("old_actor_role_id").references("roles.id");
+        table.foreign("old_action_type").references("action_types.code");
+        table.foreign("old_sensitivity").references("sensitivities.code");
+        table.foreign("old_status").references("action_statuses.code");
+        table.foreign("new_actor_role_id").references("roles.id");
+        table.foreign("new_action_type").references("action_types.code");
+        table.foreign("new_sensitivity").references("sensitivities.code");
+        table.foreign("new_status").references("action_statuses.code");
+        table.foreign("changer_role_id").references("roles.id");
     });
 };
 

@@ -14,12 +14,12 @@ export async function up(knex: knex.Knex) {
         table.string("status", 8).nullable();
         table.integer("reopen_count").notNullable();
 
-        table.foreign("hazard_type_id").references("hazard_type.id");
-        table.foreign("location").references("location.code");
-        table.foreign("department").references("department.code");
-        table.foreign("scope").references("scope.code");
-        table.foreign("sensitivity").references("sensitivity.code");
-        table.foreign("status").references("hazard_status.code");
+        table.foreign("hazard_type_id").references("hazard_types.id");
+        table.foreign("location").references("locations.code");
+        table.foreign("department").references("departments.code");
+        table.foreign("scope").references("scopes.code");
+        table.foreign("sensitivity").references("sensitivities.code");
+        table.foreign("status").references("hazard_statuses.code");
     });
 };
 

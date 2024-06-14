@@ -22,19 +22,19 @@ export async function up(knex: knex.Knex) {
         table.string("log_comment", 4096).notNullable();
         table.string("user_action", 8).notNullable();
 
-        table.foreign("incident_id").references("incident.id");
-        table.foreign("old_sensitivity").references("sensitivity.code");
+        table.foreign("incident_id").references("incidents.id");
+        table.foreign("old_sensitivity").references("sensitivities.code");
         // old_status foreign keys. Why are there two??
-        table.foreign("old_status", "incident_log_old_incident_status_code_fk").references("incident_status.code");
+        table.foreign("old_status", "incident_log_old_incident_status_code_fk").references("incident_statuses.code");
         // shouldn't this be incident_log_old_incident_status_code_fk2 ?
-        table.foreign("old_status", "incident_log_old_status_code_fk2").references("incident_status.code");
-        table.foreign("old_incident_type_id").references("incident_type.id");
-        table.foreign("new_sensitivity").references("sensitivity.code");
+        table.foreign("old_status", "incident_log_old_status_code_fk2").references("incident_statuses.code");
+        table.foreign("old_incident_type_id").references("incident_types.id");
+        table.foreign("new_sensitivity").references("sensitivities.code");
         // new_status foreign keys. Why are there two??
-        table.foreign("new_status", "incident_log_new_incident_status_code_fk").references("incident_status.code");
-        table.foreign("new_status", "incident_log_new_status_code_fk2").references("incident_status.code");
-        table.foreign("new_incident_type_id").references("incident_type.id");
-        table.foreign("changer_role_id").references("role.id");
+        table.foreign("new_status", "incident_log_new_incident_status_code_fk").references("incident_statuses.code");
+        table.foreign("new_status", "incident_log_new_status_code_fk2").references("incident_statuses.code");
+        table.foreign("new_incident_type_id").references("incident_types.id");
+        table.foreign("changer_role_id").references("roles.id");
     });
 };
 

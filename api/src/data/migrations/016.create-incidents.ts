@@ -14,13 +14,13 @@ export async function up(knex: knex.Knex) {
         table.string("supervisor", 256).nullable();
         table.integer("incident_type_id").notNullable();
 
-        table.foreign("sensitivity").references("sensitivity.code");
+        table.foreign("sensitivity").references("sensitivities.code");
         // status foreign keys
         // Why do we have multiple foriegn keys for status? Remove this comment once resolved
-        table.foreign("status", "incident_incident_status_code_fk").references("incident_status.code");
-        table.foreign("status", "incident_incident_status_code_fk2").references("incident_status.code");
-        table.foreign("department").references("department.code");
-        table.foreign("incident_type_id").references("incident_type.id");
+        table.foreign("status", "incident_incident_status_code_fk").references("incident_statuses.code");
+        table.foreign("status", "incident_incident_status_code_fk2").references("incident_statuses.code");
+        table.foreign("department").references("departments.code");
+        table.foreign("incident_type_id").references("incident_types.id");
     });
 };
 

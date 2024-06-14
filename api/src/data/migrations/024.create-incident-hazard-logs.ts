@@ -12,10 +12,10 @@ export async function up(knex: knex.Knex) {
         table.string("log_comment", 4096).notNullable();
         table.string("user_action", 8).notNullable();
 
-        table.foreign("incident_hazard_id").references("incident_hazard.id");
-        table.foreign("old_incident_hazard_type").references("incident_hazard_type.code");
-        table.foreign("new_incident_hazard_type").references("incident_hazard_type.code");
-        table.foreign("changer_role_id").references("role.id");
+        table.foreign("incident_hazard_id").references("incident_hazards.id");
+        table.foreign("old_incident_hazard_type").references("incident_hazard_types.code");
+        table.foreign("new_incident_hazard_type").references("incident_hazard_types.code");
+        table.foreign("changer_role_id").references("roles.id");
     });
 };
 

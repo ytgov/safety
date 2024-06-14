@@ -13,9 +13,9 @@ export async function up(knex: knex.Knex) {
         table.datetime("start_date").notNullable();
         table.datetime("end_date").notNullable();
 
-        table.foreign("department").references("department.code");
-        table.foreign("location").references("location.code");
-        table.foreign("role_type_id").references("role_type.id");
+        table.foreign("department").references("departments.code");
+        table.foreign("location").references("locations.code");
+        table.foreign("role_type_id").references("role_types.id");
     });
 };
 

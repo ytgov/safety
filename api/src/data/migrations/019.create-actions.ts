@@ -16,12 +16,12 @@ export async function up(knex: knex.Knex) {
         table.string("sensitivity", 8).nullable();
         table.string("status", 8).nullable();
 
-        table.foreign("hazard_id").references("hazard.id");
-        table.foreign("creator_role_id").references("role.id");
-        table.foreign("actor_role_id").references("role.id");
-        table.foreign("action_type").references("action_type.code");
-        table.foreign("sensitivity").references("sensitivity.code");
-        table.foreign("status").references("action_status.code");
+        table.foreign("hazard_id").references("hazards.id");
+        table.foreign("creator_role_id").references("roles.id");
+        table.foreign("actor_role_id").references("roles.id");
+        table.foreign("action_type").references("action_types.code");
+        table.foreign("sensitivity").references("sensitivities.code");
+        table.foreign("status").references("action_statuses.code");
     });
 };
 
