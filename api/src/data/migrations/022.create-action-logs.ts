@@ -1,7 +1,7 @@
 import * as knex from "knex";
 
-exports.up = async function(knex: knex.Knex, Promise: any) {
-    await knex.schema.createTable("action_log", function(table) {
+export async function up(knex: knex.Knex) {
+    await knex.schema.createTable("action_logs", function(table) {
         table.increments("id").primary().notNullable();
         table.integer("action_id"); // nullable or not nullable isnt specified
         table.integer("hazard_id").notNullable();
@@ -37,6 +37,6 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
     });
 };
 
-exports.down = async function(knex: knex.Knex, Promise: any) {
-    await knex.schema.dropTable("action_log");
+export async function down(knex: knex.Knex) {
+    await knex.schema.dropTable("action_logs");
 };

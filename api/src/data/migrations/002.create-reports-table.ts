@@ -1,6 +1,6 @@
 import * as knex from "knex";
 
-exports.up = async function(knex: knex.Knex, Promise: any) {
+export async function up(knex: knex.Knex) {
     await knex.schema.createTable("reports", function(table) {
         table.increments("id").notNullable().primary();
         table.string("email", 100).notNullable();
@@ -15,6 +15,6 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
     });
 };
 
-exports.down = async function(knex: knex.Knex, Promise: any) {
+export async function down(knex: knex.Knex) {
     await knex.schema.dropTable("reports");
 };

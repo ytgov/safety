@@ -1,7 +1,7 @@
 import * as knex from "knex";
 
-exports.up = async function(knex: knex.Knex, Promise: any) {
-    await knex.schema.createTable("action_attachment", function(table) {
+export async function up(knex: knex.Knex) {
+    await knex.schema.createTable("action_attachments", function(table) {
         table.increments("id").primary().notNullable();
         table.integer("action_id").notNullable();
         table.string("added_by", 256).nullable(); // look into renaming this
@@ -15,6 +15,6 @@ exports.up = async function(knex: knex.Knex, Promise: any) {
     });
 };
 
-exports.down = async function(knex: knex.Knex, Promise: any) {
-    await knex.schema.dropTable("action_attachment");
+export async function down(knex: knex.Knex) {
+    await knex.schema.dropTable("action_attachments");
 };
