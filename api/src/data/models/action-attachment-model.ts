@@ -1,8 +1,8 @@
-export interface ActionAttachment {
+export interface HazardAttachment {
     id: number;
-    action_id: number;
+    hazard_id: number;
     added_by: string | null; // look into renaming this
-    thing: Buffer | null; // look into renaming this
+    file: Buffer | null;
     deleted: boolean;
     deleted_by: string | null;
     added_date: Date;
