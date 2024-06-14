@@ -1,7 +1,7 @@
 export interface IncidentAttachment {
     id: number;
     incident_id: number;
-    added_by: string | null; // what is this?? Look into renameing this
+    added_by_email: string | null;
     deleted: boolean;
     file: Buffer;
     deleted_by: string | null;
