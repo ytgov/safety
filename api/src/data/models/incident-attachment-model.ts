@@ -1,10 +1,10 @@
 export interface IncidentAttachment {
     id: number;
     incident_id: number;
-    added_by?: string; // what is this?? Look into renameing this
+    added_by: string | null; // what is this?? Look into renameing this
     deleted: boolean;
     thing: Buffer; // look into renaming this
-    deleted_by?: string;
+    deleted_by: string | null;
     added_date: Date;
     deleted_date: Date;
 }

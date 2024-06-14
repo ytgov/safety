@@ -1,5 +1,5 @@
 export interface Location {
     code: string;
     name: string;
-    description?: string;
+    description: string | null;
 }
