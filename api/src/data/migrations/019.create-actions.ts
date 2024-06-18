@@ -12,16 +12,16 @@ export async function up(knex: knex.Knex) {
         table.datetime("modified_at").nullable().defaultTo(knex.fn.now());
         table.datetime("due_date").nullable();
         table.string("description", 4096).notNullable();
-        table.string("action_type", 8).notNullable();
-        table.string("sensitivity", 8).nullable();
-        table.string("status", 8).nullable();
+        table.string("action_type_code", 8).notNullable();
+        table.string("sensitivity_code", 8).nullable();
+        table.string("status_code", 8).nullable();
 
         table.foreign("hazard_id").references("hazards.id");
         table.foreign("creator_role_id").references("roles.id");
         table.foreign("actor_role_id").references("roles.id");
-        table.foreign("action_type").references("action_types.code");
-        table.foreign("sensitivity").references("sensitivities.code");
-        table.foreign("status").references("action_statuses.code");
+        table.foreign("action_type_code").references("action_types.code");
+        table.foreign("sensitivity_code").references("sensitivities.code");
+        table.foreign("status_code").references("action_statuses.code");
     });
 };
 
