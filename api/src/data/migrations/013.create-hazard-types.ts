@@ -6,12 +6,12 @@ export async function up(knex: knex.Knex) {
         table.string("name", 256).notNullable();
         table.string("description", 4096).nullable();
         table.boolean("searchable").notNullable();
-        table.integer("added_by").notNullable(); // look into renaming this
+        table.integer("added_by_id").notNullable(); // look into renaming this
         table.integer("made_searchable_by").nullable(); // look into renaming this
         table.datetime("created_at").nullable().defaultTo(knex.fn.now());
         table.date("searchable_on").nullable();
 
-        table.foreign("added_by").references("roles.id");
+        table.foreign("added_by_id").references("roles.id");
     });
 };
 

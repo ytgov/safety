@@ -9,7 +9,7 @@ export interface Action {
     modified_at: Date | null;
     due_date: Date | null;
     description: string;
-    action_type: string;
-    sensitivity: string | null;
-    status: string | null;
+    action_type_code: string;
+    sensitivity_code: string | null;
+    status_code: string | null;
 }

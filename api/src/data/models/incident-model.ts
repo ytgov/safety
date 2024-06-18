@@ -4,10 +4,10 @@ export interface Incident {
     proxy_employee_id: string | null;
     proxy_role_id: number | null;
     description: string;
-    sensitivity: string;
+    sensitivity_code: string;
     created_at: Date;
-    status: string;
-    department: string;
+    status_code: string;
+    department_code: string;
     supervisor: string | null;
     incident_type_id: number;
 }

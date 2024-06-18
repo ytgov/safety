@@ -3,7 +3,7 @@ export interface IncidentType {
     name: string;
     description: string | null;
     searchable: boolean;
-    added_by: number;
+    added_by_id: number;
     made_searchable_by: number | null;
     created_at: Date | null;
     searchable_on: Date | null;
