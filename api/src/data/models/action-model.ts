@@ -1,15 +1,15 @@
 export interface Action {
-    id: number;
-    hazard_id: number;
-    creator_employee_id: number | null;
-    creator_role_id: number | null;
-    actor_employee_id: number | null;
-    actor_role_id: number | null;
-    created_at: Date;
-    modified_at: Date | null;
-    due_date: Date | null;
-    description: string;
-    action_type_code: string;
-    sensitivity_code: string | null;
-    status_code: string | null;
+  id: number;
+  hazard_id: number;
+  creator_user_id?: number;
+  creator_role_type_id?: number;
+  actor_user_id?: number;
+  actor_role_type_id?: number;
+  created_at: Date;
+  modified_at?: Date;
+  due_date?: Date ;
+  description: string;
+  action_type_code: string;
+  sensitivity_code?: string;
+  status_code?: string;
 }

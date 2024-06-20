@@ -10,6 +10,7 @@ export async function up(knex: knex.Knex) {
         table.boolean("is_searchable").notNullable().defaultTo(true);
         table.datetime("created_at").nullable().defaultTo(knex.fn.now());
         table.date("searchable_on").nullable();
+        
         table.foreign("create_user_id").references("users.id");
         table.foreign("searchable_user_id").references("users.id");
     });
