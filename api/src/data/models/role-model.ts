@@ -1,8 +1,8 @@
 export interface Role {
     id: number;
     name: string | null;
-    department: string;
-    location: string | null;
+    department_code: string;
+    location_code: string | null;
     role_type_id: number;
     employee_id: string;
     created_at: Date;
