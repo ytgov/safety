@@ -20,7 +20,7 @@ export { IncidentType } from "./incident-type-model";
 export { Location } from "./location-model";
 export { Report } from "./report-model";
 export { RoleLog } from "./role-log-model";
-export { Role } from "./role-model";
+export { UserRole } from "./user-role-model";
 export { RoleType } from "./role-type-model";
 export { Scope } from "./scope-model";
 export { Sensitivity } from "./sensitivity-model";

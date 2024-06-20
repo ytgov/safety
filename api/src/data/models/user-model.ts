@@ -1,4 +1,5 @@
 export interface User {
+  id: number;
   email: string;
   auth_subject: string;
   first_name: string;

@@ -1,10 +1,10 @@
 export interface HazardType {
-    id: number;
-    name: string;
-    description: string | null;
-    searchable: boolean;
-    added_by_id: Date;
-    made_searchable_by: number | null;
-    created_at: Date | null;
-    searchable_on: Date | null;
+  id: number;
+  create_user_id: number;
+  searchable_user_id?: number;
+  name: string;
+  description?: string;
+  is_searchable: boolean;
+  created_at?: Date;
+  searchable_on?: Date;
 }
