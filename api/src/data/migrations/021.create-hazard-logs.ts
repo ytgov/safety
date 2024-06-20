@@ -22,26 +22,13 @@ export async function up(knex: knex.Knex) {
         table.string("new_sensitivity_code", 8).nullable();
         table.string("new_status_code", 8).nullable();
         table.integer("new_reopen_count").notNullable();
-        table.string("changer_employee_id", 256).nullable();
+        table.integer("changer_user_id").nullable();
         table.integer("changer_role_id").nullable();
         table.datetime("changed_date").notNullable();
         table.string("log_comment", 4096).notNullable();
         table.string("user_action", 8).notNullable();
 
         table.foreign("hazard_id").references("hazards.id");
-        table.foreign("old_hazard_type_id").references("hazard_types.id");
-        table.foreign("old_location_code").references("locations.code");
-        table.foreign("old_department_code").references("departments.code");
-        table.foreign("old_scope_code").references("scopes.code");
-        table.foreign("old_sensitivity_code").references("sensitivities.code");
-        table.foreign("old_status_code").references("hazard_statuses.code");
-        table.foreign("new_hazard_type_id").references("hazard_types.id");
-        table.foreign("new_location_code").references("locations.code");
-        table.foreign("new_department_code").references("departments.code");
-        table.foreign("new_scope_code").references("scopes.code");
-        table.foreign("new_sensitivity_code").references("sensitivities.code");
-        table.foreign("new_status_code").references("hazard_statuses.code");
-        table.foreign("changer_role_id").references("roles.id");
     });
 };
 
