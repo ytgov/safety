@@ -10,4 +10,6 @@ export interface Incident {
   proxy_user_id?: string;
   description: string;
   created_at: Date;
+
+  attachments?: any[];
 }

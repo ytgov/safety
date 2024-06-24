@@ -24,6 +24,10 @@ const routes: Array<RouteRecordRaw> = [
         path: "report-an-incident/complete",
         component: () => import("@/components/incident/CreateCompletePage.vue"),
       },
+      {
+        path: "reports/:id",
+        component: () => import("@/components/incident/DetailsPage.vue"),
+      },
 
       {
         path: "sign-in",
@@ -31,6 +35,7 @@ const routes: Array<RouteRecordRaw> = [
       },
     ],
   },
+
   /*  {
     path: "/sign-in",
     component: () => import("@/layouts/Blank.vue"),
@@ -42,7 +47,7 @@ const routes: Array<RouteRecordRaw> = [
     ],
   }, */
 
-  //...adminRoutes,
+  ...adminRoutes,
 
   {
     path: "/:pathMatch(.*)*",

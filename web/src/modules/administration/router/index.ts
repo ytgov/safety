@@ -5,23 +5,23 @@ import { useUserStore } from "@/store/UserStore";
 const routes = [
   {
     path: "/administration",
-    component: () => import("@/layouts/Default.vue"),
+    component: () => import("@/layouts/DefaultNoAuth.vue"),
     children: [
       {
         path: "",
         component: () => import("../views/Dashboard.vue"),
         beforeEnter: requireAccess,
-        meta: {
+        /* meta: {
           allow_admin: true,
-        },
+        }, */
       },
       {
         path: "users",
         component: () => import("../modules/users/views/UserList.vue"),
         beforeEnter: requireAccess,
-        meta: {
+        /*  meta: {
           require_admin: true,
-        },
+        }, */
       },
     ],
   },
@@ -33,7 +33,7 @@ async function requireAccess(to: RouteLocation): Promise<boolean | string> {
 
   let user = await waitForUserToLoad();
 
-  if (user.STATUS != "Active") return "/NotAuthorized?Requires-Active";
+  if (user.is_active != true) return "/NotAuthorized?Requires-Active";
 
   if (to.meta && to.meta.allow_admin && user.IS_ADMIN == "Y") return true;
 

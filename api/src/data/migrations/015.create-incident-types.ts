@@ -3,7 +3,7 @@ import * as knex from "knex";
 export async function up(knex: knex.Knex) {
     await knex.schema.createTable("incident_types", function(table) {
         table.increments("id").primary().notNullable();
-        table.integer("create_user_id").notNullable();
+        table.integer("create_user_id").nullable();
         table.integer("searchable_user_id").nullable();
         table.string("name", 256).notNullable();
         table.string("description", 4096).nullable();

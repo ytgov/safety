@@ -1,5 +1,5 @@
 export interface UserRole {
-  id: number;
+  id?: number;
   name?: string;
   department_code?: string;
   location_code?: string;

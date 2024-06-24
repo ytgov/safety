@@ -28,13 +28,17 @@
         class="ml-2"></v-text-field>
     </template>
     <template v-slot:right>
-      <add-user :onComplete="loadItems"></add-user>
+      <add-user :onComplete="loadItems" :on></add-user>
     </template>
 
     <v-data-table :search="search" :headers="headers" :items="items" :loading="isLoading" @click:row="rowClick">
-      <template v-slot:item.permissions="{ item }">
-        <v-chip color="yg_moss" v-if="item.IS_ADMIN">Admin</v-chip>
-        <v-chip color="yg_zinc" v-else-if="item.ROLE == 'Moderator'">Moderator</v-chip>
+      <template v-slot:item.is_active="{ item }">
+        <span style="color: #7a9a01" v-if="item.is_active">Active</span>
+        <span style="color: orangered" v-else>Inactive</span>
+      </template>
+
+      <template v-slot:item.roles="{ item }">
+        {{ item.roles.map((r) => r.name).join(", ") }}
       </template>
     </v-data-table>
   </base-card>
@@ -44,6 +48,8 @@
 <script lang="ts">
 import { mapActions, mapState } from "pinia";
 import { useUserAdminStore } from "../store";
+import { useDepartmentStore } from "@/store/DepartmentStore";
+import { useRoleStore } from "@/store/RoleStore";
 import UserEditor from "../components/UserEditor.vue";
 import { clone } from "lodash";
 import AddUser from "../components/AddUser.vue";
@@ -53,14 +59,16 @@ export default {
   data: () => ({
     headers: [
       { title: "Name", key: "display_name" },
-      { title: "Email", key: "EMAIL" },
-      { title: "Status", key: "STATUS" },
-      { title: "Permisions", key: "permissions" },
+      { title: "Email", key: "email" },
+      { title: "Status", key: "is_active" },
+      { title: "Roles", key: "roles" },
     ],
     search: "",
   }),
   computed: {
     ...mapState(useUserAdminStore, ["users", "isLoading"]),
+    ...mapState(useDepartmentStore, ["departments"]),
+    ...mapState(useRoleStore, ["roles"]),
     items() {
       return this.users;
     },
@@ -70,7 +78,7 @@ export default {
     breadcrumbs() {
       return [
         {
-          title: "Administration",
+          title: "Admin Dashboard",
           to: "/administration",
         },
         {
@@ -81,9 +89,14 @@ export default {
   },
   beforeMount() {
     this.loadItems();
+
+    this.initializeDepartments();
+    this.initializeRoles();
   },
   methods: {
     ...mapActions(useUserAdminStore, ["getAllUsers", "selectUser"]),
+    ...mapActions(useDepartmentStore, { initializeDepartments: "initialize" }),
+    ...mapActions(useRoleStore, { initializeRoles: "initialize" }),
 
     async loadItems() {
       await this.getAllUsers();
