@@ -1,4 +1,3 @@
-import { DB_SCHEMA } from "../config";
 import { Report } from "../data/models";
 import { db } from "../data";
 

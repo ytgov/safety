@@ -22,6 +22,8 @@
     <v-col cols="12" sm="6">
       <div v-if="isAuthenticated == true">
         <ReportListCard></ReportListCard>
+        <SMTListCard v-if="hasRole('SMT')"></SMTListCard>
+        <SupervisorCard></SupervisorCard>
       </div>
 
       <RouterLink v-else to="/sign-in">
@@ -36,10 +38,24 @@
 <script setup>
 import CreateIncidentButton from "@/components/incident/CreateButton.vue";
 import ReportListCard from "@/components/report/ReportListCard.vue";
+import SMTListCard from "@/components/report/SMTListCard.vue";
+import SupervisorCard from "@/components/report/SupervisorCard.vue";
+
 import { useAuth0 } from "@auth0/auth0-vue";
+import { useUserStore } from "@/store/UserStore";
+import { useReportStore } from "@/store/ReportStore";
 
 const { isAuthenticated } = useAuth0();
 
+const userStore = useUserStore();
+const { hasRole } = userStore;
+
+const reportStore = useReportStore();
+const { initialize } = reportStore;
+
+//onMounted(async () => {
+await initialize();
+//});
 /* const user = computed(() => {
   return AuthHelper.user;
 }); */

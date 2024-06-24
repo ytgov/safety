@@ -1,14 +1,15 @@
-import { defineStore } from "pinia";
+import { acceptHMRUpdate, defineStore } from "pinia";
 
 import { useNotificationStore } from "@/store/NotificationStore";
 import { useApiStore } from "@/store/ApiStore";
-import { USERS_URL } from "@/urls";
+import { DIRECTORY_URL, ROLE_URL, USERS_URL } from "@/urls";
+import { clone } from "lodash";
 
 let m = useNotificationStore();
 
 interface AdminState {
-  users: Array<AppUser>;
-  selectedUser: AppUser | undefined;
+  users: Array<User>;
+  selectedUser: User | undefined;
   isLoading: boolean;
 }
 
@@ -22,12 +23,6 @@ export const useUserAdminStore = defineStore("userAdmin", {
     userCount(state) {
       if (state && state.users) return state.users.length;
       return 0;
-    },
-    moderators(state) {
-      if (state.users.length > 0) {
-        return state.users.filter((u) => u.ROLE == "Moderator" || u.IS_ADMIN);
-      }
-      return new Array<AppUser>();
     },
   },
   actions: {
@@ -53,11 +48,20 @@ export const useUserAdminStore = defineStore("userAdmin", {
       this.isLoading = true;
       let api = useApiStore();
 
+      if (!this.selectedUser) return;
+
+      const roles = this.selectedUser.roles;
+      let u = clone(this.selectedUser);
+      delete u.roles;
+
       if (this.selectedUser) {
         await api
-          .secureCall("put", `${USERS_URL}/${this.selectedUser.EMAIL}`, this.selectedUser)
-          .then((resp) => {
+          .secureCall("put", `${USERS_URL}/${this.selectedUser.id}`, u)
+          .then(async (resp) => {
             this.users = resp.data;
+
+            await api.secureCall("post", `${ROLE_URL}/user/${u.id}`, { roles }).then((resp) => {});
+
             this.unselectUser();
           })
           .finally(() => {
@@ -72,6 +76,10 @@ export const useUserAdminStore = defineStore("userAdmin", {
       let api = useApiStore();
 
       return api.secureCall("post", USERS_URL, { user }).then(async (resp) => {
+        if (resp && resp.data && resp.data.error) {
+          m.notify({ text: resp.data.error[0].text, variant: "error" });
+        }
+
         await this.getAllUsers();
         return resp.data;
       });
@@ -79,21 +87,43 @@ export const useUserAdminStore = defineStore("userAdmin", {
     async searchDirectory(terms: any) {
       let api = useApiStore();
 
-      return api.secureCall("post", `${USERS_URL}/search-directory`, terms).then((resp) => {
+      return api.secureCall("post", `${DIRECTORY_URL}/search-directory`, terms).then((resp) => {
         return resp.data;
       });
     },
   },
 });
 
-export interface AppUser {
-  EMAIL: string;
-  FIRST_NAME: string;
-  LAST_NAME: string;
+export interface User {
+  id: number;
+  email: string;
+  auth_subject: string;
+  first_name: string;
+  last_name: string;
   display_name: string;
-  IS_ADMIN: boolean;
-  STATUS: string;
-  ROLE: string;
+  title: string;
+  department: string;
+  division: string;
+  branch: string;
+  unit: string;
+  is_active: boolean | string;
 
-  surveys?: number[];
+  roles?: UserRole[];
+}
+
+export interface UserRole {
+  id: number;
+  name?: string;
+  department_code?: string;
+  location_code?: string;
+  role_type_id: number;
+  user_id: string;
+  created_at: Date;
+  create_user_id: number;
+  start_date: Date;
+  end_date?: Date;
+}
+
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useUserAdminStore, import.meta.hot));
 }

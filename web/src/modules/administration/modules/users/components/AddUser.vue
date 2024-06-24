@@ -2,10 +2,10 @@
   <div>
     <v-btn color="primary" variant="tonal" size="small" class="mr-5" @click="doShow">Add User</v-btn>
 
-    <v-dialog v-model="showEdit" width="700px" transition="dialog-bottom-transition" persistent>
+    <v-dialog v-model="showEdit" width="700px" persistent>
       <template v-slot:default="{ isActive }">
         <v-card>
-          <v-toolbar color="info" density="comfortable">
+          <v-toolbar color="primary" density="comfortable">
             <v-toolbar-title class="text-white" style="">Add User</v-toolbar-title>
             <v-spacer> </v-spacer>
             <v-toolbar-items>
@@ -76,7 +76,8 @@ export default {
         if (this.onComplete) this.onComplete();
 
         this.doClose();
-      });
+      })
+      .catch(resp)
     },
   },
 };
