@@ -13,7 +13,7 @@
       outlined
       clearable
       return-object>
-      <template slot="no-data">
+      <template #no-data>
         <div class="mx-4 text-caption">
           <strong>No matches found?</strong>
           This search matches the beginning of names and titles only

@@ -1,4 +1,7 @@
+import { UserRole } from "./user-role-model";
+
 export interface User {
+  id: number;
   email: string;
   auth_subject: string;
   first_name: string;
@@ -10,6 +13,8 @@ export interface User {
   branch: string;
   unit: string;
   is_active: boolean | string;
+
+  roles?: UserRole[];
 }
 
 export interface User_Create {

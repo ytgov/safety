@@ -19,6 +19,12 @@
           </template>
 
           <v-list density="compact">
+            <v-list-item to="/administration" v-if="isSystemAdmin">
+              <template v-slot:prepend>
+                <v-icon>mdi-account-cog</v-icon>
+              </template>
+              <v-list-item-title style="font-size: 0.9rem !important">Administration</v-list-item-title>
+            </v-list-item>
             <v-list-item @click="logoutClick">
               <template v-slot:prepend>
                 <v-icon>mdi-exit-run</v-icon>
@@ -66,12 +72,10 @@ export default {
     };
   },
   computed: {
-    ...mapState(useUserStore, ["user"]),
+    ...mapState(useUserStore, ["user", "isSystemAdmin"]),
     title() {
       return applicationName;
     },
-
-    currentUser() {},
   },
 
   async mounted() {

@@ -92,22 +92,37 @@
 
         <v-row class="pa-5 pb-6">
           <v-col cols="12" md="12">
-            <v-label class="mb-1" style="white-space: inherit">Date and time event occurred</v-label>
+            <v-row>
+              <v-col cols="12" sm="6">
+                <v-label class="mb-1" style="white-space: inherit">Date and time event occurred</v-label>
+                <DateSelector v-model="report.date"></DateSelector>
+              </v-col>
 
-            <DateSelector v-model="report.date"></DateSelector>
+              <v-col cols="12" sm="6">
+                <v-label class="mb-1" style="white-space: inherit">Urgency level</v-label>
+                <v-select
+                  hide-details
+                  v-model="report.urgency"
+                  :items="urgencies"
+                  item-title="name"
+                  item-value="code"></v-select>
+              </v-col>
+            </v-row>
           </v-col>
           <v-col cols="12" md="12">
-            <v-label class="mb-1" style="white-space: inherit"
-              >General location where the event occurred (such as street address). Include building number if
-              possible</v-label
-            >
-            <v-text-field v-model="report.generalLocation" hide-details />
+            <v-label class="mb-1" style="white-space: inherit">General location where the event occurred</v-label>
+            <v-autocomplete
+              v-model="report.location_code"
+              :items="locations"
+              item-title="name"
+              item-value="code"
+              hide-details />
           </v-col>
           <v-col cols="12" md="12">
             <v-label class="mb-1" style="white-space: inherit"
               >Specific location where the event occurred (such as a spot in a building)</v-label
             >
-            <v-text-field v-model="report.specificLocation" hide-details />
+            <v-text-field v-model="report.location_detail" hide-details />
           </v-col>
           <v-col cols="12" md="12">
             <v-label class="mb-1" style="white-space: inherit"
@@ -127,13 +142,33 @@
         <v-card-item class="py-4 px-6 mb-2 bg-sun">
           <h4 class="text-h6">Submit Report</h4>
         </v-card-item>
-        <v-card-text>
-          <v-label> Was Supervisor notified of this event?</v-label>
-
-          <v-radio-group inline v-model="report.supervisorNotified" hide-details>
-            <v-radio value="1" label="Yes" class="mr-5" hide-details />
-            <v-radio value="0" label="No" hide-details />
+        <v-card-text class="pt-5">
+          <v-label>Are you submitting this report on behalf of another person?</v-label>
+          <v-radio-group v-model="report.on_behalf" inline>
+            <v-radio label="No" value="No"></v-radio>
+            <v-radio label="Yes" value="Yes"></v-radio>
           </v-radio-group>
+
+          <DirectorySelector
+            v-if="report.on_behalf == 'Yes'"
+            class=""
+            label="Search and select the person you are submitting this for"
+            @selected="handleBehalfSelect"></DirectorySelector>
+
+          <DirectorySelector
+            :label="
+              report.on_behalf == 'Yes' ? 'Search and select their supervisor' : 'Search and select your supervisor'
+            "
+            @selected="handleSupervisorSelect"></DirectorySelector>
+
+          <v-label>Attach supporting images</v-label>
+          <v-file-input
+            v-model="report.files"
+            prepend-icon=""
+            prepend-inner-icon="mdi-camera"
+            chips
+            multiple
+            accept="image/*"></v-file-input>
 
           <div class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
@@ -150,19 +185,24 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
+import { storeToRefs } from "pinia";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { AuthHelper } from "@/plugins/auth";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import DateSelector from "@/components/DateSelector.vue";
+import DirectorySelector from "@/components/DirectorySelector.vue";
 
 const reportStore = useReportStore();
-const { addReport } = reportStore;
+const { initialize, addReport } = reportStore;
+const { locations, urgencies } = storeToRefs(reportStore);
 
-const report = ref({ eventType: null, date: new Date(), createDate: new Date(), supervisorNotified: null });
+await initialize();
+
+const report = ref({ eventType: null, date: new Date(), urgency: "Medium" });
 
 const canSave = computed(() => {
-  return report.value.supervisorNotified != null && report.value.eventType && isAuthenticated.value == true;
+  return report.value.eventType && isAuthenticated.value == true;
 });
 
 const auth = useAuth0();
@@ -184,5 +224,12 @@ async function saveReport() {
   await addReport(report.value).then(() => {
     router.push("/report-an-incident/complete");
   });
+}
+
+function handleSupervisorSelect(value) {
+  report.value.supervisor_email = value.email;
+}
+function handleBehalfSelect(value) {
+  report.value.on_behalf_email = value.email;
 }
 </script>

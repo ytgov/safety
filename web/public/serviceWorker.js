@@ -1,5 +1,17 @@
 /* eslint-disable no-undef, no-restricted-globals */
 
+importScripts(
+  'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js'
+);
+
+workbox.setConfig({
+  debug: true,
+});
+
+workbox.precaching.precacheAndRoute([
+  {url: '/yukon.svg', revision: '123456'}, // Change the revision to force update
+]);
+
 // This is the code piece that GenerateSW mode can't provide for us.
 // This code listens for the user's confirmation to update the app.
 self.addEventListener("message", (event) => {
@@ -9,10 +21,24 @@ self.addEventListener("message", (event) => {
   }
 });
 
+/*
 self.addEventListener("fetch", (event) => {
-  //console.log("FETCH", event.request);
+   
+  let store = caches.open("basic")
 
-  /* event.respondWith(
+  event.respondWith(
+    fetch(event.request)
+      .then(function (response) {
+        store.put(event.request, response.clone());
+        console.log("ADDING TO CACHE", event.request);
+        return response;
+      })
+      .catch((err) => {
+        console.log("RETURNING FROM CACHE", event.request, err);
+        return store.match(event.request);
+      })
+  );
+  event.respondWith(
     fetch(event.request)
       .then((cache) => {
         return fetch(event.request).then(function (response) {
@@ -25,8 +51,9 @@ self.addEventListener("fetch", (event) => {
         console.log("RETURNING FROM CACHE", event.request, err);
         return caches.match(event.request);
       })
-  ); */
+  ); 
 });
+*/
 
 console.log("Loading serviceWorker.js");
 

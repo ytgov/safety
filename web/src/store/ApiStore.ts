@@ -41,7 +41,40 @@ export const useApiStore = defineStore("api", () => {
     m.notify(message);
   }
 
+  const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
+
   async function secureCall(method: string, url: string, data?: any) {
+    let response;
+
+    if (auth.isLoading.value != false) {
+      for (let i = 0; i < 30; i++) {
+        await timer(200);
+        if (auth.isLoading.value != true) break;
+      }
+    }
+
+    if (!auth.isAuthenticated.value) {
+      console.log("Not Authenticated");
+      response = { error: "Not Authenticated" };
+      throw Error("Not Authenticated");
+    }
+
+    response = await auth.getAccessTokenSilently().then(async (token) => {
+      return await SecureAPICall(method, token)
+        .request({ url, data })
+        .then((res) => {
+          return res.data;
+        })
+        .catch((err) => {
+          doApiErrorMessage(err);
+          return { error: err };
+        });
+    });
+
+    return response;
+  }
+
+  async function secureUpload(method: string, url: string, data?: any) {
     let response;
     /* if (!auth.isAuthenticated.value) {
       console.log("Not Authenticated");
@@ -50,7 +83,7 @@ export const useApiStore = defineStore("api", () => {
     } */
     response = await auth.getAccessTokenSilently().then(async (token) => {
       return await SecureAPICall(method, token)
-        .request({ url, data })
+        .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
         .then((res) => {
           return res.data;
         })
@@ -79,6 +112,7 @@ export const useApiStore = defineStore("api", () => {
   }
 
   return {
+    secureUpload,
     secureCall,
     call,
   };

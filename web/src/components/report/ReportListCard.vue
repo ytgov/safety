@@ -1,11 +1,14 @@
 <template>
-  <v-card class="default">
+  <v-card class="default mb-5">
     <v-card-text>
       <h4 class="text-h5 mb-4">My Reports</h4>
 
       <v-list v-if="myReports && myReports.length > 0" bg-color="#ddd" style="border: 1px #aaa solid" rounded>
-        <div v-for="(report, idx) of myReports" class="">
-          <v-list-item :title="makeTitle(report)" :subtitle="makeSubtitle(report)"></v-list-item>
+        <div v-for="(report, idx) of myReports">
+          <v-list-item
+            :title="makeTitle(report)"
+            :subtitle="makeSubtitle(report)"
+            @click="openReportClick(report)"></v-list-item>
           <v-divider v-if="idx < myReports.length - 1" class="mt-2 mb-1" />
         </div>
       </v-list>
@@ -21,45 +24,26 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { useReportStore, Report } from "@/store/ReportStore";
+import { useReportStore, Incident } from "@/store/ReportStore";
 import { storeToRefs } from "pinia";
-import { onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 const reportStore = useReportStore();
-
 const { myReports } = storeToRefs(reportStore);
-const { initialize } = reportStore;
 
-onMounted(async () => {
-  await initialize();
-});
+const router = useRouter();
 
-function makeTitle(input: Report) {
-  let title = "";
-
-  switch (input.eventType) {
-    case "incident":
-      title += "Incident";
-      break;
-    case "noloss":
-      title += "No Loss Incident (near miss)";
-      break;
-    case "hazard":
-      title += "Hazard Identification";
-      break;
-    case "refusal":
-      title += "Work Refusal";
-      break;
-    default:
-      title += "Type TBD";
-  }
-
-  title += ` on ${DateTime.fromISO(input.date.toString()).toFormat("yyyy-MM-dd")}`;
-
+function makeTitle(input: Incident) {
+  let title = input.incident_type_description;
+  title += ` on ${DateTime.fromISO(input.created_at.toString()).toFormat("yyyy-MM-dd")}`;
   return title;
 }
 
-function makeSubtitle(input: Report) {
-  return `Created: ${DateTime.fromISO(input.createDate.toString()).toRelative()}, Status: ${input.status}`;
+function makeSubtitle(input: Incident) {
+  return `Created: ${DateTime.fromISO(input.created_at.toString()).toRelative()}, Status: ${input.status_name}`;
+}
+
+function openReportClick(input: Incident) {
+  router.push(`/reports/${input.id}`);
 }
 </script>
