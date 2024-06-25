@@ -4,7 +4,7 @@ import { isArray } from "lodash";
 
 import { db as knex } from "../data";
 import { IncidentService } from "../services";
-import { Incident, IncidentAttachment } from "../data/models";
+import { Incident, IncidentAttachment, UserRole } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
 
 export const reportRouter = express.Router();
@@ -18,6 +18,16 @@ reportRouter.get("/my-reports", async (req: Request, res: Response) => {
 reportRouter.get("/my-supervisor-reports", async (req: Request, res: Response) => {
   const list = await db.getBySupervisorEmail(req.user.email);
   return res.json({ data: list });
+});
+
+reportRouter.get("/:role", async (req: Request, res: Response) => {
+  const { role } = req.params;
+
+  const match = req.user.roles.find((r: UserRole) => r.name == role);
+  if (!match) return res.json({ data: [] });
+
+  const list = await db.getAll();
+  res.json({ data: list });
 });
 
 reportRouter.get("/:id", async (req: Request, res: Response) => {
