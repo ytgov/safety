@@ -66,7 +66,7 @@ export default {
   },
   computed: {
     ...mapWritableState(useNotificationStore, ["showNotification"]),
-    ...mapState(useUserStore, ["user", "isAdmin"]),
+    ...mapState(useUserStore, ["user", "isSystemAdmin"]),
 
     title() {
       return applicationName;

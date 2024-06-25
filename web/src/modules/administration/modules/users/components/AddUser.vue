@@ -65,19 +65,22 @@ export default {
       this.chosenOne = person;
     },
     doAdd() {
-      this.addUser(this.chosenOne).then((resp: any) => {
-        if (resp && resp.error) {
-          if (this.onError) this.onError(resp.error[0]);
+      this.addUser(this.chosenOne)
+        .then((resp: any) => {
+          if (resp && resp.error) {
+            if (this.onError) this.onError(resp.error[0]);
 
-          this.chosenOne = {};
-          return;
-        }
+            this.chosenOne = {};
+            return;
+          }
 
-        if (this.onComplete) this.onComplete();
+          if (this.onComplete) this.onComplete();
 
-        this.doClose();
-      })
-      .catch(resp)
+          this.doClose();
+        })
+        .catch((resp) => {
+          console.log("Error in AddUser", resp);
+        });
     },
   },
 };

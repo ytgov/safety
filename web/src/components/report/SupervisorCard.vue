@@ -21,7 +21,7 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { useReportStore, Report } from "@/store/ReportStore";
+import { useReportStore, Incident } from "@/store/ReportStore";
 import { storeToRefs } from "pinia";
 import { onMounted } from "vue";
 

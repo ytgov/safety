@@ -43,7 +43,7 @@
             <v-col class="text-right">
               <v-btn @click="doSelect" color="primary" class="mb-0" small>
                 <v-icon class="mr-2">mdi-account-check</v-icon>
-                {{ actionName }}
+                actionName
               </v-btn>
               <v-btn @click="clear" color="secondary" class="ml-4 mb-0 mt-4" small>Clear</v-btn></v-col
             >
@@ -69,12 +69,12 @@ const isLoading = ref(false);
 const items = ref([] as any[]);
 const search = ref("");
 
-const model = ref(null);
+const model = ref(null as any);
 const searchIndex = ref(1);
 
-const timerId = ref(null);
+const timerId = ref(null as any);
 
-const selectedPerson = ref(null);
+const selectedPerson = ref(null as any);
 
 watch(search, async (nv) => {
   if (!nv) {
@@ -100,7 +100,7 @@ async function doDirectorySearch(val: string) {
   // delay new call 500ms
   timerId.value = setTimeout(() => {
     if (!val) {
-      items = [];
+      items.value = [];
       return;
     }
 

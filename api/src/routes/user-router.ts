@@ -63,6 +63,8 @@ userRouter.put(
     let existing = await db.getById(id);
     if (!existing) return res.status(404).send("User not found");
 
+    delete existing.roles;
+
     existing.is_active = is_active;
     existing.department = department;
     existing.division = division;

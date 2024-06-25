@@ -4,16 +4,16 @@ import { LOCATION_URL, REPORTS_URL } from "@/urls";
 
 export const useReportStore = defineStore("reports", {
   state: () => ({
-    myReports: [] as Report[],
-    mySupervisorReports: [] as Report[],
+    myReports: [] as Incident[],
+    mySupervisorReports: [] as Incident[],
     locations: [] as Location[],
     urgencies: [] as Urgency[],
-    selectedReport: undefined as Report | undefined,
+    selectedReport: undefined as Incident | undefined,
   }),
   actions: {
     async initialize() {
       console.log("Initializing Report Store");
-      this.myReports = this.myReports || new Array<Report>();
+      this.myReports = this.myReports || new Array<Incident>();
 
       // this.myReports = [{ title: "testing", createDate: new Date() }];
       await this.loadLocations();
@@ -63,13 +63,13 @@ export const useReportStore = defineStore("reports", {
         });
     },
 
-    async addReport(report: Report) {
+    async addReport(report: Incident) {
       this.myReports.push(report);
       const api = useApiStore();
 
       const formData = new FormData();
       formData.append("eventType", report.eventType);
-      formData.append("date", report.date.toString());
+      formData.append("date", (report as any).date.toString());
       formData.append("urgency", report.urgency);
       formData.append("location_code", report.location_code);
       formData.append("specificLocation", report.specificLocation);
@@ -114,6 +114,26 @@ export interface Report {
   supervisor_email: string;
   on_behalf: string;
   on_behalf_email: string;
+
+  files?: any[];
+}
+
+export interface Incident {
+  id: number;
+  created_at: Date;
+  title?: string;
+  eventType: string;
+  status: string;
+  urgency: string;
+  location_code: string;
+  specificLocation: string;
+  description: string;
+  supervisor_email: string;
+  on_behalf: string;
+  on_behalf_email: string;
+
+  incident_type_description: string;
+  status_name: string;
 
   files?: any[];
 }
