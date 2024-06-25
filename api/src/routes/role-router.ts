@@ -23,8 +23,11 @@ roleRouter.post("/user/:user_id", async (req: Request, res: Response) => {
 
       for (const role of roles) {
         role.create_user_id = req.user.id;
-        role.start_date = InsertableDate(role.start_date);
-        role.end_date = InsertableDate(role.end_date);
+
+        // TODO: implement date-based activations if necessary
+        //role.start_date = InsertableDate(role.start_date);
+        //role.end_date = InsertableDate(role.end_date);
+        role.created_at = InsertableDate(new Date().toISOString());
 
         if (isEmpty(role.department_code)) role.department_code = null;
         await trx("user_roles").insert(roleForInsert(role));
