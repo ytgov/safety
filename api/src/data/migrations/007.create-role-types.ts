@@ -5,7 +5,7 @@ export async function up(knex: knex.Knex) {
         table.increments("id").primary().notNullable();
         table.string("name", 256).notNullable();
         table.integer("permissions").notNullable();
-        table.string("description", 4096).notNullable();
+        table.string("description", 4000).notNullable();
     });
 };
 

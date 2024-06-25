@@ -11,7 +11,7 @@ export async function up(knex: knex.Knex) {
         table.datetime("created_at").notNullable().defaultTo(knex.fn.now());
         table.datetime("modified_at").nullable().defaultTo(knex.fn.now());
         table.datetime("due_date").nullable();
-        table.string("description", 4096).notNullable();
+        table.string("description", 4000).notNullable();
         table.string("action_type_code", 8).notNullable();
         table.string("sensitivity_code", 8).nullable();
         table.string("status_code", 8).nullable();
