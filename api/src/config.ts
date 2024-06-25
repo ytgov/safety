@@ -18,8 +18,8 @@ dotenv.config({ path: path, override: true });
 console.log(`LOADING ${NODE_ENV} CONFIG FROM ${path}`);
 
 export const API_PORT = process.env.API_PORT || "3000";
-// TODO: Remove this value once it's setup in the environment 
-export const FRONTEND_URL ="https://safety.gov.yk.ca" // process.env.FRONTEND_URL || "";
+// TODO: Remove this value once it's setup in the environment
+export const FRONTEND_URL = process.env.FRONTEND_URL || "https://safety.gov.yk.ca";
 export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || "";
 export const AUTH0_DOMAIN = (`${process.env.AUTH0_DOMAIN}` || "").replace(/\/$/, "");
 export const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
@@ -76,7 +76,7 @@ export const APPLICATION_NAME = process.env.APPLICATION_NAME || "YG Safety Porta
 export const DB_SCHEMA = process.env.DB_SCHEMA || "";
 export const DB_USER_TABLE = process.env.DB_USER_TABLE || "";
 
-// TODO: Remove this value once it's setup in the environment 
-export const AD_CLIENT_ID = "15a9a9d8-2dcd-4cd8-965e-e2a7d044c7de"// process.env.AD_CLIENT_ID || "";
+// TODO: Remove this value once it's setup in the environment
+export const AD_CLIENT_ID = "15a9a9d8-2dcd-4cd8-965e-e2a7d044c7de"; // process.env.AD_CLIENT_ID || "";
 export const AD_CLIENT_SECRET = process.env.AD_CLIENT_SECRET || "";
 export const AD_TENANT_ID = process.env.AD_TENANT_ID || "";

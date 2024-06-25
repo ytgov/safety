@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
 import { db as knex } from "../data";
 import { isEmpty } from "lodash";
-import { UserRole } from "src/data/models";
+import { UserRole } from "../data/models";
+import { InsertableDate } from "../utils/formatters";
 
 export const roleRouter = express.Router();
 
@@ -14,8 +15,6 @@ roleRouter.post("/user/:user_id", async (req: Request, res: Response) => {
   const { user_id } = req.params;
   const { roles } = req.body;
 
-  console.log("SET ROLES", user_id, roles);
-
   knex
     .transaction(async (trx) => {
       await trx("user_roles")
@@ -24,6 +23,9 @@ roleRouter.post("/user/:user_id", async (req: Request, res: Response) => {
 
       for (const role of roles) {
         role.create_user_id = req.user.id;
+        role.start_date = InsertableDate(role.start_date);
+        role.end_date = InsertableDate(role.end_date);
+
         if (isEmpty(role.department_code)) role.department_code = null;
         await trx("user_roles").insert(roleForInsert(role));
       }

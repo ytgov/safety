@@ -1,6 +1,10 @@
 import moment from "moment";
 import _ from "lodash";
+import { DateTime } from "luxon";
 import markdownit from "markdown-it";
+
+import { DB_CLIENT } from "../config";
+import { db as knex } from "../data";
 
 export function FormatDate(input: Date): string {
   return moment(input).format("YYYY-MM-DD");
@@ -23,7 +27,7 @@ export function CleanInteger(input: any): number {
 }
 
 export function RenderMarkdown(input: string): { output: string; isMarkdown: boolean } {
-  let containsNewlines = RegExp(/.*\n/g).test(input)
+  let containsNewlines = RegExp(/.*\n/g).test(input);
   let containsHash = input.includes("#");
 
   if (containsNewlines || containsHash) {
@@ -38,4 +42,18 @@ export function RenderMarkdown(input: string): { output: string; isMarkdown: boo
   }
 
   return { output: input, isMarkdown: false };
+}
+
+export function InsertableDate(input: string | null) {
+  if (input) {
+    if (DB_CLIENT == "oracledb") {
+      return knex.raw(
+        `TO_TIMESTAMP('${DateTime.fromISO(input).toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`
+      );
+    }
+
+    return input;
+  }
+
+  return null;
 }

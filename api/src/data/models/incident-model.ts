@@ -1,3 +1,5 @@
+import { Knex } from "knex";
+
 export interface Incident {
   id: number;
   proxy_role_type_id?: number;
@@ -9,7 +11,7 @@ export interface Incident {
   supervisor_email?: string;
   proxy_user_id?: string;
   description: string;
-  created_at: Date;
+  created_at: Date | Knex.Raw<any>;
 
   attachments?: any[];
 }
