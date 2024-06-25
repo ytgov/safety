@@ -3,7 +3,17 @@ import { db } from "../data";
 
 export class IncidentService {
   async getAll(): Promise<Incident[]> {
-    return db.from("incidents");
+    return db<Incident>("incidents")
+      .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
+      .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
+      .innerJoin("departments", "departments.code", "incidents.department_code")
+      .select(
+        "incidents.*",
+        "incident_types.name as incident_type_name",
+        "incident_types.description as incident_type_description",
+        "incident_statuses.name as status_name",
+        "departments.name as department_name"
+      );
   }
 
   async getById(id: number | string): Promise<Incident | undefined> {
@@ -46,7 +56,18 @@ export class IncidentService {
   }
 
   async getBySupervisorEmail(email: string): Promise<Incident[]> {
-    return db<Incident>("incidents").where({ supervisor_email: email });
+    return db<Incident>("incidents")
+      .where({ supervisor_email: email })
+      .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
+      .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
+      .innerJoin("departments", "departments.code", "incidents.department_code")
+      .select(
+        "incidents.*",
+        "incident_types.name as incident_type_name",
+        "incident_types.description as incident_type_description",
+        "incident_statuses.name as status_name",
+        "departments.name as department_name"
+      );
   }
 
   async create(item: any): Promise<Incident[]> {

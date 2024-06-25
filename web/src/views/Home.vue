@@ -26,11 +26,11 @@
         <SupervisorCard></SupervisorCard>
       </div>
 
-      <RouterLink v-else to="/sign-in">
+      <div v-else @click="loginClick" class="ma-0 cursor-pointer">
         <v-alert type="success" prominent color="primary" title="Sign in" icon="mdi-login">
           to see your submissions and cases assigned to you
         </v-alert>
-      </RouterLink>
+      </div>
     </v-col>
   </v-row>
 </template>
@@ -41,6 +41,7 @@ import ReportListCard from "@/components/report/ReportListCard.vue";
 import SMTListCard from "@/components/report/SMTListCard.vue";
 import SupervisorCard from "@/components/report/SupervisorCard.vue";
 
+import { AuthHelper } from "@/plugins/auth";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
@@ -63,4 +64,10 @@ await initialize();
 /* const isAuthenticated = computed(() => {
   return AuthHelper.isAuthenticated;
 }); */
+
+function loginClick() {
+  AuthHelper.loginWithRedirect({
+    appState: { target: window.location.pathname },
+  });
+}
 </script>
