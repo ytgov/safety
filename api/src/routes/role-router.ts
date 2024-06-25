@@ -2,6 +2,8 @@ import express, { Request, Response } from "express";
 import { db as knex } from "../data";
 import { isEmpty } from "lodash";
 import { UserRole } from "src/data/models";
+import { DB_CLIENT } from "src/config";
+import { DateTime } from "luxon";
 
 export const roleRouter = express.Router();
 
@@ -24,6 +26,25 @@ roleRouter.post("/user/:user_id", async (req: Request, res: Response) => {
 
       for (const role of roles) {
         role.create_user_id = req.user.id;
+
+        if (DB_CLIENT == "oracledb") {
+          if (role.start_date) {
+            (role as any).start_date = knex.raw(
+              `TO_TIMESTAMP('${DateTime.fromISO(role.start_date).toFormat(
+                "yyyy-MM-dd HH:mm:ss"
+              )}', 'YYYY-MM-DD HH24:MI:SS')`
+            );
+          }
+
+          if (role.end_date) {
+            (role as any).end_date = knex.raw(
+              `TO_TIMESTAMP('${DateTime.fromISO(role.end_date).toFormat(
+                "yyyy-MM-dd HH:mm:ss"
+              )}', 'YYYY-MM-DD HH24:MI:SS')`
+            );
+          }
+        }
+
         if (isEmpty(role.department_code)) role.department_code = null;
         await trx("user_roles").insert(roleForInsert(role));
       }
