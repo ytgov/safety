@@ -70,8 +70,6 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
   let insertedId = insertedReports[0].id;
 
-  console.log("req.file", req.files);
-
   if (req.files && req.files.files) {
     let files = req.files.files;
 
@@ -93,5 +91,5 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     }
   }
 
-  return res.status(500).json({ data: [] });
+  return res.status(200).json({ data: {} });
 });
