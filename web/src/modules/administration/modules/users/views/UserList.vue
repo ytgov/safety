@@ -28,7 +28,7 @@
         class="ml-2"></v-text-field>
     </template>
     <template v-slot:right>
-      <add-user :onComplete="loadItems" :on></add-user>
+      <add-user :onComplete="loadItems"></add-user>
     </template>
 
     <v-data-table :search="search" :headers="headers" :items="items" :loading="isLoading" @click:row="rowClick">
@@ -38,7 +38,7 @@
       </template>
 
       <template v-slot:item.roles="{ item }">
-        {{ item.roles.map((r) => r.name).join(", ") }}
+        {{ (item.roles ?? []).map((r) => r.name).join(", ") }}
       </template>
     </v-data-table>
   </base-card>
