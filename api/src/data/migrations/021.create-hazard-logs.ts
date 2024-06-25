@@ -5,7 +5,7 @@ export async function up(knex: knex.Knex) {
         table.increments("id").primary().notNullable();
         table.integer("hazard_id").notNullable();
         table.integer("old_hazard_type_id").notNullable();
-        table.string("old_description", 4096).nullable();
+        table.string("old_description", 4000).nullable();
         table.string("old_location_code", 8).nullable();
         table.string("old_location_detail", 8).nullable();
         table.string("old_department_code", 8).nullable();
@@ -14,7 +14,7 @@ export async function up(knex: knex.Knex) {
         table.string("old_status_code", 8).nullable();
         table.integer("old_reopen_count").notNullable();
         table.integer("new_hazard_type_id").notNullable();
-        table.string("new_description", 4096).nullable();
+        table.string("new_description", 4000).nullable();
         table.string("new_location_code", 8).nullable();
         table.string("new_location_detail", 8).nullable();
         table.string("new_department_code", 8).nullable();
@@ -25,7 +25,7 @@ export async function up(knex: knex.Knex) {
         table.integer("changer_user_id").nullable();
         table.integer("changer_role_id").nullable();
         table.datetime("changed_date").notNullable();
-        table.string("log_comment", 4096).notNullable();
+        table.string("log_comment", 4000).notNullable();
         table.string("user_action", 8).notNullable();
 
         table.foreign("hazard_id").references("hazards.id");

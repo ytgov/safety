@@ -9,7 +9,7 @@ export async function up(knex: knex.Knex) {
         table.string("scope_code", 8).nullable();
         table.string("status_code", 8).nullable();
         table.string("sensitivity_code", 8).nullable();
-        table.string("description", 4096).nullable();
+        table.string("description", 4000).nullable();
         table.string("location_detail", 1000).nullable();
         table.datetime("created_at").nullable().defaultTo(knex.fn.now());
         table.integer("reopen_count").notNullable().defaultTo(0);
