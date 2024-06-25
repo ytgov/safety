@@ -27,8 +27,8 @@
               label="Status"
               v-model="selectedUser.is_active"
               :items="[
-                { value: true, title: 'Active' },
-                { value: false, title: 'Inactive' },
+                { value: 1, title: 'Active' },
+                { value: 0, title: 'Inactive' },
               ]"
               variant="outlined"
               density="comfortable" />
