@@ -11,7 +11,7 @@ export async function up(knex: knex.Knex) {
         table.string("reporting_person_email", 250).nullable();
         table.string("supervisor_email", 250).nullable();
         table.integer("proxy_user_id").nullable();
-        table.string("description", 4096).notNullable();
+        table.string("description", 4000).notNullable();
         table.datetime("created_at").notNullable().defaultTo(knex.fn.now());
 
         table.foreign("sensitivity_code").references("sensitivities.code");
