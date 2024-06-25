@@ -103,17 +103,18 @@ export default {
     },
 
     addRoleClick() {
+      if (!this.selectedUser) return;
       this.selectedUser.roles = this.selectedUser.roles || [];
 
-      this.selectedUser.roles.push({
+      (this.selectedUser.roles || []).push({
         role_type_id: 1,
         user_id: this.selectedUser.id,
         start_date: new Date(),
-        department_code: null,
+        department_code: undefined, 
       });
     },
-    removeRoleClick(idx) {
-      this.selectedUser.roles.splice(idx, 1);
+    removeRoleClick(idx: number) {
+      if (this.selectedUser) (this.selectedUser.roles || []).splice(idx, 1);
     },
   },
 };
