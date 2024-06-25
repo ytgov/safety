@@ -1,7 +1,8 @@
 import express, { Request, Response } from "express";
-import { DirectoryService, RoleService, UserService } from "../services";
-import { ReturnValidationErrors } from "../middleware";
 import { param } from "express-validator";
+
+import { RoleService, UserService } from "../services";
+import { ReturnValidationErrors } from "../middleware";
 import { User } from "../data/models";
 
 export const userRouter = express.Router();

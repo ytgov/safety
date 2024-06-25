@@ -1,10 +1,11 @@
 import express, { Request, Response } from "express";
-import { IncidentService } from "../services";
 import { DateTime } from "luxon";
-import { db as knex } from "../data";
-import { DB_CLIENT } from "../config";
-import { Incident, IncidentAttachment } from "../data/models";
 import { isArray } from "lodash";
+
+import { db as knex } from "../data";
+import { IncidentService } from "../services";
+import { Incident, IncidentAttachment } from "../data/models";
+import { InsertableDate } from "../utils/formatters";
 
 export const reportRouter = express.Router();
 const db = new IncidentService();
@@ -37,7 +38,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   const incident_type = await knex("incident_types").where({ name: eventType }).select("id").first();
 
   const report = {
-    created_at: new Date(),
+    created_at: InsertableDate(new Date().toISOString()),
     description,
     department_code: "PSC", // TODO: make this lookup based on submitting person
     status_code: "REP", // Initial Report
@@ -63,21 +64,13 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     proxy_user_id: req.user.id,
   } as Incident;
 
-  if (DB_CLIENT == "oracledb") {
-    (report as any).created_at = knex.raw(
-      `TO_TIMESTAMP('${cVal.toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`
-    );
-    //report.date = knex.raw(`TO_TIMESTAMP('${dVal.toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`);
-  }
-
   console.log("INSERTING REPORT", report);
 
   const insertedReports = await db.create(report);
 
   let insertedId = insertedReports[0].id;
 
-console.log("req.file", req.files)
-
+  console.log("req.file", req.files);
 
   if (req.files && req.files.files) {
     let files = req.files.files;
@@ -92,11 +85,10 @@ console.log("req.file", req.files)
         file_type: file.mimetype,
         file_size: file.size,
         file: file.data,
-        added_date: new Date(),
+        added_date: InsertableDate(new Date().toISOString()),
       } as IncidentAttachment;
 
-
-      console.log("INSERT ATTACH", attachment)
+      console.log("INSERT ATTACH", attachment);
       await knex("incident_attachments").insert(attachment);
     }
   }

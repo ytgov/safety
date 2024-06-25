@@ -1,3 +1,5 @@
+import { Knex } from "knex";
+
 export interface IncidentAttachment {
   id: number;
   incident_id: number;
@@ -8,6 +10,6 @@ export interface IncidentAttachment {
   file_size?: number;
   file?: Buffer;
   deleted_by_user_id?: string;
-  added_date: Date;
-  deleted_date: Date;
+  added_date: Date | Knex.Raw<any>;
+  deleted_date: Date | Knex.Raw<any>;
 }
