@@ -39,6 +39,7 @@ export const useUserAdminStore = defineStore("userAdmin", {
         });
     },
     selectUser(user: any) {
+      user.is_active = user.is_active === true || user.is_active == 1 || user.is_active == "1" ? 1 : 0;
       this.selectedUser = user;
     },
     unselectUser() {

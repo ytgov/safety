@@ -19,6 +19,7 @@ export const useReportStore = defineStore("reports", {
       await this.loadLocations();
       await this.loadUrgency();
       await this.loadMyReports();
+      await this.loadMySupervisorReports();
     },
 
     async loadLocations() {
@@ -86,8 +87,6 @@ export const useReportStore = defineStore("reports", {
     },
 
     async loadReport(reportId: number) {
-      console.log("LOADING REPORT", reportId);
-
       const api = useApiStore();
       return api
         .secureCall("get", `${REPORTS_URL}/${reportId}`)
@@ -96,6 +95,18 @@ export const useReportStore = defineStore("reports", {
         })
         .catch(() => {
           console.log("Error in loadReport");
+        });
+    },
+
+    async loadReportsForRole(roleName: string) {
+      const api = useApiStore();
+      return api
+        .secureCall("get", `${REPORTS_URL}/role/${roleName}`)
+        .then((resp) => {
+          return resp.data;
+        })
+        .catch(() => {
+          console.log(`Error in loadReportsForRole/${roleName}`);
         });
     },
   },
