@@ -102,12 +102,14 @@
             <v-label>Supervisor</v-label>
             <v-text-field :value="selectedReport.supervisor_email" />
 
-            <v-label>Supporting images</v-label>
+            <div v-if="selectedReport.attachments && selectedReport.attachments.length > 0">
+              <v-label>Supporting images</v-label>
 
-            <div class="d-flex pt-2">
-              <v-chip color="info" variant="flat" v-for="attach of selectedReport.attachments" class="mr-3">{{
-                attach.file_name
-              }}</v-chip>
+              <div class="d-flex pt-2">
+                <v-chip color="info" variant="flat" v-for="attach of selectedReport.attachments" class="mr-3">{{
+                  attach.file_name
+                }}</v-chip>
+              </div>
             </div>
           </v-col>
         </v-row>
@@ -143,16 +145,12 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
-import { useAuth0 } from "@auth0/auth0-vue";
-import { AuthHelper } from "@/plugins/auth";
 import { useRoute } from "vue-router";
 
 import { useReportStore } from "@/store/ReportStore";
-import DateSelector from "@/components/DateSelector.vue";
-import DirectorySelector from "@/components/DirectorySelector.vue";
 
 const reportStore = useReportStore();
 const { initialize, loadReport } = reportStore;
@@ -173,30 +171,12 @@ const stepperValue = computed(() => {
   return 0;
 });
 
-const canSave = computed(() => {
-  return selectedReport.value.eventType && isAuthenticated.value == true;
-});
-
-const auth = useAuth0();
-
-const isAuthenticated = computed(() => {
-  return AuthHelper.isAuthenticated.value;
-});
-
 function formatDate(input) {
+  if (!input) return "";
   return DateTime.fromISO(input.toString()).toFormat("MMMM dd, yyyy");
 }
 
-async function saveReport() {
-  selectedReport.value.createDate = new Date();
-
-  await addReport(selectedReport.value).then(() => {
-    //router.push("/report-an-incident/complete");
-  });
-}
-
 function supervisorClick() {
-  console.log("HERE");
   selectedReport.value.status_code = "SUP";
   selectedReport.value.status_name = "Supervisor Review";
 }

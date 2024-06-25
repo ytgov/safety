@@ -87,8 +87,6 @@ export const useReportStore = defineStore("reports", {
     },
 
     async loadReport(reportId: number) {
-      console.log("LOADING REPORT", reportId);
-
       const api = useApiStore();
       return api
         .secureCall("get", `${REPORTS_URL}/${reportId}`)
@@ -103,7 +101,7 @@ export const useReportStore = defineStore("reports", {
     async loadReportsForRole(roleName: string) {
       const api = useApiStore();
       return api
-        .secureCall("get", `${REPORTS_URL}/${roleName}`)
+        .secureCall("get", `${REPORTS_URL}/role/${roleName}`)
         .then((resp) => {
           return resp.data;
         })

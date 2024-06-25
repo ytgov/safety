@@ -20,7 +20,7 @@ reportRouter.get("/my-supervisor-reports", async (req: Request, res: Response) =
   return res.json({ data: list });
 });
 
-reportRouter.get("/:role", async (req: Request, res: Response) => {
+reportRouter.get("/role/:role", async (req: Request, res: Response) => {
   const { role } = req.params;
 
   const match = req.user.roles.find((r: UserRole) => r.name == role);
