@@ -19,6 +19,7 @@
     "moment": "^2.29.4",
     "pinia": "^2.1.7",
     "register-service-worker": "^1.7.2",
+    "vite-plugin-pwa": "^0.20.0",
     "vue": "^3.4.30",
     "vue-router": "^4.4.0",
     "vuetify": "^3.6.10"

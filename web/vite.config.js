@@ -1,6 +1,7 @@
 // Plugins
 import vue from "@vitejs/plugin-vue";
 import vuetify from "vite-plugin-vuetify";
+import { VitePWA } from "vite-plugin-pwa";
 
 // Utilities
 import { defineConfig } from "vite";
@@ -13,7 +14,16 @@ export default defineConfig({
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
     vuetify({
       autoImport: true
-    })
+    }),
+    VitePWA({
+      strategies: 'injectManifest',
+      injectRegister: 'auto',
+      srcDir: 'public',
+      filename: 'serviceWorker.js',
+      injectManifest : {
+        globPatterns: ['**/*.{js,css,html,svg,ico}'],
+      },
+    }),
   ],
   build: {
     outDir: "../app/dist/web"

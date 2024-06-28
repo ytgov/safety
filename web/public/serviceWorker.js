@@ -1,65 +1,60 @@
 /* eslint-disable no-undef, no-restricted-globals */
 
-importScripts(
-  'https://storage.googleapis.com/workbox-cdn/releases/6.4.1/workbox-sw.js'
-);
+console.log("Loading serviceWorker.js...");
 
-workbox.setConfig({
-  debug: true,
-});
+import { precacheAndRoute } from 'workbox-precaching';
 
-workbox.precaching.precacheAndRoute([
-  {url: '/yukon.svg', revision: '123456'}, // Change the revision to force update
-]);
-
-// This is the code piece that GenerateSW mode can't provide for us.
-// This code listens for the user's confirmation to update the app.
-self.addEventListener("message", (event) => {
-  //console.log("MESSAGE", event);
-  if (event.data && event.data.type === "SKIP_WAITING") {
-    self.skipWaiting();
-  }
-});
+self.skipWaiting();
+// workbox.core.clientsClaim();
 
 /*
-self.addEventListener("fetch", (event) => {
-   
-  let store = caches.open("basic")
+ * vite-plugin-pwa provides us with paths to all the files to precache via __WB_MANIFEST.
+ * Do not precahce any where else. 
+ * Additional files needed to be precache should be configured in vite config
+ */
+precacheAndRoute(self.__WB_MANIFEST);
 
-  event.respondWith(
-    fetch(event.request)
-      .then(function (response) {
-        store.put(event.request, response.clone());
-        console.log("ADDING TO CACHE", event.request);
-        return response;
-      })
-      .catch((err) => {
-        console.log("RETURNING FROM CACHE", event.request, err);
-        return store.match(event.request);
-      })
-  );
-  event.respondWith(
-    fetch(event.request)
-      .then((cache) => {
-        return fetch(event.request).then(function (response) {
-          caches.open("basic").put(event.request, response.clone());
-          console.log("ADDING TO CACHE", event.request);
-          return response;
-        });
-      })
-      .catch((err) => {
-        console.log("RETURNING FROM CACHE", event.request, err);
-        return caches.match(event.request);
-      })
-  ); 
-});
-*/
+// Works if app is a single page app
+// workbox.routing.registerRoute(
+//  new workbox.routing.NavigationRoute(workbox.precaching.createHandlerBoundToURL('/index.html'))
+// );
 
-console.log("Loading serviceWorker.js");
+// Example cache GET req (import removed)
+// workbox.routing.registerRoute(({ url }) => {
+//  return url.pathname.startsWith('/node_modules/');
+// },
+// new strategies.CacheFirst({
+//     cacheName: 'node-module-cache',
+//     plugins: [
+//       new expiration.ExpirationPlugin({
+//         maxEntries: 255,
+//         maxAgeSeconds: 60 * 60 * 24 * 30,
+//       }),
+//     ],
+//   })
+// );
 
-//workbox.clientsClaim();
+/*
+ * Attempt to cache simple api calls
+ */
 
-// The precaching code provided by Workbox.
-//self.__precacheManifest = [].concat(self.__precacheManifest || []);
-//workbox.precaching.suppressWarnings();
-//workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
+// function handleReports() {
+//   console.log("Attempting to cache reports!");
+//   return new strategies.NetworkFirst({
+//     cacheName: 'my-reports-cache',
+//     plugins: [
+//       new expiration.ExpirationPlugin({
+//         maxEntries: 16,
+//         maxAgeSeconds: 30,
+//       }),
+//     ],
+//   })
+// }
+
+// Cache reports
+// workbox.routing.registerRoute(({ url }) => {
+//   return url.pathname.startsWith('/api/reports/my-report');
+// },
+//   handleReports()
+// );
+

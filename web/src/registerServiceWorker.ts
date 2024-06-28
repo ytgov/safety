@@ -1,3 +1,4 @@
+// This file is not in use, vite-plugin-pwa auto generates sw register
 import { register } from "register-service-worker";
 
 register("/serviceWorker.js", {
