@@ -113,6 +113,79 @@ export class DirectoryService {
 
     return [];
   }
+
+  async searchByEmail(terms: string): Promise<any> {
+    if (terms && terms.length > 3) {
+      if (moment().isAfter(this.validUntil)) {
+        this.connected = false;
+        await this.connect();
+
+        if (!this.connected) return [];
+      }
+
+      let queryStmts = new Array<string>();
+
+      queryStmts.push(`( startsWith(mail,'${terms}') )`);
+
+      const selectStmt =
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager";
+
+      return axios
+        .get<AzureADUserGetResponse>(
+          `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(" AND ")} ${selectStmt}`,
+          { headers: this.authHeader }
+        )
+        .then((resp) => {
+          if (resp.data && resp.data.value) {
+            let list = new Array<any>();
+
+            for (let dir of resp.data.value) {
+              // get rid of results for external people like contractors
+              if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue;
+              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
+              if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue;
+              if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue;
+              if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue;
+
+              let long_name = `${dir.givenName} ${dir.surname} (${dir.userPrincipalName
+                .toLowerCase()
+                .replace("@ynet.gov.yk.ca", "")})`;
+              let title = "Unknown title";
+
+              if (dir.department) {
+                long_name += ` ${dir.department}`;
+              } else dir.department = "Unknown department";
+
+              if (dir.jobTitle) {
+                long_name += ` :  ${dir.jobTitle}`;
+                title = dir.jobTitle;
+              }
+
+              list.push({
+                display_name: `${dir.givenName} ${dir.surname}`,
+                first_name: dir.givenName,
+                last_name: dir.surname,
+                ynet_id: dir.userPrincipalName.toLowerCase().replace("@ynet.gov.yk.ca", ""),
+                email: dir.mail,
+                long_name,
+                title,
+                department: dir.department,
+                officeLocation: dir.officeLocation,
+                userPrincipalName: dir.userPrincipalName.toLowerCase(),
+              });
+            }
+
+            return list;
+          }
+        })
+        .catch((error) => {
+          console.log("GRAPH ERROR", error);
+          return [];
+        });
+    }
+
+    return [];
+  }
 }
 
 export interface AzureADGroupGetResponse {

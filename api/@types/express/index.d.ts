@@ -4,6 +4,7 @@ namespace Express {
     store?: any;
     oidc?: any;
     auth?: any;
+    files: any | any[];
 
     isAuthenticated(): boolean;
   }

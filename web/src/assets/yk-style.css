@@ -164,3 +164,8 @@ ul.v-breadcrumbs {
 .bg-sun {
   background-color: #f2a90055;
 }
+
+.v-label {
+  color: #000000bb;
+  opacity: 1;
+}

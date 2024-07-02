@@ -32,6 +32,16 @@ export class Migrator {
       return res.json({ data: await this.listMigrations() });
     });
 
+    this.migrationRouter.get("/seed/all", async (req: Request, res: Response) => {
+      try {
+        const result = await this.seedAll();
+        return res.json({ data: result });
+      } catch (err) {
+        console.error(err);
+      }
+      res.json({ data: "Seeding Failed" });
+    });
+
     this.migrationRouter.get("/seed/:specific", async (req: Request, res: Response) => {
       try {
         const { specific } = req.params;
@@ -66,6 +76,11 @@ export class Migrator {
   async seedUp(specific: string) {
     console.log(`-------- SEED ${specific} ---------`);
     return db.seed.run({ specific, directory: join(__dirname, "seeds") });
+  }
+
+  async seedAll() {
+    console.log(`-------- SEED ALL ---------`);
+    return db.seed.run({ directory: join(__dirname, "seeds") });
   }
 }
 const migrator = new Migrator();
