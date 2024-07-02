@@ -1,13 +1,13 @@
 import knex from "knex";
-import { Sensitivity } from "../models";
+import { Sensitivity, SensitivityLevels } from "../models";
 
 export async function seed(knex: knex.Knex) {
   const locations = await knex<Sensitivity>("sensitivities");
 
   const toInsert = [
-    { code: "0", name: "Not Sensitive" },
-    { code: "1", name: "Sensitive" },
-    { code: "2", name: "Highly Sensitive" },
+    SensitivityLevels.NOT_SENSITIVE,
+    SensitivityLevels.SENSITIVE,
+    SensitivityLevels.HIGHLY_SENSITIVE,
   ] as Array<Sensitivity>;
 
   for (const item of toInsert) {

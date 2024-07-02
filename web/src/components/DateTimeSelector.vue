@@ -7,24 +7,23 @@
     </div>
     <VueDatePicker
       v-model="output"
-      format="yyyy/MM/dd"
-      :auto-position="true"
-      :teleport="false"
+      format="yyyy/MM/dd h:mm a"
+      :teleport="true"
       :auto-apply="true"
       :text-input="true"
-      :enable-time-picker="false"
+      :enable-time-picker="true"
       :max-date="max"
       :min-date="min"
-      ssef
       @open="has_focus = true"
       @closed="has_focus = false"
       @update:model-value=""
       :readonly="isReadonly"
       :clearable="false"
+      position="left"
       :is-24="false"
       required
       :action-row="{ showCancel: false }"
-      placeholder="YYYY/MM/DD" />
+      placeholder="YYYY/MM/DD HH:MM am" />
   </div>
 </template>
 
@@ -53,11 +52,6 @@ export default {
     output(to, from) {
       this.$emit("input", this.output);
       this.$emit("update:modelValue", this.output);
-    },
-  },
-  methods: {
-    setManual(value) {
-      this.output = value;
     },
   },
 };

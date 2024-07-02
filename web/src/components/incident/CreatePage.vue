@@ -14,7 +14,7 @@
         </v-card-item>
 
         <v-row class="pa-2 pb-6">
-          <v-col class="d-flex flex-nowrap" cols="12" md="6">
+          <!--  <v-col class="d-flex flex-nowrap" cols="12" md="6">
             <v-checkbox
               v-model="report.eventType"
               value="noloss"
@@ -25,20 +25,7 @@
               <strong>No Loss Incident (near miss)</strong> <br />
               Something has happened. No damage or injury occurred, but could have
             </div>
-          </v-col>
-
-          <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="incident"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
-            <div>
-              <strong>Incident</strong> <br />
-              Something has happened and caused an injury, equipment damage, property damage or environmental issue
-            </div>
-          </v-col>
+          </v-col> -->
 
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
             <v-checkbox
@@ -57,6 +44,19 @@
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
             <v-checkbox
               v-model="report.eventType"
+              value="incident"
+              class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px"
+              hide-details />
+            <div>
+              <strong>Incident</strong> <br />
+              Something has happened and caused an injury, equipment damage, property damage or environmental issue
+            </div>
+          </v-col>
+
+          <!--  <v-col class="d-flex flex-nowrap" cols="12" md="6">
+            <v-checkbox
+              v-model="report.eventType"
               value="refusal"
               class="flex-grow-0 flex-shrink-0"
               style="width: 60px; height: 40px"
@@ -65,8 +65,8 @@
               <strong>Work Refusal</strong><br />
               Refusing unsafe work process was used. Work task stopped as it created a safety hazard
             </div>
-          </v-col>
-          <v-col class="d-flex flex-nowrap" cols="12" md="6">
+          </v-col> -->
+          <!--  <v-col class="d-flex flex-nowrap" cols="12" md="6">
             <v-checkbox
               v-model="report.eventType"
               value="dontknow"
@@ -77,7 +77,7 @@
               <strong>Don't Know</strong><br />
               If it is unclear what the event type is
             </div>
-          </v-col>
+          </v-col> -->
         </v-row>
       </v-card>
     </section>
@@ -95,7 +95,7 @@
             <v-row>
               <v-col cols="12" sm="6">
                 <v-label class="mb-1" style="white-space: inherit">Date and time event occurred</v-label>
-                <DateSelector v-model="report.date"></DateSelector>
+                <DateTimeSelector v-model="report.date"></DateTimeSelector>
               </v-col>
 
               <v-col cols="12" sm="6">
@@ -190,7 +190,7 @@ import { useAuth0 } from "@auth0/auth0-vue";
 import { AuthHelper } from "@/plugins/auth";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
-import DateSelector from "@/components/DateSelector.vue";
+import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import DirectorySelector from "@/components/DirectorySelector.vue";
 
 const reportStore = useReportStore();

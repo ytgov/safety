@@ -1,5 +1,5 @@
 import moment from "moment";
-import _ from "lodash";
+import _, { isDate } from "lodash";
 import { DateTime } from "luxon";
 import markdownit from "markdown-it";
 
@@ -46,15 +46,25 @@ export function RenderMarkdown(input: string): { output: string; isMarkdown: boo
 
 export function InsertableDate(input: string | null) {
   if (input) {
+    let date = new Date();
+
+    if (isDate(input)) date = input;
+
+    let jsD = DateTime.fromJSDate(new Date(input));
+    let isD = DateTime.fromISO(input);
+
+    if (jsD.isValid) date = jsD.toJSDate();
+    if (isD.isValid) date = isD.toJSDate();
+
     if (DB_CLIENT == "oracledb") {
       console.log("CONVERTING FOR ORACLE", input);
 
       return knex.raw(
-        `TO_TIMESTAMP('${DateTime.fromISO(input).toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`
+        `TO_TIMESTAMP('${DateTime.fromJSDate(date).toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`
       );
     }
 
-    return input;
+    return date;
   }
 
   return null;

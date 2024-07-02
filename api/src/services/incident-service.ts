@@ -37,6 +37,18 @@ export class IncidentService {
       .where({ incident_id: item.id })
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
 
+    item.steps = await db("incident_steps").where({ incident_id: item.id });
+    item.actions = await db("actions").where({ incident_id: item.id });
+    item.hazards = await db("incident_hazards").where({ incident_id: item.id });
+
+    for (let hazard of item.hazards) {
+      hazard.hazard = await db("hazards").where({ id: hazard.hazard_id }).first();
+    }
+
+    for (let hazard of item.hazards) {
+      hazard.hazard = await db("hazards").where({ id: hazard.hazard_id }).first();
+    }
+
     return item;
   }
 

@@ -49,7 +49,7 @@ export const DB_CONFIG_DEV = {
   },
 };
 
-export const MAIL_FROM = process.env.MAIL_FROM || "PMAPService@yukon.ca";
+export const MAIL_FROM = process.env.MAIL_FROM || "SafetyPortal@yukon.ca";
 export const MAIL_HOST = process.env.MAIL_HOST || "smtp.gov.yk.ca";
 export const MAIL_PORT = process.env.MAIL_PORT || 25;
 export const MAIL_USER = process.env.MAIL_USER || "";
