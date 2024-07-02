@@ -40,7 +40,9 @@ function makeTitle(input: Incident) {
 }
 
 function makeSubtitle(input: Incident) {
-  return `Created: ${DateTime.fromISO(input.created_at.toString()).toRelative()}, Status: ${input.status_name}`;
+  return `Created: ${DateTime.fromISO(input.created_at.toString(), {
+    zone: "America/Whitehorse",
+  }).toRelative()}, Status: ${input.status_name}`;
 }
 
 function openReportClick(input: Incident) {
