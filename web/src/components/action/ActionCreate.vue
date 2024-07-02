@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, emits } from "vue";
+import { ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useUserStore } from "@/store/UserStore";
@@ -59,8 +59,8 @@ import DateSelector from "@/components/DateSelector.vue";
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
 
-const action = ref({});
-const dp = ref(null);
+const action = ref({} as { description?: string; due_date?: Date; notes?: string; action_user_id?: any });
+const dp = ref(null as any);
 
 const canSave = computed(() => {
   if (action.value.due_date && action.value.description) return true;
@@ -69,16 +69,16 @@ const canSave = computed(() => {
 });
 
 function setToday() {
-  dp.value.setManual(DateTime.now().toJSDate());
+  if (dp.value) dp.value.setManual(DateTime.now().toJSDate());
 }
 function setTomorrow() {
-  dp.value.setManual(DateTime.now().plus({ days: 1 }).toJSDate());
+  if (dp.value) dp.value.setManual(DateTime.now().plus({ days: 1 }).toJSDate());
 }
 function setWeek() {
-  dp.value.setManual(DateTime.now().plus({ weeks: 1 }).toJSDate());
+  if (dp.value) dp.value.setManual(DateTime.now().plus({ weeks: 1 }).toJSDate());
 }
 function setMe() {
-  action.value.action_user_id = user.value.display_name;
+  if (user.value) action.value.action_user_id = user.value.display_name;
 }
 
 function closeClick() {

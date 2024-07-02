@@ -147,6 +147,9 @@ export interface Incident {
   status_name: string;
 
   files?: any[];
+  steps?: any[];
+  actions?: any[];
+  hazards?: any[];
 }
 
 export interface Location {

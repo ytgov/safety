@@ -1,7 +1,7 @@
 <template>
   <div v-if="selectedReport">
     <div v-if="selectedReport.actions && selectedReport.actions.length > 0">
-      <v-list variant="" lines="2" bg-color="#ffffff00" rounded class="py-0" style="border: 1px #00000066 solid">
+      <v-list bg-color="#ffffff00" rounded class="py-0" style="border: 1px #00000066 solid">
         <div v-for="(action, idx) of selectedReport.actions">
           <v-list-item
             :title="action.description"
@@ -12,7 +12,7 @@
               <v-btn fab class="my-0" color="success" size="x-small" icon="mdi-check"></v-btn>
             </template>
           </v-list-item>
-          <v-divider v-if="idx < selectedReport.actions - 1" />
+          <v-divider v-if="idx < selectedReport.actions.length - 1" />
         </div>
       </v-list>
     </div>

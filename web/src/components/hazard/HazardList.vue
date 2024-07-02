@@ -6,7 +6,7 @@
 
 
     <div v-if="selectedReport.hazards && selectedReport.hazards.length > 0">
-      <v-list variant="" lines="2" bg-color="#ffffff00" rounded class="py-0" style="border: 1px #00000066 solid">
+      <v-list bg-color="#ffffff00" rounded class="py-0" style="border: 1px #00000066 solid">
         <div v-for="(hazard, idx) of selectedReport.hazards">
           <v-list-item
             :title="hazard.hazard.description"
