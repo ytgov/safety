@@ -73,7 +73,7 @@ export const useReportStore = defineStore("reports", {
       formData.append("date", (report as any).date.toString());
       formData.append("urgency", report.urgency);
       formData.append("location_code", report.location_code);
-      formData.append("location_detail", report.location_detail);
+      formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
       formData.append("on_behalf", report.on_behalf);
@@ -271,6 +271,8 @@ export interface Incident {
   supervisor_email: string;
   on_behalf: string;
   on_behalf_email: string;
+  investigation_notes?: string;
+  location_detail?: string;
 
   incident_type_description: string;
   status_name: string;
