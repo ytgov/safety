@@ -4,6 +4,9 @@ import { isArray } from "lodash";
 import { db as knex } from "../data";
 import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
 import {
+  Action,
+  ActionStatuses,
+  ActionTypes,
   Hazard,
   HazardStatuses,
   Incident,
@@ -110,8 +113,6 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");
     const insertedHazards = await trx("hazards").insert(hazard).returning("*");
 
-    const supervisorUser = await trx("users").where({ email: supervisor_email }).first();
-
     let insertedIncidentId = insertedIncidents[0].id;
     let insertedHazardId = insertedHazards[0].id;
 
@@ -143,25 +144,14 @@ reportRouter.post("/", async (req: Request, res: Response) => {
         activate_date: i == i ? new Date() : null,
       } as IncidentStep;
 
+      if (i == 1) {
+        (step as any).complete_date = InsertableDate(new Date().toISOString());
+        step.complete_name = req.user.display_name;
+        step.complete_user_id = req.user.id;
+      }
+
       await trx("incident_steps").insert(step);
     }
-
-    /* const basicActions = ["Complete Initial Investigation", "Complete Action Plan"];
-
-    for (let i = 1; i <= basicActions.length; i++) {
-      const action = {
-        incident_id: insertedIncidentId,
-        created_at: new Date(),
-        description: basicActions[i - 1],
-        action_type_code: ActionTypes.SYSTEM_GENERATED.code,
-        sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-        status_code: ActionStatuses.OPEN.code,
-        actor_user_email: supervisor_email,
-        actor_user_id: supervisorUser?.id ?? null,
-      } as Action;
-
-      await trx("actions").insert(action);
-    } */
 
     if (req.files && req.files.files) {
       let files = req.files.files;
@@ -215,4 +205,123 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   }
 
   return res.status(400).json({ data: {} });
+});
+
+reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Response) => {
+  const { id, step_id, operation } = req.params;
+
+  const step = await knex("incident_steps").where({ incident_id: id, id: step_id }).first();
+
+  if (step) {
+    if (operation == "complete") {
+      await knex("incident_steps")
+        .where({ incident_id: id, id: step_id })
+        .update({
+          complete_name: req.user.display_name,
+          complete_date: InsertableDate(new Date().toISOString()),
+          complete_user_id: req.user.id,
+        });
+    } else if (operation == "revert") {
+      await knex("incident_steps").where({ incident_id: id, id: step_id }).update({
+        complete_name: null,
+        complete_date: null,
+        complete_user_id: null,
+      });
+    }
+  }
+
+  const allSteps = await knex("incident_steps").where({ incident_id: id });
+  let allComplete = true;
+
+  for (const step of allSteps) {
+    if (!step.complete_date) allComplete = false;
+  }
+
+  if (allComplete) {
+    await knex("incidents").where({ id }).update({ status_code: IncidentStatuses.CLOSED.code });
+  } else {
+    await knex("incidents").where({ id }).update({ status_code: IncidentStatuses.IN_PROGRESS.code });
+  }
+
+  return res.json({ data: {} });
+});
+
+reportRouter.post("/:id/action", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { description, notes, actor_user_email, actor_user_id, actor_role_type_id, due_date } = req.body;
+
+  const action = {
+    incident_id: parseInt(id),
+    created_at: InsertableDate(new Date().toISOString()),
+    description,
+    notes,
+    action_type_code: ActionTypes.USER_GENERATED.code,
+    sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
+    status_code: ActionStatuses.OPEN.code,
+    actor_user_email,
+    actor_user_id,
+    actor_role_type_id,
+    due_date: InsertableDate(due_date),
+  } as Action;
+
+  await knex("actions").insert(action);
+
+  return res.json({ data: {} });
+});
+
+reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
+  const { id, action_id } = req.params;
+  const { description, notes, actor_user_email, actor_user_id, actor_role_type_id, due_date } = req.body;
+
+  const action = await knex("actions").where({ incident_id: id, id: action_id }).first();
+  if (!action) return res.status(404).send();
+
+  await knex("actions").where({ id: action_id }).update({
+    description,
+    notes,
+    actor_user_email,
+    actor_user_id,
+    actor_role_type_id,
+    due_date,
+  });
+
+  return res.json({ data: {} });
+});
+
+reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
+  const { id, action_id } = req.params;
+
+  await knex("actions").where({ incident_id: id, id: action_id }).delete();
+
+  return res.json({ data: {} });
+});
+
+reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
+  const { id, action_id } = req.params;
+
+  await knex("actions").where({ incident_id: id, id: action_id }).delete();
+
+  return res.json({ data: {} });
+});
+
+reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: Response) => {
+  const { id, action_id, operation } = req.params;
+
+  if (operation == "complete") {
+    await knex("actions")
+      .where({ incident_id: id, id: action_id })
+      .update({
+        complete_date: InsertableDate(new Date().toISOString()),
+        complete_name: req.user.display_name,
+        complete_user_id: req.user.id,
+      });
+  } else if (operation == "revert") {
+    await knex("actions").where({ incident_id: id, id: action_id }).update({
+      complete_date: null,
+      complete_name: null,
+      complete_user_id: null,
+    });
+  }
+
+  return res.json({ data: {} });
 });

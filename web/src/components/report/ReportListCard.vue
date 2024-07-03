@@ -41,7 +41,7 @@ function makeTitle(input: Incident) {
 
 function makeSubtitle(input: Incident) {
   return `Created: ${DateTime.fromISO(input.created_at.toString(), {
-    zone: "America/Whitehorse",
+    zone: "UTC",
   }).toRelative()}, Status: ${input.status_name}`;
 }
 

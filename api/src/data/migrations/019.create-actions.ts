@@ -18,6 +18,9 @@ export async function up(knex: knex.Knex) {
     table.string("sensitivity_code", 8).nullable();
     table.string("status_code", 8).nullable();
     table.string("notes", 4000).nullable();
+    table.datetime("complete_date").nullable();
+    table.string("complete_name", 200).nullable();
+    table.integer("complete_user_id").nullable();
 
     table.foreign("hazard_id").references("hazards.id");
     table.foreign("incident_id").references("incidents.id");

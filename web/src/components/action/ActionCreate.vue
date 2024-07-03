@@ -1,9 +1,9 @@
 <template>
-  <v-dialog width="700px">
+  <v-dialog width="700px" persistent>
     <template #default>
       <v-card v-if="action">
         <v-toolbar color="primary" density="comfortable">
-          <v-toolbar-title class="text-white" style="">Add Action to Action Plan</v-toolbar-title>
+          <v-toolbar-title class="text-white" style="">Add Task to Action Plan</v-toolbar-title>
           <v-spacer> </v-spacer>
           <v-toolbar-items>
             <v-btn icon="mdi-close" @click="closeClick"></v-btn>
@@ -11,7 +11,7 @@
         </v-toolbar>
         <v-card-text class="pt-5">
           <v-row>
-            <v-col>
+            <v-col cols="12">
               <v-label>Due date</v-label>
               <DateSelector ref="dp" v-model="action.due_date" :min="new Date()" />
               <a @click="setToday" class="cursor-pointer text-info">Today</a>,
@@ -19,9 +19,11 @@
               <a @click="setWeek" class="cursor-pointer text-info">in 1 week</a>
             </v-col>
             <v-col>
-              <v-label>Assigned to</v-label>
-              <v-text-field hide-details v-model="action.action_user_id" />
-              <a @click="setMe" class="cursor-pointer text-info">Me</a>
+              <ActionUserSelector
+                label="Search and select the group or person"
+                @selected="actionUserSelected"></ActionUserSelector>
+
+              <!-- <a @click="setMe" class="cursor-pointer text-info">Me</a> -->
             </v-col>
             <v-col cols="12">
               <v-label>Task</v-label>
@@ -51,13 +53,18 @@ import { ref, computed } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useUserStore } from "@/store/UserStore";
+import { useReportStore } from "@/store/ReportStore";
 
 const emit = defineEmits(["doClose"]);
 
+import ActionUserSelector from "./ActionUserSelector.vue";
 import DateSelector from "@/components/DateSelector.vue";
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
+
+const reportStore = useReportStore();
+const { saveAction } = reportStore;
 
 const action = ref({} as { description?: string; due_date?: Date; notes?: string; action_user_id?: any });
 const dp = ref(null as any);
@@ -78,7 +85,7 @@ function setWeek() {
   if (dp.value) dp.value.setManual(DateTime.now().plus({ weeks: 1 }).toJSDate());
 }
 function setMe() {
-  if (user.value) action.value.action_user_id = user.value.display_name;
+  if (user.value) action.value.action_user_id = user.value.id;
 }
 
 function closeClick() {
@@ -87,7 +94,24 @@ function closeClick() {
 }
 
 async function saveClick() {
-  console.log("SAVING ACTION", action.value);
-  alert("This doesn't work yet");
+  await saveAction(action.value).then(() => {
+    closeClick();
+  });
+}
+
+function actionUserSelected(actor) {
+  if (actor.actor_role_type_id) {
+    action.value.actor_role_type_id = actor.actor_role_type_id;
+    action.value.actor_user_id = null;
+    action.value.actor_user_email = null;
+  } else if (actor.user_id) {
+    action.value.actor_role_type_id = null;
+    action.value.actor_user_id = actor.user_id;
+    action.value.actor_user_email = actor.email;
+  } else if (actor.email) {
+    action.value.actor_role_type_id = null;
+    action.value.actor_user_id = null;
+    action.value.actor_user_email = actor.email;
+  }
 }
 </script>

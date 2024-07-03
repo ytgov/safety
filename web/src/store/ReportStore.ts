@@ -109,6 +109,113 @@ export const useReportStore = defineStore("reports", {
           console.log(`Error in loadReportsForRole/${roleName}`);
         });
     },
+
+    async completeStep(step: any) {
+      if (!this.selectedReport) return;
+
+      const api = useApiStore();
+      return api
+        .secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}/step/${step.id}/complete`)
+        .then((resp) => {
+          if (this.selectedReport) this.loadReport(this.selectedReport.id);
+        })
+        .catch(() => {
+          console.log(`Error in completeStep /step/${step.id}/complete`);
+        });
+    },
+
+    async revertStep(step: any) {
+      if (!this.selectedReport) return;
+
+      const api = useApiStore();
+      return api
+        .secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}/step/${step.id}/revert`)
+        .then((resp) => {
+          if (this.selectedReport) this.loadReport(this.selectedReport.id);
+        })
+        .catch(() => {
+          console.log(`Error in revertStep /step/${step.id}/complete`);
+        });
+    },
+
+    async saveAction(action: any) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+
+      if (action.id) {
+        return api
+          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}`, action)
+          .then((resp) => {
+            if (this.selectedReport) this.loadReport(reportId);
+          })
+          .catch(() => {
+            console.log(`Error in completeStep /${reportId}/action/${action.id}`);
+          });
+      } else {
+        return api
+          .secureCall("post", `${REPORTS_URL}/${reportId}/action`, action)
+          .then((resp) => {
+            if (this.selectedReport) this.loadReport(reportId);
+          })
+          .catch(() => {
+            console.log(`Error in saveAction /${reportId}/action/${action.id}`);
+          });
+      }
+    },
+    async deleteAction(action: any) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+
+      if (action.id) {
+        return api
+          .secureCall("delete", `${REPORTS_URL}/${reportId}/action/${action.id}`)
+          .then((resp) => {
+            if (this.selectedReport) this.loadReport(reportId);
+          })
+          .catch(() => {
+            console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
+          });
+      }
+    },
+
+    async completeAction(action: any) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+
+      if (action.id) {
+        return api
+          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}/complete`)
+          .then((resp) => {
+            if (this.selectedReport) this.loadReport(reportId);
+          })
+          .catch(() => {
+            console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
+          });
+      }
+    },
+    async revertAction(action: any) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+
+      if (action.id) {
+        return api
+          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}/revert`)
+          .then((resp) => {
+            if (this.selectedReport) this.loadReport(reportId);
+          })
+          .catch(() => {
+            console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
+          });
+      }
+    },
   },
 });
 
