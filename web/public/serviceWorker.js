@@ -2,14 +2,14 @@
 
 console.log("Loading serviceWorker.js...");
 
-import { precacheAndRoute } from 'workbox-precaching';
+import { precacheAndRoute } from "workbox-precaching";
 
 self.skipWaiting();
 // workbox.core.clientsClaim();
 
 /*
  * vite-plugin-pwa provides us with paths to all the files to precache via __WB_MANIFEST.
- * Do not precahce any where else. 
+ * Do not precahce any where else.
  * Additional files needed to be precache should be configured in vite config
  */
 precacheAndRoute(self.__WB_MANIFEST);
@@ -38,23 +38,20 @@ precacheAndRoute(self.__WB_MANIFEST);
  * Attempt to cache simple api calls
  */
 
-// function handleReports() {
-//   console.log("Attempting to cache reports!");
-//   return new strategies.NetworkFirst({
-//     cacheName: 'my-reports-cache',
-//     plugins: [
-//       new expiration.ExpirationPlugin({
-//         maxEntries: 16,
-//         maxAgeSeconds: 30,
-//       }),
-//     ],
-//   })
-// }
+function handleReports() {
+  console.log("Attempting to cache locations!");
+  return new strategies.NetworkFirst({
+    cacheName: "api-location",
+    plugins: [
+      new expiration.ExpirationPlugin({
+        maxEntries: 16,
+        maxAgeSeconds: 120,
+      }),
+    ],
+  });
+}
 
 // Cache reports
-// workbox.routing.registerRoute(({ url }) => {
-//   return url.pathname.startsWith('/api/reports/my-report');
-// },
-//   handleReports()
-// );
-
+workbox.routing.registerRoute(({ url }) => {
+  return url.pathname.startsWith("/api/location");
+}, handleReports());
