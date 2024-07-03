@@ -81,7 +81,7 @@ onMounted(async () => {
 });
 
 async function logoutClick() {
-  await AuthHelper.logout();
+  await AuthHelper.logout({ returnTo: "https://safety.gov.yk.ca" });
 }
 
 async function loginClick() {
