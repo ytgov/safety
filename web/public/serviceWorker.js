@@ -3,7 +3,7 @@
 console.log("Loading serviceWorker.js...");
 
 import { precacheAndRoute } from "workbox-precaching";
-import { registerRoute } from "workbox-routing";
+import { registerRoute, NavigationRoute } from "workbox-routing";
 import { NetworkFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 
@@ -18,9 +18,7 @@ self.skipWaiting();
 precacheAndRoute(self.__WB_MANIFEST);
 
 // Works if app is a single page app
-// workbox.routing.registerRoute(
-//  new workbox.routing.NavigationRoute(workbox.precaching.createHandlerBoundToURL('/index.html'))
-// );
+registerRoute(new NavigationRoute(workbox.precaching.createHandlerBoundToURL("/index.html")));
 
 // Example cache GET req (import removed)
 // workbox.routing.registerRoute(({ url }) => {
