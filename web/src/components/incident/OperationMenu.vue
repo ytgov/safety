@@ -29,7 +29,7 @@
   </v-menu>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import { useReportStore } from "@/store/ReportStore";

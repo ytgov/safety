@@ -57,7 +57,7 @@
   </v-dialog>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, computed, defineProps } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
@@ -76,7 +76,7 @@ const { user } = storeToRefs(userStore);
 const reportStore = useReportStore();
 const { saveAction, deleteAction, completeAction, revertAction } = reportStore;
 
-const dp = ref(null as any);
+const dp = ref(null);
 
 const canSave = computed(() => {
   if (props.action.due_date && props.action.description) return true;
