@@ -3,6 +3,7 @@
 console.log("Loading serviceWorker.js...");
 
 import { precacheAndRoute } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
 
 self.skipWaiting();
 // workbox.core.clientsClaim();
@@ -52,6 +53,6 @@ function handleReports() {
 }
 
 // Cache reports
-workbox.routing.registerRoute(({ url }) => {
+registerRoute(({ url }) => {
   return url.pathname.startsWith("/api/location");
 }, handleReports());
