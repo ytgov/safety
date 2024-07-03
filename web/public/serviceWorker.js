@@ -4,6 +4,8 @@ console.log("Loading serviceWorker.js...");
 
 import { precacheAndRoute } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
+import { NetworkFirst } from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
 
 self.skipWaiting();
 // workbox.core.clientsClaim();
@@ -41,10 +43,10 @@ precacheAndRoute(self.__WB_MANIFEST);
 
 function handleReports() {
   console.log("Attempting to cache locations!");
-  return new strategies.NetworkFirst({
+  return new NetworkFirst({
     cacheName: "api-location",
     plugins: [
-      new expiration.ExpirationPlugin({
+      new ExpirationPlugin({
         maxEntries: 16,
         maxAgeSeconds: 120,
       }),
