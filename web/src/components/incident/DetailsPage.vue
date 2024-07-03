@@ -84,9 +84,23 @@
               <v-text-field
                 :value="selectedReport.supervisor_email"
                 append-inner-icon="mdi-lock"
-                hide-details
-                class="mb-2"
                 readonly></v-text-field>
+
+              <div v-if="selectedReport.attachments && selectedReport.attachments.length > 0">
+                <v-label>Supporting images</v-label>
+
+                <div class="d-flex pt-2">
+                  <v-chip
+                    color="info"
+                    variant="flat"
+                    v-for="attach of selectedReport.attachments"
+                    class="mr-3"
+                    @click="openAttachmentClick(attach)">
+                    <v-icon class="mr-3">mdi-camera</v-icon>
+                    {{ attach.file_name }}</v-chip
+                  >
+                </div>
+              </div>
             </v-card-text>
           </v-card>
 
@@ -114,7 +128,7 @@
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <h4 class="text-h6">Hazards</h4>
             </v-card-item>
-            <v-card-text class="pt-5">
+            <v-card-text class="pt-2">
               <HazardList></HazardList>
             </v-card-text>
           </v-card>
@@ -132,23 +146,11 @@
                 <v-textarea v-model="selectedReport.description" hide-details />
               </v-col>
 
-              <v-col cols="12" v-if="selectedReport.attachments && selectedReport.attachments.length > 0">
-                <div>
-                  <v-label>Supporting images</v-label>
-
-                  <div class="d-flex pt-2">
-                    <v-chip color="info" variant="flat" v-for="attach of selectedReport.attachments" class="mr-3">{{
-                      attach.file_name
-                    }}</v-chip>
-                  </div>
-                </div>
-              </v-col>
-
               <v-col cols="12" md="12">
                 <v-label>Investigation</v-label>
-                <v-textarea hide-details />
+                <v-textarea v-model="selectedReport.investigation_notes" hide-details />
 
-                <v-btn color="primary" class="mb-0 mt-6">Save</v-btn>
+                <v-btn color="primary" class="mb-0 mt-6" @click="saveClick">Save</v-btn>
               </v-col>
             </v-row>
           </v-card>
@@ -157,7 +159,16 @@
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <h4 class="text-h6">Urgency</h4>
             </v-card-item>
-            <v-card-text class="pt-5"> {{ selectedReport.urgency_code }}</v-card-text>
+            <v-card-text class="pt-2">
+              <v-slider
+                readonly
+                :max="2"
+                :ticks="tickLabels"
+                show-ticks="always"
+                v-model="urgencyLevel"
+                tick-size="4"
+                :color="urgencyColor"></v-slider>
+            </v-card-text>
           </v-card>
         </v-col>
       </v-row>
@@ -183,7 +194,7 @@ import ActionEdit from "@/components/action/ActionEdit.vue";
 import { useReportStore } from "@/store/ReportStore";
 
 const reportStore = useReportStore();
-const { initialize, loadReport } = reportStore;
+const { initialize, loadReport, updateReport, openAttachment } = reportStore;
 const { locations, urgencies, selectedReport } = storeToRefs(reportStore);
 
 const router = useRoute();
@@ -195,6 +206,36 @@ await loadReport(reportId);
 const showActionAdd = ref(false);
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
+
+const tickLabels = {
+  0: "Low",
+  1: "Medium",
+  2: "High",
+};
+
+const urgencyColor = computed(() => {
+  if (!selectedReport.value) return 0;
+  switch (selectedReport.value.urgency_code) {
+    case "Medium":
+      return "warning";
+    case "High":
+      return "error";
+    default:
+      return "success";
+  }
+});
+
+const urgencyLevel = computed(() => {
+  if (!selectedReport.value) return 0;
+  switch (selectedReport.value.urgency_code) {
+    case "Medium":
+      return 1;
+    case "High":
+      return 2;
+    default:
+      return 0;
+  }
+});
 
 setTimeout(() => {
   let list = document.getElementsByClassName("v-stepper-item");
@@ -237,6 +278,14 @@ function addActionClick() {
 function doShowActionEdit(action) {
   actionToEdit.value = action;
   showActionEdit.value = true;
+}
+
+async function saveClick() {
+  await updateReport();
+}
+
+function openAttachmentClick(attachment) {
+  openAttachment(attachment);
 }
 </script>
 

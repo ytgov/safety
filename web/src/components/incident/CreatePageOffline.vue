@@ -1,5 +1,5 @@
 <template>
-  <h1 class="text-h4">Report an Incident</h1>
+  <h1 class="text-h4">Report an Incident - Offline</h1>
   <p class="text-body-2">
     Personal information is collected under the Workers' Safety and Compensation Act, Section #, for the purposes of
     Incident investigation and corrective action. For further information, contant the Director of Health, Safety &
@@ -172,6 +172,10 @@
 
           <div class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
+
+            <div v-if="isAuthenticated == false" class="pt-6 ml-4 text-warning">
+              * You must be authenticated to submit
+            </div>
           </div>
         </v-card-text>
       </v-card>
@@ -184,17 +188,12 @@ import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
-import { useInterfaceStore } from "@/store/InterfaceStore";
-
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import DirectorySelector from "@/components/DirectorySelector.vue";
 
 const reportStore = useReportStore();
 const { initialize, addReport } = reportStore;
 const { locations, urgencies } = storeToRefs(reportStore);
-
-const interfaceStore = useInterfaceStore();
-const { showOverlay, hideOverlay } = interfaceStore;
 
 await initialize();
 
@@ -206,10 +205,8 @@ const canSave = computed(() => {
 
 async function saveReport() {
   report.value.createDate = new Date();
-  showOverlay();
 
   await addReport(report.value).then(() => {
-    hideOverlay();
     router.push("/report-an-incident/complete");
   });
 }

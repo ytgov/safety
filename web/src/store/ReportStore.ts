@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
-import { LOCATION_URL, REPORTS_URL } from "@/urls";
+import { ATTACHMENT_URL, LOCATION_URL, REPORTS_URL } from "@/urls";
 
 export const useReportStore = defineStore("reports", {
   state: () => ({
@@ -73,7 +73,7 @@ export const useReportStore = defineStore("reports", {
       formData.append("date", (report as any).date.toString());
       formData.append("urgency", report.urgency);
       formData.append("location_code", report.location_code);
-      formData.append("specificLocation", report.specificLocation);
+      formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
       formData.append("on_behalf", report.on_behalf);
@@ -84,6 +84,18 @@ export const useReportStore = defineStore("reports", {
       }
 
       return api.secureUpload("post", `${REPORTS_URL}`, formData);
+    },
+
+    async updateReport() {
+      if (!this.selectedReport) return;
+
+      const body = {
+        investigation_notes: this.selectedReport.investigation_notes,
+        description: this.selectedReport.description,
+      };
+
+      const api = useApiStore();
+      return api.secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}`, body);
     },
 
     async loadReport(reportId: number) {
@@ -164,6 +176,7 @@ export const useReportStore = defineStore("reports", {
           });
       }
     },
+
     async deleteAction(action: any) {
       if (!this.selectedReport) return;
       let reportId = this.selectedReport.id;
@@ -199,6 +212,7 @@ export const useReportStore = defineStore("reports", {
           });
       }
     },
+
     async revertAction(action: any) {
       if (!this.selectedReport) return;
       let reportId = this.selectedReport.id;
@@ -215,6 +229,14 @@ export const useReportStore = defineStore("reports", {
             console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
           });
       }
+    },
+
+    openAttachment(attachment: any) {
+      if (!this.selectedReport) return;
+
+      console.log("OLPENING", attachment);
+
+      window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
     },
   },
 });
@@ -249,6 +271,8 @@ export interface Incident {
   supervisor_email: string;
   on_behalf: string;
   on_behalf_email: string;
+  investigation_notes?: string;
+  location_detail?: string;
 
   incident_type_description: string;
   status_name: string;

@@ -1,4 +1,5 @@
 export * from "./action-router";
+export * from "./attachment-router";
 export * from "./department-router";
 export * from "./directory-router";
 export * from "./location-router";

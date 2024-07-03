@@ -15,7 +15,9 @@ export interface Incident {
   proxy_user_id?: string;
   description: string;
   created_at: Date | Knex.Raw<any>;
+  reported_at: Date | Knex.Raw<any>;
   urgency_code: string;
+  investigation_notes?: string;
 
   attachments?: any[];
   steps?: IncidentStep[];
