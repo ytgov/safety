@@ -16,10 +16,12 @@
       </p>
 
       <CreateIncidentButton block />
+
+      <v-alert v-if="isOffline" type="warning"> It appears you are offline </v-alert>
     </v-col>
     <!-- <v-divider vertical /> -->
 
-    <v-col cols="12" sm="6">
+    <v-col cols="12" sm="6" v-if="!isOffline">
       <div v-if="isAuthenticated == true">
         <ReportListCard></ReportListCard>
         <SMTListCard v-if="hasRole('SMT')"></SMTListCard>
@@ -36,6 +38,7 @@
 </template>
 
 <script setup>
+import { storeToRefs } from "pinia";
 import CreateIncidentButton from "@/components/incident/CreateButton.vue";
 import ReportListCard from "@/components/report/ReportListCard.vue";
 import SMTListCard from "@/components/report/SMTListCard.vue";
@@ -45,6 +48,10 @@ import { AuthHelper } from "@/plugins/auth";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
+import { useInterfaceStore } from "@/store/InterfaceStore";
+
+const interfaceStore = useInterfaceStore();
+const { showApplicationOverlay, isOffline } = storeToRefs(interfaceStore);
 
 const { isAuthenticated } = useAuth0();
 

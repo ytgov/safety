@@ -63,6 +63,12 @@ export const useApiStore = defineStore("api", () => {
       return await SecureAPICall(method, token)
         .request({ url, data })
         .then((res) => {
+          if (res.data.messages && res.data.messages.length > 0) {
+            for (const message of res.data.messages) {
+              m.notify(message);
+            }
+          }
+
           return res.data;
         })
         .catch((err) => {

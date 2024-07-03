@@ -49,8 +49,20 @@ reportRouter.get("/role/:role", async (req: Request, res: Response) => {
 
 reportRouter.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const list = await db.getById(id);
-  return res.json({ data: list });
+  const data = await db.getById(id);
+
+  if (!data) return res.status(404).send();
+
+  return res.json({ data });
+});
+
+reportRouter.put("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { description, investigation_notes } = req.body;
+
+  await knex("incidents").where({ id }).update({ description, investigation_notes });
+
+  return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
 
 reportRouter.post("/", async (req: Request, res: Response) => {
@@ -58,8 +70,17 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   req.body.email = req.user.email;
   req.body.status = "Initial Report";
 
-  let { date, eventType, description, location_code, location_detail, supervisor_email, on_behalf, on_behalf_email } =
-    req.body;
+  let {
+    date,
+    eventType,
+    description,
+    location_code,
+    location_detail,
+    supervisor_email,
+    on_behalf,
+    on_behalf_email,
+    urgency,
+  } = req.body;
 
   const reporting_person_email = on_behalf == "Yes" ? on_behalf_email : req.user.email;
 
@@ -93,7 +114,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       reopen_count: 0,
       created_at: InsertableDate(new Date().toISOString()),
       reported_at: InsertableDate(date),
-      urgency_code: Urgencies.MEDIUM.code,
+      urgency_code: urgency,
     } as Hazard;
 
     const incident = {
@@ -107,7 +128,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       incident_type_id: defaultIncidentType.id,
       reporting_person_email,
       proxy_user_id: req.user.id,
-      urgency_code: Urgencies.MEDIUM.code,
+      urgency_code: urgency,
     } as Incident;
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");

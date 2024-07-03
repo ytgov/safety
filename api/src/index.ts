@@ -13,6 +13,7 @@ import {
   userRouter,
   departmentRouter,
   actionRouter,
+  attachmentRouter,
 } from "./routes";
 import { checkJwt, loadUser } from "./middleware/authz.middleware";
 import migrator from "./data/migrator";
@@ -64,6 +65,7 @@ app.use("/migrate", migrator.migrationRouter);
 app.use("/api/directory", directoryRouter);
 app.use("/api/department", departmentRouter);
 app.use("/api/location", locationRouter);
+app.use("/api/attachment", attachmentRouter);
 
 app.use("/api/reports", checkJwt, loadUser, reportRouter);
 app.use("/api/user", checkJwt, loadUser, userRouter);

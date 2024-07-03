@@ -11,6 +11,8 @@ export interface Hazard {
   description?: string;
   location_detail?: string;
   created_at: Date | Knex.Raw<any>;
+  reported_at: Date | Knex.Raw<any>;
   reopen_count: number;
   urgency_code: string;
+  notes?: string;
 }

@@ -39,14 +39,18 @@ export class IncidentService {
 
     item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
     item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date");
-    item.hazards = await db("incident_hazards").where({ incident_id: item.id });
+    item.hazards = await db("incident_hazards")
+      .where({ incident_id: item.id })
+      .innerJoin("incident_hazard_types", "incident_hazards.incident_hazard_type_code", "incident_hazard_types.code")
+      .select("incident_hazards.*", "incident_hazard_types.name as incident_hazard_type_name");
 
-    for (let hazard of item.hazards) {
-      hazard.hazard = await db("hazards").where({ id: hazard.hazard_id }).first();
-    }
-
-    for (let hazard of item.hazards) {
-      hazard.hazard = await db("hazards").where({ id: hazard.hazard_id }).first();
+    for (let hazard of item.hazards ?? []) {
+      hazard.hazard = await db("hazards")
+        .where({ "hazards.id": hazard.hazard_id })
+        .innerJoin("hazard_types", "hazards.hazard_type_id", "hazard_types.id")
+        .innerJoin("locations", "hazards.location_code", "locations.code")
+        .select("hazards.*", "hazard_types.name as hazard_type_name", "locations.name as location_name")
+        .first();
     }
 
     for (let action of item.actions) {

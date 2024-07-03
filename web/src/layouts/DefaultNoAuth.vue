@@ -3,7 +3,7 @@
     <router-link to="/"><img src="/yukon.svg" style="margin: -10px 85px 0 14px" height="44" /></router-link>
     <!-- <v-img class="ml-0m pl-0" src="src/assets/yukon.svg" height="44" /> -->
     <v-app-bar-title class="pt-0 font-weight-bold" style="margin-left: -20px">
-      <router-link to="/" class="title-link">{{ title }}</router-link>
+      <router-link to="/" class="title-link">{{ applicationName }}</router-link>
     </v-app-bar-title>
 
     <template #append>
@@ -47,53 +47,48 @@
       <router-view></router-view>
     </v-container>
   </v-main>
-
-  <v-overlay v-model="showOverlay" class="align-center justify-center">
+  <v-overlay v-model="showApplicationOverlay" class="align-center justify-center">
     <div class="text-center">
       <v-progress-circular indeterminate size="64" class="mb-5" color="#f3b228" width="6"></v-progress-circular>
-      <h2>Loading {{ title }}</h2>
+      <h2>Loading {{ applicationName }}</h2>
     </div>
   </v-overlay>
 </template>
 
-<script lang="ts">
+<script setup>
+import { onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
+
 import { applicationName } from "@/config";
 import { waitForUserToLoad } from "@/modules/administration/router";
 import { AuthHelper } from "@/plugins/auth";
 import { useUserStore } from "@/store/UserStore";
-import { mapState } from "pinia";
+import { useInterfaceStore } from "@/store/InterfaceStore";
 
-export default {
-  name: "DefaultNoAuth",
+const interfaceStore = useInterfaceStore();
+const { showApplicationOverlay, isOffline } = storeToRefs(interfaceStore);
+const { showOverlay, hideOverlay } = interfaceStore;
 
-  data() {
-    return {
-      showOverlay: true,
-    };
-  },
-  computed: {
-    ...mapState(useUserStore, ["user", "isSystemAdmin"]),
-    title() {
-      return applicationName;
-    },
-  },
+const userStore = useUserStore();
+const { isSystemAdmin, user } = storeToRefs(userStore);
 
-  async mounted() {
-    this.showOverlay = false;
-    await waitForUserToLoad();
-  },
-  methods: {
-    async logoutClick() {
-      await AuthHelper.logout();
-    },
+showOverlay();
 
-    loginClick() {
-      AuthHelper.loginWithRedirect({
-        appState: { target: window.location.pathname },
-      });
-    },
-  },
-};
+onMounted(async () => {
+  await waitForUserToLoad();
+  //this.showOverlay = false;
+  hideOverlay();
+});
+
+async function logoutClick() {
+  await AuthHelper.logout();
+}
+
+async function loginClick() {
+  AuthHelper.loginWithRedirect({
+    appState: { target: window.location.pathname },
+  });
+}
 </script>
 
 <style scoped>
