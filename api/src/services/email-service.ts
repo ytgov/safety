@@ -1,9 +1,11 @@
 import nodemailer, { Transporter, TransportOptions } from "nodemailer";
 import { MailOptions } from "nodemailer/lib/json-transport";
-import { MAIL_CONFIG, MAIL_FROM, FRONTEND_URL, APPLICATION_NAME } from "../config";
+import { MAIL_CONFIG, MAIL_FROM, APPLICATION_NAME } from "../config";
 import fs from "fs";
 import path from "path";
 import { Incident } from "src/data/models";
+
+const FRONTEND_OVERRIDE = "https://safety.gov.yk.ca"
 
 const BASE_TEMPLATE = "../templates/email/base.html";
 const INCIDENT_EMPLOYEE_TEMPLATE = "../templates/email/incident-notification-employee.html";
@@ -38,7 +40,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_URL}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
 
     console.log("-- EMAIL REPORTER INCIDENT NOTIFICATION", recipient.email);
 
@@ -54,7 +56,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_URL}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
 
     console.log("-- EMAIL EMPLOYEE INCIDENT NOTIFICATION", recipient.email);
 
@@ -70,7 +72,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_URL}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
 
     console.log("-- EMAIL SUPERVISOR INCIDENT NOTIFICATION", recipient.email);
 
@@ -82,7 +84,7 @@ export class EmailService {
     let baseContent = fs.readFileSync(basePath).toString();
 
     baseContent = baseContent.replace(/``CUSTOM_CONTENT``/, customContent);
-    baseContent = baseContent.replace(/``APPLICATION_URL``/g, FRONTEND_URL);
+    baseContent = baseContent.replace(/``APPLICATION_URL``/g, FRONTEND_OVERRIDE);
     baseContent = baseContent.replace(/``APPLICATION_NAME``/g, APPLICATION_NAME);
     baseContent = baseContent.replace(/``TO_NAME``/g, toName);
     baseContent = baseContent.replace(/``TO_EMAIL``/g, toEmail);
