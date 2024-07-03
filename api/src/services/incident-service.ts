@@ -37,8 +37,8 @@ export class IncidentService {
       .where({ incident_id: item.id })
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
 
-    item.steps = await db("incident_steps").where({ incident_id: item.id });
-    item.actions = await db("actions").where({ incident_id: item.id });
+    item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
+    item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date");
     item.hazards = await db("incident_hazards").where({ incident_id: item.id });
 
     for (let hazard of item.hazards) {
@@ -47,6 +47,18 @@ export class IncidentService {
 
     for (let hazard of item.hazards) {
       hazard.hazard = await db("hazards").where({ id: hazard.hazard_id }).first();
+    }
+
+    for (let action of item.actions) {
+      if (action.actor_role_type_id) {
+        action.actor_display_name = (
+          await db("role_types").where({ id: action.actor_role_type_id }).first()
+        ).description;
+      } else if (action.actor_user_id) {
+        action.actor_display_name = (await db("users").where({ id: action.actor_user_id }).first()).display_name;
+      } else if (action.actor_user_email) {
+        action.actor_display_name = action.actor_user_email;
+      }
     }
 
     return item;

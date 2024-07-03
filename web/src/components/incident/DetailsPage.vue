@@ -3,15 +3,17 @@
 
   <div v-if="selectedReport">
     <div class="float-right">
-    <!--   <v-btn color="primary" class="my-0 mt-1" @click="supervisorClick">
-        <v-icon class="mr-3">mdi-check</v-icon> Supervisor Signature</v-btn
-      > -->
       <OperationMenu />
     </div>
 
     <h1 class="text-h4 mb-2">
       {{ selectedReport.incident_type_description }} Details
-      <v-chip class="ml-3" style="margin-top :-8px" color="info" variant="flat">
+      <v-chip
+        class="ml-3"
+        size="large"
+        style="margin-top: -8px"
+        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_zinc'"
+        variant="flat">
         <strong>Status:</strong> &nbsp; {{ selectedReport.status_name }}
       </v-chip>
     </h1>
@@ -22,67 +24,35 @@
     </h2> -->
 
     <div class="mb-5" style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px">
+      <!-- {{ selectedReport.steps }} -->
+
+      <v-stepper-vertical v-if="smAndDown" hide-actions>
+        <v-stepper-vertical-item
+          v-for="(step, idx) of selectedReport.steps"
+          :value="idx + 1"
+          :complete="step.complete_date"
+          :title="step.step_title"
+          :color="step.complete_date ? 'success' : ''"
+          :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
+        </v-stepper-vertical-item>
+      </v-stepper-vertical>
+
       <v-stepper
+        v-else
         v-model="stepperValue"
         flat
-        style="clear: both"
         alt-labels
+        style="clear: both"
         bg-color="#ffffff00"
-        hide-actions
-        :mobile="false">
+        :class="{ unpadded: !smAndDown }">
         <v-stepper-header>
           <v-stepper-item
-            value="1"
-            :complete="stepperValue > 0"
-            title="Incident Reported"
-            :color="stepperValue > 0 ? 'success' : ''"
-            :subtitle="formatDate(selectedReport.created_at)">
-          </v-stepper-item>
-          <v-divider />
-
-          <v-stepper-item
-            value="2"
-            :complete="stepperValue > 1"
-            :color="stepperValue > 1 ? 'success' : ''"
-            title="Investigation Completed">
-            <small class="mt-1">{{ lockDate }}</small>
-          </v-stepper-item>
-          <v-divider />
-
-          <v-stepper-item
-            value="3"
-            :complete="stepperValue > 2"
-            :color="stepperValue > 2 ? 'success' : ''"
-            title="Action Plan Created">
-            <small class="mt-1">{{ uploadDate }}</small>
-          </v-stepper-item>
-          <v-divider />
-
-          <v-stepper-item
-            value="4"
-            :complete="stepperValue > 3"
-            :color="stepperValue > 3 ? 'success' : ''"
-            title="Action Plan Approved">
-            <small class="mt-1">{{ financeApproveDate }}</small>
-            <small>{{ financeApproveName }}</small>
-          </v-stepper-item>
-          <v-divider />
-
-          <v-stepper-item
-            value="5"
-            :complete="stepperValue > 4"
-            :color="stepperValue > 4 ? 'success' : ''"
-            title="Remediation Completed">
-            <small class="mt-1" v-if="stepperValue > 4">Ready to be activated</small>
-          </v-stepper-item>
-          <v-divider />
-
-          <v-stepper-item
-            value="6"
-            :complete="stepperValue > 5"
-            :color="stepperValue > 5 ? 'success' : ''"
-            title="Final Review">
-            <small class="mt-1" v-if="stepperValue > 5">Ready to be activated</small>
+            v-for="(step, idx) of selectedReport.steps"
+            :value="idx + 1"
+            :complete="step.complete_date"
+            :title="step.step_title"
+            :color="step.complete_date ? 'success' : ''"
+            :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
           </v-stepper-item>
         </v-stepper-header>
       </v-stepper>
@@ -94,26 +64,28 @@
           <v-card class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
-                <h4 class="text-h6">Incident Basics</h4>
+                <h4 class="text-h6">Incident Information</h4>
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
-              <v-label>Reported by:</v-label>
-              <v-text-field
-                :value="selectedReport.reporting_person_email"
-                append-inner-icon="mdi-lock"
-                readonly></v-text-field>
-
-              <v-label>Department:</v-label>
+              <v-label>Department</v-label>
               <v-text-field
                 :value="selectedReport.department_name"
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
-              <v-label>Supervisor:</v-label>
+              <v-label>Reported by</v-label>
+              <v-text-field
+                :value="selectedReport.reporting_person_email"
+                append-inner-icon="mdi-lock"
+                readonly></v-text-field>
+
+              <v-label>Supervisor</v-label>
               <v-text-field
                 :value="selectedReport.supervisor_email"
                 append-inner-icon="mdi-lock"
+                hide-details
+                class="mb-2"
                 readonly></v-text-field>
             </v-card-text>
           </v-card>
@@ -127,8 +99,14 @@
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
-              <ActionList></ActionList>
+              <ActionList @showAction="doShowActionEdit"></ActionList>
+
               <ActionCreate v-model="showActionAdd" @doClose="showActionAdd = false"></ActionCreate>
+
+              <ActionEdit
+                v-model="showActionEdit"
+                :action="actionToEdit"
+                @doClose="showActionEdit = false"></ActionEdit>
             </v-card-text>
           </v-card>
 
@@ -149,14 +127,6 @@
             </v-card-item>
 
             <v-row class="pa-5 pt-2 pb-6">
-              <!--  <v-col cols="12" md="12">
-            <v-label class="mb-1" style="white-space: inherit">General location where the event occurred</v-label>
-            <v-text-field :value="selectedReport.location_code" hide-details />
-          </v-col>
-          <v-col cols="12" md="12">
-            <v-label class="mb-1" style="white-space: inherit">Specific location where the event occurred</v-label>
-            <v-text-field v-model="selectedReport.location_detail" hide-details />
-          </v-col> -->
               <v-col cols="12" md="12">
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
                 <v-textarea v-model="selectedReport.description" hide-details />
@@ -192,11 +162,6 @@
         </v-col>
       </v-row>
     </section>
-
-    <v-row class="mb-5">
-      <v-col cols="12" md="6"> </v-col>
-      <v-col cols="12" md="6"> </v-col>
-    </v-row>
   </div>
 </template>
 
@@ -206,10 +171,14 @@ import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useRoute } from "vue-router";
 
+import { useDisplay } from "vuetify";
+const { smAndDown } = useDisplay();
+
 import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
 import HazardList from "@/components/hazard/HazardList.vue";
 import ActionCreate from "@/components/action/ActionCreate.vue";
+import ActionEdit from "@/components/action/ActionEdit.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 
@@ -224,27 +193,66 @@ await initialize();
 await loadReport(reportId);
 
 const showActionAdd = ref(false);
+const showActionEdit = ref(false);
+const actionToEdit = ref(null);
+
+setTimeout(() => {
+  let list = document.getElementsByClassName("v-stepper-item");
+
+  for (let i = 0; i < list.length - 1; i++) {
+    let item = list[i];
+    let hr = document.createElement("hr");
+    hr.classList.add("v-divider");
+    hr.classList.add("v-theme--light");
+    hr.setAttribute("area-orientation", "horizontal");
+    hr.setAttribute("role", "separator");
+    item.after(hr);
+  }
+}, 100);
 
 const stepperValue = computed(() => {
-  if (!selectedReport.value) return 0;
+  if (selectedReport.value) {
+    let current = null;
 
-  if (selectedReport.value.status_name == "Initial Report") return 1;
-  if (selectedReport.value.status_name == "Supervisor Review") return 2;
+    for (let i = 1; i < selectedReport.value.steps.length; i++) {
+      const step = selectedReport.value.steps[i - 1];
 
+      if (step.complete_date) continue;
+
+      return i;
+    }
+  }
   return 0;
 });
 
 function formatDate(input) {
   if (!input) return "";
-  return DateTime.fromISO(input.toString()).toFormat("MMMM dd, yyyy");
-}
-
-function supervisorClick() {
-  selectedReport.value.status_code = "SUP";
-  selectedReport.value.status_name = "Investigation Completed";
+  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:ma");
 }
 
 function addActionClick() {
   showActionAdd.value = true;
 }
+
+function doShowActionEdit(action) {
+  actionToEdit.value = action;
+  showActionEdit.value = true;
+}
 </script>
+
+<style>
+.v-stepper-item {
+  opacity: 0.9 !important;
+  padding-left: 5px !important;
+  padding-right: 5px !important;
+}
+.unpadded .v-stepper-item:first-of-type {
+  padding-left: 5px !important;
+}
+.unpadded .v-stepper-item:last-of-type {
+  padding-right: 5px !important;
+}
+.v-expansion-panel .v-expansion-panel-text {
+  display: none;
+}
+</style>

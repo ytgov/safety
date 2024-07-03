@@ -6,7 +6,7 @@ import { ROLE_URL } from "@/urls";
 export const useRoleStore = defineStore("role", {
   state: () => ({
     isLoading: false,
-    roles: [],
+    roles: [] as any[],
   }),
   actions: {
     async initialize() {

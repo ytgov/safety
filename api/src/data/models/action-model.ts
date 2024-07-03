@@ -15,4 +15,9 @@ export interface Action {
   sensitivity_code?: string;
   status_code?: string;
   notes?: string;
+  complete_date?: Date;
+  complete_name?: string;
+  complete_user_id?: number;
+
+  actor_display_name?: string;
 }
