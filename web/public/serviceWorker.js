@@ -4,7 +4,7 @@ console.log("Loading serviceWorker.js...");
 
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
-import { NetworkFirst } from "workbox-strategies";
+import { CacheFirst, NetworkFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 
 self.skipWaiting();
@@ -39,20 +39,31 @@ registerRoute(new NavigationRoute(createHandlerBoundToURL("/index.html")));
  * Attempt to cache simple api calls
  */
 
-function handleReports() {
-  console.log("Attempting to cache locations!");
-  return new NetworkFirst({
-    cacheName: "api-location",
-    plugins: [
-      new ExpirationPlugin({
-        maxEntries: 16,
-        maxAgeSeconds: 120,
-      }),
-    ],
-  });
-}
+// Cache fonts
+registerRoute(({ request }) => {
+  return request.destination === 'font';
+}, new CacheFirst({
+  cacheName: 'font-cache',
+  plugins: [
+    new ExpirationPlugin({
+      maxEntries: 64,
+      maxAgeSeconds: 60 * 60 * 24 * 30,
+    }),
+  ],
+})
+);
 
 // Cache reports
 registerRoute(({ url }) => {
   return url.pathname.startsWith("/api/location");
-}, handleReports());
+}, new NetworkFirst({
+  cacheName: "api-location",
+  plugins: [
+    new ExpirationPlugin({
+      maxEntries: 16,
+      maxAgeSeconds: 120,
+    }),
+  ],
+})
+);
+
