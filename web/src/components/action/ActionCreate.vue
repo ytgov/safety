@@ -104,14 +104,17 @@ function actionUserSelected(actor) {
     action.value.actor_role_type_id = actor.actor_role_type_id;
     action.value.actor_user_id = null;
     action.value.actor_user_email = null;
+    action.value.actor_display_name = actor.name;
   } else if (actor.user_id) {
     action.value.actor_role_type_id = null;
     action.value.actor_user_id = actor.user_id;
     action.value.actor_user_email = actor.email;
+    action.value.actor_display_name = actor.display_name;
   } else if (actor.email) {
     action.value.actor_role_type_id = null;
     action.value.actor_user_id = null;
     action.value.actor_user_email = actor.email;
+    action.value.actor_display_name = actor.display_name;
   }
 }
 </script>

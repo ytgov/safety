@@ -3,14 +3,16 @@ import { MailOptions } from "nodemailer/lib/json-transport";
 import { MAIL_CONFIG, MAIL_FROM, APPLICATION_NAME } from "../config";
 import fs from "fs";
 import path from "path";
-import { Incident } from "src/data/models";
+import { Action, Incident } from "../data/models";
+import { FormatDate } from "src/utils/formatters";
 
-const FRONTEND_OVERRIDE = "https://safety.gov.yk.ca"
+const FRONTEND_OVERRIDE = "https://safety.gov.yk.ca";
 
 const BASE_TEMPLATE = "../templates/email/base.html";
 const INCIDENT_EMPLOYEE_TEMPLATE = "../templates/email/incident-notification-employee.html";
 const INCIDENT_REPORTER_TEMPLATE = "../templates/email/incident-notification-reporter.html";
 const INCIDENT_SUPERVISOR_TEMPLATE = "../templates/email/incident-notification-supervisor.html";
+const TASK_ASSIGNED_TEMPLATE = "../templates/email/task-assigned-notification.html";
 
 export class EmailService {
   transport: Transporter;
@@ -77,6 +79,21 @@ export class EmailService {
     console.log("-- EMAIL SUPERVISOR INCIDENT NOTIFICATION", recipient.email);
 
     await this.sendEmail(recipient.fullName, recipient.email, "An Incident was Reported", content);
+  }
+
+  async sendTaskAssignmentNotification(recipient: { fullName: string; email: string }, action: Action): Promise<any> {
+    let templatePath = path.join(__dirname, TASK_ASSIGNED_TEMPLATE);
+    let content = fs.readFileSync(templatePath).toString();
+
+    content = content.replace(
+      /``TASK_DETAILS``/g,
+      `${action.description}, due on ${FormatDate(action.due_date ?? new Date())}`
+    );
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${action.incident_id}`);
+
+    console.log("-- TASK ASSIGNED NOTIFICATION", recipient.email);
+
+    await this.sendEmail(recipient.fullName, recipient.email, "A Task Has Been Assigned to You", content);
   }
 
   async sendEmail(toName: string, toEmail: string, subject: string, customContent: string): Promise<any> {
