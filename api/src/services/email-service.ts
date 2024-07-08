@@ -4,7 +4,7 @@ import { MAIL_CONFIG, MAIL_FROM, APPLICATION_NAME } from "../config";
 import fs from "fs";
 import path from "path";
 import { Action, Incident } from "../data/models";
-import { FormatDate } from "src/utils/formatters";
+import { FormatDate } from "../utils/formatters";
 
 const FRONTEND_OVERRIDE = "https://safety.gov.yk.ca";
 
