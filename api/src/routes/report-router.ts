@@ -269,7 +269,8 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
 
 reportRouter.post("/:id/action", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, notes, actor_user_email, actor_user_id, actor_role_type_id, due_date } = req.body;
+  const { description, notes, actor_user_email, actor_user_id, actor_display_name, actor_role_type_id, due_date } =
+    req.body;
 
   const action = {
     incident_id: parseInt(id),
@@ -287,7 +288,14 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
 
   await knex("actions").insert(action);
 
-  return res.json({ data: {} });
+  if (actor_user_email) {
+    await emailService.sendTaskAssignmentNotification(
+      { fullName: actor_display_name, email: actor_user_email },
+      action
+    );
+  }
+
+  return res.json({ data: {}, messages: [{ variant: "success", text: "Task Saved" }] });
 });
 
 reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
