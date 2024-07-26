@@ -63,7 +63,7 @@ import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { applicationName } from "@/config";
-import { waitForUserToLoad } from "@/modules/administration/router";
+import { waitForUserToLoad } from "@/routes";
 import { AuthHelper } from "@/plugins/auth";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";

@@ -12,7 +12,7 @@ export interface Incident {
   department_code: string;
   reporting_person_email?: string;
   supervisor_email?: string;
-  proxy_user_id?: string;
+  proxy_user_id?: number;
   description: string;
   created_at: Date | Knex.Raw<any>;
   reported_at: Date | Knex.Raw<any>;

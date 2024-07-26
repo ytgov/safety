@@ -85,7 +85,7 @@ export default {
     ...mapActions(useUserStore, ["initialize"]),
 
     logoutClick() {
-      this.$auth.logout({ logoutParams: { returnTo: window.location.origin } });
+      //this.$auth.logout({ logoutParams: { returnTo: window.location.origin } });
     },
   },
 };

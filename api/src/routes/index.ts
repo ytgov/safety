@@ -3,6 +3,7 @@ export * from "./attachment-router";
 export * from "./department-router";
 export * from "./directory-router";
 export * from "./location-router";
+export * from "./offline-report-router";
 export * from "./report-router";
 export * from "./role-router";
 export * from "./user-router";

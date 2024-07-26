@@ -117,9 +117,24 @@ export const useApiStore = defineStore("api", () => {
     return response;
   }
 
+  async function upload(method: string, url: string, data?: any) {
+    let response = await APICall(method)
+      .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        doApiErrorMessage(err);
+        return { error: err };
+      });
+
+    return response;
+  }
+
   return {
     secureUpload,
     secureCall,
+    upload,
     call,
   };
 });

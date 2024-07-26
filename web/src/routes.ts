@@ -93,7 +93,8 @@ router.beforeEach(async (to) => {
       return u.isSystemAdmin;
     }
 
-    console.log(" route allowed");
+    console.log(" route allowed - returning next()");
+
     return true;
   }
 

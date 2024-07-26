@@ -40,7 +40,7 @@
 </template>
 
 <script lang="ts" setup>
-import { waitForUserToLoad } from "@/modules/administration/router";
+import { waitForUserToLoad } from "@/routes";
 import { onMounted, ref } from "vue";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { router } from "@/routes";
