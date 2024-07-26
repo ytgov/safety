@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
       },
       {
         path: "report-an-incident-offline",
-        component: () => import("@/components/incident/CreatePage.vue"),
+        component: () => import("@/components/incident/CreatePageOffline.vue"),
         meta: {
           requiresAuth: false,
         },

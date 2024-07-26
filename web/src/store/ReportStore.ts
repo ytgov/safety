@@ -65,6 +65,7 @@ export const useReportStore = defineStore("reports", {
     },
 
     async addReport(report: Incident) {
+      console.log("ADDREPORT", report);
       this.myReports.push(report);
       const api = useApiStore();
 
@@ -84,6 +85,21 @@ export const useReportStore = defineStore("reports", {
       }
 
       return api.secureUpload("post", `${REPORTS_URL}`, formData);
+    },
+
+    async addReportOffline(report: Incident) {
+      console.log("ADDREPORTOFFLINE", report);
+
+      await this.addReport(report);
+
+      const storedJson = this.getStoredReports();
+      storedJson.push(report);
+      localStorage.setItem("reports", JSON.stringify(storedJson));
+    },
+
+    getStoredReports() {
+      let storedReports = localStorage.getItem("reports") ?? "[]";
+      return JSON.parse(storedReports);
     },
 
     async updateReport() {

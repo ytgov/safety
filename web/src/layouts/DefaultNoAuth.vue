@@ -34,6 +34,9 @@
           </v-list>
         </v-menu>
       </div>
+      <div v-else-if="isOffline" class="mr-4 text-warning">
+        Offline
+      </div>
       <div v-else class="mr-4">
         <a @click="loginClick" class="cursor-pointer">Sign in</a>
       </div>
