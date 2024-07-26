@@ -16,8 +16,6 @@
       </p>
 
       <CreateIncidentButton block />
-
-      <v-alert v-if="isOffline" type="warning"> It appears you are offline </v-alert>
     </v-col>
     <!-- <v-divider vertical /> -->
 
@@ -35,6 +33,10 @@
       </div>
     </v-col>
   </v-row>
+  <div v-for="report of offlineReports">
+    {{report}}
+    <hr>
+  </div>
 </template>
 
 <script setup>
@@ -51,7 +53,7 @@ import { useReportStore } from "@/store/ReportStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 
 const interfaceStore = useInterfaceStore();
-const { showApplicationOverlay, isOffline } = storeToRefs(interfaceStore);
+const { isOffline } = storeToRefs(interfaceStore);
 
 const { isAuthenticated } = useAuth0();
 
@@ -59,10 +61,12 @@ const userStore = useUserStore();
 const { hasRole } = userStore;
 
 const reportStore = useReportStore();
-const { initialize } = reportStore;
+const { initialize, getStoredReports } = reportStore;
 
 //onMounted(async () => {
 await initialize();
+
+const offlineReports = await getStoredReports()
 //});
 /* const user = computed(() => {
   return AuthHelper.user;

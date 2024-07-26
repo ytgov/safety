@@ -3,7 +3,7 @@
   <p class="text-body-2">
     Personal information is collected under the Workers' Safety and Compensation Act, Section #, for the purposes of
     Incident investigation and corrective action. For further information, contant the Director of Health, Safety &
-    Wellbeing at 867-332-5974
+    Wellbeing at 867-332-5974.
   </p>
 
   <v-form class="mt-6">
@@ -14,19 +14,6 @@
         </v-card-item>
 
         <v-row class="pa-2 pb-6">
-          <!--  <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="noloss"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
-            <div>
-              <strong>No Loss Incident (near miss)</strong> <br />
-              Something has happened. No damage or injury occurred, but could have
-            </div>
-          </v-col> -->
-
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
             <v-checkbox
               v-model="report.eventType"
@@ -53,31 +40,6 @@
               Something has happened and caused an injury, equipment damage, property damage or environmental issue
             </div>
           </v-col>
-
-          <!--  <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="refusal"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
-            <div>
-              <strong>Work Refusal</strong><br />
-              Refusing unsafe work process was used. Work task stopped as it created a safety hazard
-            </div>
-          </v-col> -->
-          <!--  <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="dontknow"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
-            <div>
-              <strong>Don't Know</strong><br />
-              If it is unclear what the event type is
-            </div>
-          </v-col> -->
         </v-row>
       </v-card>
     </section>
@@ -143,7 +105,15 @@
           <h4 class="text-h6">Submit Report</h4>
         </v-card-item>
         <v-card-text class="pt-5">
-          <v-label>Are you submitting this report on behalf of another person?</v-label>
+          <v-label>Supervisor's email</v-label>
+          <v-text-field v-model="report.supervisor_email" />
+
+          <v-alert type="warning">
+            You are submitting this report offline. When your device reconnects to the internet, this report will be
+            uploaded.
+          </v-alert>
+
+          <!-- <v-label>Are you submitting this report on behalf of another person?</v-label>
           <v-radio-group v-model="report.on_behalf" inline>
             <v-radio label="No" value="No"></v-radio>
             <v-radio label="Yes" value="Yes"></v-radio>
@@ -160,15 +130,15 @@
               report.on_behalf == 'Yes' ? 'Search and select their supervisor' : 'Search and select your supervisor'
             "
             @selected="handleSupervisorSelect"></DirectorySelector>
-
-          <v-label>Attach supporting images</v-label>
+ -->
+          <!--   <v-label>Attach supporting images</v-label>
           <v-file-input
             v-model="report.files"
             prepend-icon=""
             prepend-inner-icon="mdi-camera"
             chips
             multiple
-            accept="image/*"></v-file-input>
+            accept="image/*"></v-file-input> -->
 
           <div class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
@@ -184,15 +154,14 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
-import DirectorySelector from "@/components/DirectorySelector.vue";
 
 const reportStore = useReportStore();
-const { initialize, addReport } = reportStore;
+const { initialize, addReportOffline } = reportStore;
 const { locations, urgencies } = storeToRefs(reportStore);
 
 await initialize();
@@ -206,15 +175,10 @@ const canSave = computed(() => {
 async function saveReport() {
   report.value.createDate = new Date();
 
-  await addReport(report.value).then(() => {
-    router.push("/report-an-incident/complete");
-  });
-}
+  console.log("SAVING OFFLINE REPORT", report.value);
 
-function handleSupervisorSelect(value) {
-  report.value.supervisor_email = value.email;
-}
-function handleBehalfSelect(value) {
-  report.value.on_behalf_email = value.email;
+  await addReportOffline(report.value).then(() => {
+    //router.push("/report-an-incident/complete");
+  });
 }
 </script>
