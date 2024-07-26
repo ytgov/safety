@@ -161,7 +161,7 @@ import { useReportStore } from "@/store/ReportStore";
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 
 const reportStore = useReportStore();
-const { initialize, addReportOffline } = reportStore;
+const { initialize, addReport } = reportStore;
 const { locations, urgencies } = storeToRefs(reportStore);
 
 await initialize();
@@ -177,8 +177,8 @@ async function saveReport() {
 
   console.log("SAVING OFFLINE REPORT", report.value);
 
-  await addReportOffline(report.value).then(() => {
-    //router.push("/report-an-incident/complete");
+  await addReport(report.value).then(() => {
+    router.push("/report-an-incident/complete");
   });
 }
 </script>
