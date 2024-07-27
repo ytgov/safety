@@ -147,7 +147,7 @@ async function saveReport() {
   console.log("SAVING OFFLINE REPORT", report.value);
 
   await addReportOffline(report.value).then(() => {
-    router.push("/report-an-incident/complete");
+    router.push("/report-an-incident-offline/complete");
   });
 }
 </script>

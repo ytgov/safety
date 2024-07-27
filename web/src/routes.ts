@@ -35,6 +35,13 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/components/incident/CreateCompletePage.vue"),
       },
       {
+        path: "report-an-incident-offline/complete",
+        component: () => import("@/components/incident/CreateCompletePageOffline.vue"),
+        meta: {
+          requiresAuth: false,
+        },
+      },
+      {
         path: "reports/:id",
         component: () => import("@/components/incident/DetailsPage.vue"),
       },
@@ -42,6 +49,9 @@ const routes: RouteRecordRaw[] = [
       {
         path: "sign-in",
         component: () => import("@/modules/authentication/views/SignIn.vue"),
+        meta: {
+          requiresAuth: false,
+        },
       },
 
       ...adminRoutes,
@@ -50,6 +60,9 @@ const routes: RouteRecordRaw[] = [
         path: "/:pathMatch(.*)*",
         name: "Not Found",
         component: () => import("@/views/NotFound.vue"),
+        meta: {
+          requiresAuth: false,
+        },
       },
     ],
   },
@@ -91,7 +104,7 @@ router.beforeEach(async (to) => {
 
       console.log("requires Admin");
       return u.isSystemAdmin; */
-      return false
+      return false;
     }
 
     console.log(" route allowed");
