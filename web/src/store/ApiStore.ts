@@ -1,7 +1,7 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { useNotificationStore } from "@/store/NotificationStore";
 import { SecureAPICall, APICall } from "./helpers/axiosAPIConfig";
-import { AuthHelper } from "@/plugins/auth";
+import auth0 from "@/plugins/auth";
 import { router } from "@/routes";
 
 //refs are reactive variables
@@ -9,8 +9,6 @@ import { router } from "@/routes";
 // functions are equivalent to methods/actions in vue2
 
 export const useApiStore = defineStore("api", () => {
-  const auth = AuthHelper;
-
   const m = useNotificationStore();
 
   function doApiErrorMessage(err: any) {
@@ -46,20 +44,20 @@ export const useApiStore = defineStore("api", () => {
   async function secureCall(method: string, url: string, data?: any) {
     let response;
 
-    if (auth.isLoading.value != false) {
+    if (auth0.isLoading.value != false) {
       for (let i = 0; i < 30; i++) {
         await timer(200);
-        if (auth.isLoading.value != true) break;
+        if (auth0.isLoading.value != true) break;
       }
     }
 
-    if (!auth.isAuthenticated.value) {
+    if (!auth0.isAuthenticated.value) {
       console.log("Not Authenticated");
       response = { error: "Not Authenticated" };
       throw Error("Not Authenticated");
     }
 
-    response = await auth.getAccessTokenSilently().then(async (token) => {
+    response = await auth0.getAccessTokenSilently().then(async (token) => {
       return await SecureAPICall(method, token)
         .request({ url, data })
         .then((res) => {
@@ -87,7 +85,7 @@ export const useApiStore = defineStore("api", () => {
       response = { error: "Not Authenticated" };
       return;
     } */
-    response = await auth.getAccessTokenSilently().then(async (token) => {
+    response = await auth0.getAccessTokenSilently().then(async (token) => {
       return await SecureAPICall(method, token)
         .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
         .then((res) => {

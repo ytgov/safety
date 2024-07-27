@@ -79,7 +79,7 @@ const bgSyncPlugin = new BackgroundSyncPlugin("reportQueue", {
 // Queue report submissions
 registerRoute(
   ({ url }) => {
-    return url.pathname.startsWith("/api/reports");
+    return url.pathname.startsWith("/api/offline-reports");
   },
   new NetworkOnly({
     plugins: [bgSyncPlugin],

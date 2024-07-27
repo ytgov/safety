@@ -15,7 +15,7 @@
         the button below.
       </p>
 
-      <CreateIncidentButton block />
+      <CreateIncidentButton />
     </v-col>
     <!-- <v-divider vertical /> -->
 
@@ -33,10 +33,10 @@
       </div>
     </v-col>
   </v-row>
-  <div v-for="report of offlineReports">
-    {{report}}
-    <hr>
-  </div>
+  <!-- <div v-for="report of offlineReports">
+    {{ report }}
+    <hr />
+  </div> -->
 </template>
 
 <script setup>
@@ -46,7 +46,6 @@ import ReportListCard from "@/components/report/ReportListCard.vue";
 import SMTListCard from "@/components/report/SMTListCard.vue";
 import SupervisorCard from "@/components/report/SupervisorCard.vue";
 
-import { AuthHelper } from "@/plugins/auth";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
@@ -55,10 +54,10 @@ import { useInterfaceStore } from "@/store/InterfaceStore";
 const interfaceStore = useInterfaceStore();
 const { isOffline } = storeToRefs(interfaceStore);
 
-const { isAuthenticated } = useAuth0();
+const { isAuthenticated, loginWithRedirect } = useAuth0();
 
 const userStore = useUserStore();
-const { hasRole } = userStore;
+const { hasRole, user } = userStore;
 
 const reportStore = useReportStore();
 const { initialize, getStoredReports } = reportStore;
@@ -66,18 +65,11 @@ const { initialize, getStoredReports } = reportStore;
 //onMounted(async () => {
 await initialize();
 
-const offlineReports = await getStoredReports()
+const offlineReports = await getStoredReports();
 //});
-/* const user = computed(() => {
-  return AuthHelper.user;
-}); */
-
-/* const isAuthenticated = computed(() => {
-  return AuthHelper.isAuthenticated;
-}); */
 
 function loginClick() {
-  AuthHelper.loginWithRedirect({
+  loginWithRedirect({
     appState: { target: window.location.pathname },
   });
 }

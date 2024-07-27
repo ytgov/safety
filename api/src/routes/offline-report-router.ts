@@ -181,6 +181,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
     }
 
     await trx.commit();
+    console.log("ALL GOOD!")
     return res.status(200).json({ data: {} });
   } catch (error) {
     trx.rollback();

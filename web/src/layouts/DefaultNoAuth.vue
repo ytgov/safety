@@ -34,9 +34,7 @@
           </v-list>
         </v-menu>
       </div>
-      <div v-else-if="isOffline" class="mr-4 text-warning">
-        Offline
-      </div>
+      <div v-else-if="isOffline" class="mr-4 text-warning">Offline</div>
       <div v-else class="mr-4">
         <a @click="loginClick" class="cursor-pointer">Sign in</a>
       </div>
@@ -63,8 +61,8 @@ import { onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 
 import { applicationName } from "@/config";
-import { waitForUserToLoad } from "@/routes";
-import { AuthHelper } from "@/plugins/auth";
+//import { waitForUserToLoad } from "@/routes";
+import { useAuth0 } from "@auth0/auth0-vue";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 
@@ -75,20 +73,22 @@ const { showOverlay, hideOverlay } = interfaceStore;
 const userStore = useUserStore();
 const { isSystemAdmin, user } = storeToRefs(userStore);
 
+const { logout, loginWithRedirect } = useAuth0();
+
 showOverlay();
 
 onMounted(async () => {
-  await waitForUserToLoad();
-  //this.showOverlay = false;
+  await userStore.initialize();
+  //await waitForUserToLoad();
   hideOverlay();
 });
 
 async function logoutClick() {
-  await AuthHelper.logout({ returnTo: "https://safety.gov.yk.ca" });
+  await logout({ returnTo: "https://safety.gov.yk.ca" });
 }
 
 async function loginClick() {
-  AuthHelper.loginWithRedirect({
+  loginWithRedirect({
     appState: { target: window.location.pathname },
   });
 }
