@@ -1,5 +1,4 @@
-import { authGuard } from "@auth0/auth0-vue";
-import { RouteLocation, RouteRecordRaw } from "vue-router";
+import { RouteRecordRaw } from "vue-router";
 import { useUserStore } from "@/store/UserStore";
 
 const routes: RouteRecordRaw[] = [
@@ -18,11 +17,5 @@ const routes: RouteRecordRaw[] = [
     },
   },
 ];
-
-export async function waitForUserToLoad(): Promise<any> {
-  let u = useUserStore();
-  await u.initialize();
-  return u.user;
-}
 
 export default routes;

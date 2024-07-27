@@ -73,13 +73,13 @@ registerRoute(
 );
 
 const bgSyncPlugin = new BackgroundSyncPlugin("reportQueue", {
-  maxRetentionTime: 30 * 24 * 60, // Retry for max of 24 Hours (specified in minutes)
+  maxRetentionTime: 30 * 24 * 60, // Retry for max of 30 days (specified in minutes)
 });
 
-// Cache reports
+// Queue report submissions
 registerRoute(
   ({ url }) => {
-    return url.pathname.startsWith("/api/reports");
+    return url.pathname.startsWith("/api/offline-reports");
   },
   new NetworkOnly({
     plugins: [bgSyncPlugin],

@@ -5,10 +5,9 @@
  */
 
 import BaseComponents from "./baseComponents";
-import vuetify from "./vuetify";
 import { App } from "vue";
 
 export function registerPlugins(app: App<Element>) {
   BaseComponents.register(app);
-  app.use(vuetify);
+  //app.use(vuetify);
 }

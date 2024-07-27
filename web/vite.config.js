@@ -7,11 +7,20 @@ import { VitePWA } from "vite-plugin-pwa";
 import { defineConfig } from "vite";
 import path from "path";
 
+import preloadPrefetch from "vite-plugin-preload-prefetch";
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
     // https://github.com/vuetifyjs/vuetify-loader/tree/next/packages/vite-plugin
+    preloadPrefetch([
+      {
+        rel: "prefetch",
+        files: [{ entryMatch: /./ }],
+        injectTo: "head",
+      },
+    ]),
     vuetify({
       autoImport: true,
     }),

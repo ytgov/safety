@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
-import { ATTACHMENT_URL, LOCATION_URL, REPORTS_URL } from "@/urls";
+import { ATTACHMENT_URL, LOCATION_URL, OFFLINEREPORTS_URL, REPORTS_URL } from "@/urls";
 
 export const useReportStore = defineStore("reports", {
   state: () => ({
@@ -90,11 +90,28 @@ export const useReportStore = defineStore("reports", {
     async addReportOffline(report: Incident) {
       console.log("ADDREPORTOFFLINE", report);
 
-      await this.addReport(report);
+      const api = useApiStore();
 
-      const storedJson = this.getStoredReports();
+      const formData = new FormData();
+      formData.append("eventType", report.eventType);
+      formData.append("date", (report as any).date.toString());
+      formData.append("urgency", report.urgency);
+      formData.append("location_code", report.location_code);
+      formData.append("location_detail", report.location_detail ?? "");
+      formData.append("description", report.description);
+      formData.append("supervisor_email", report.supervisor_email);
+      formData.append("on_behalf", report.on_behalf);
+      formData.append("on_behalf_email", report.on_behalf_email);
+
+      for (const file of report.files || []) {
+        formData.append("files", file);
+      }
+
+      return api.upload("post", `${OFFLINEREPORTS_URL}`, formData);
+
+      /* const storedJson = this.getStoredReports();
       storedJson.push(report);
-      localStorage.setItem("reports", JSON.stringify(storedJson));
+      localStorage.setItem("reports", JSON.stringify(storedJson)); */
     },
 
     getStoredReports() {

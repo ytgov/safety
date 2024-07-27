@@ -113,39 +113,8 @@
             uploaded.
           </v-alert>
 
-          <!-- <v-label>Are you submitting this report on behalf of another person?</v-label>
-          <v-radio-group v-model="report.on_behalf" inline>
-            <v-radio label="No" value="No"></v-radio>
-            <v-radio label="Yes" value="Yes"></v-radio>
-          </v-radio-group>
-
-          <DirectorySelector
-            v-if="report.on_behalf == 'Yes'"
-            class=""
-            label="Search and select the person you are submitting this for"
-            @selected="handleBehalfSelect"></DirectorySelector>
-
-          <DirectorySelector
-            :label="
-              report.on_behalf == 'Yes' ? 'Search and select their supervisor' : 'Search and select your supervisor'
-            "
-            @selected="handleSupervisorSelect"></DirectorySelector>
- -->
-          <!--   <v-label>Attach supporting images</v-label>
-          <v-file-input
-            v-model="report.files"
-            prepend-icon=""
-            prepend-inner-icon="mdi-camera"
-            chips
-            multiple
-            accept="image/*"></v-file-input> -->
-
           <div class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
-
-            <div v-if="isAuthenticated == false" class="pt-6 ml-4 text-warning">
-              * You must be authenticated to submit
-            </div>
           </div>
         </v-card-text>
       </v-card>
@@ -161,7 +130,7 @@ import { useReportStore } from "@/store/ReportStore";
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 
 const reportStore = useReportStore();
-const { initialize, addReport } = reportStore;
+const { initialize, addReportOffline } = reportStore;
 const { locations, urgencies } = storeToRefs(reportStore);
 
 await initialize();
@@ -177,7 +146,7 @@ async function saveReport() {
 
   console.log("SAVING OFFLINE REPORT", report.value);
 
-  await addReport(report.value).then(() => {
+  await addReportOffline(report.value).then(() => {
     router.push("/report-an-incident/complete");
   });
 }

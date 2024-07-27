@@ -6,7 +6,7 @@ import { DEPARTMENT_URL } from "@/urls";
 export const useDepartmentStore = defineStore("department", {
   state: () => ({
     isLoading: false,
-    departments: [],
+    departments: [] as Department[],
   }),
   actions: {
     async initialize() {
@@ -28,3 +28,9 @@ export const useDepartmentStore = defineStore("department", {
     },
   },
 });
+
+export interface Department {
+  code: string;
+  name: string;
+  description?: string;
+}
