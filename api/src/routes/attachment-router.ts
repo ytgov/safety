@@ -1,5 +1,4 @@
 import express, { Request, Response } from "express";
-import { param } from "express-validator";
 
 import { IncidentAttachment } from "../data/models";
 import { db as knex } from "../data";
@@ -11,7 +10,12 @@ attachmentRouter.get("/incident/:incident_id/attachment/:id", async (req: Reques
 
   let attach = await knex("incident_attachments").where({ incident_id, id }).first<IncidentAttachment>();
 
-  if (!attach) return res.status(404).send();
+  if (!attach) {
+    console.log("ATTACHMENET NOT FOUND", { incident_id, id });
+    return res.status(404).send();
+  }
+
+  console.log("SENDING ATTACHMENT", attach.file);
 
   res.setHeader("Content-disposition", `attachment; filename="${attach.file_name}"`);
   res.setHeader("Content-type", attach.file_type ?? "");
