@@ -34,7 +34,7 @@ export class UserService {
   }
 
   async create(item: User_Create): Promise<any> {
-    return db("users").insert(item);
+    return db("users").insert(item).returning("*");
   }
 
   async update(id: number | string, item: User_Update): Promise<User> {

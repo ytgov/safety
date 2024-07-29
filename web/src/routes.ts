@@ -70,11 +70,11 @@ const routes: RouteRecordRaw[] = [
 
 import { useUserStore } from "@/store/UserStore";
 
-/* export async function waitForUserToLoad(): Promise<any> {
+export async function waitForUserToLoad(): Promise<any> {
   let u = useUserStore();
   await u.initialize();
   return u;
-} */
+}
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -91,24 +91,18 @@ router.beforeEach(async (to) => {
   }
 
   console.log("Await authGuard");
-
   const isAuthenticated = await authGuard(to);
 
   if (isAuthenticated) {
     console.log("You are authenticated");
 
     if (to.meta.requireSystemAdmin) {
-      /* const u = await waitForUserToLoad();
-
-      console.log("User Is", u.isSystemAdmin);
-
-      console.log("requires Admin");
-      return u.isSystemAdmin; */
-      return false;
+      const u = await waitForUserToLoad();
+      console.log("User Is Admin", u.isSystemAdmin);
+      return u.isSystemAdmin;
     }
 
     console.log(" route allowed");
-
     return true;
   }
 
