@@ -89,6 +89,7 @@ watch(search, async (nv) => {
 
 watch(model, async (nv) => {
   if (!nv) {
+    doSelect();
     return;
   }
 

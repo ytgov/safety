@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { isArray } from "lodash";
 
 import { db as knex } from "../data";
-import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
+import { DepartmentService, DirectoryService, EmailService, IncidentService, UserService } from "../services";
 import {
   Hazard,
   HazardStatuses,
@@ -21,30 +21,45 @@ export const offlineReportRouter = express.Router();
 const db = new IncidentService();
 const emailService = new EmailService();
 const directoryService = new DirectoryService();
+const userService = new UserService();
 
 offlineReportRouter.post("/", async (req: Request, res: Response) => {
   const {} = req.body;
 
-  let currentUserEmail = "offline-user@yukon.ca";
+  let currentUserEmail = req.body.email;
   let currentUserId = 1;
-  let currentUserName = "Offline User Testing";
+  let currentUserName = req.body.email;
+
+  const existingUser = await userService.getByEmail(currentUserEmail);
+
+  if (existingUser) {
+    currentUserId = existingUser.id;
+    currentUserEmail = existingUser.email;
+    currentUserName = existingUser.display_name;
+  } else {
+    const createdUser = await userService.create({
+      department: "",
+      division: "",
+      branch: "",
+      unit: "",
+      display_name: currentUserEmail,
+      email: currentUserEmail,
+      first_name: "Offline",
+      last_name: "Submission",
+      title: "",
+      is_active: true,
+      auth_subject: "SUB_MISSING",
+    });
+
+    currentUserId = createdUser[0].id;
+  }
 
   req.body.email = currentUserEmail;
   req.body.status = "Initial Report";
 
-  let {
-    date,
-    eventType,
-    description,
-    location_code,
-    location_detail,
-    supervisor_email,
-    on_behalf,
-    on_behalf_email,
-    urgency,
-  } = req.body;
+  let { date, eventType, description, location_code, location_detail, supervisor_email, urgency } = req.body;
 
-  const reporting_person_email = on_behalf == "Yes" ? on_behalf_email : currentUserEmail;
+  const reporting_person_email = req.body.email;
 
   const defaultHazardType = await knex("hazard_types").orderBy("id").select("id").first();
   const defaultIncidentType = await knex("incident_types").where({ name: eventType }).select("id").first();
@@ -89,7 +104,6 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       supervisor_email,
       incident_type_id: defaultIncidentType.id,
       reporting_person_email,
-      proxy_user_id: currentUserId,
       urgency_code: urgency,
     } as Incident;
 
@@ -181,7 +195,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
     }
 
     await trx.commit();
-    console.log("ALL GOOD!")
+    console.log("ALL GOOD!");
     return res.status(200).json({ data: {} });
   } catch (error) {
     trx.rollback();

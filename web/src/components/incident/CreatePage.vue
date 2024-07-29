@@ -6,7 +6,7 @@
     Wellbeing at 867-332-5974
   </p>
 
-  <v-form class="mt-6">
+  <v-form class="mt-6" v-model="isValid">
     <section>
       <v-card class="default">
         <v-card-item class="py-4 px-6 mb-2 bg-sun">
@@ -100,36 +100,31 @@
 
               <v-col cols="12" sm="6">
                 <v-label class="mb-1" style="white-space: inherit">Urgency level</v-label>
-                <v-select
-                  hide-details
-                  v-model="report.urgency"
-                  :items="urgencies"
-                  item-title="name"
-                  item-value="code"></v-select>
+                <v-select v-model="report.urgency" :items="urgencies" item-title="name" item-value="code"></v-select>
               </v-col>
             </v-row>
           </v-col>
-          <v-col cols="12" md="12">
+          <v-col cols="12" md="12" class="py-0">
             <v-label class="mb-1" style="white-space: inherit">General location where the event occurred</v-label>
             <v-autocomplete
               v-model="report.location_code"
               :items="locations"
               item-title="name"
               item-value="code"
-              hide-details />
+              :rules="[requiredRule]" />
           </v-col>
-          <v-col cols="12" md="12">
+          <v-col cols="12" md="12" class="py-0">
             <v-label class="mb-1" style="white-space: inherit"
               >Specific location where the event occurred (such as a spot in a building)</v-label
             >
-            <v-text-field v-model="report.location_detail" hide-details />
+            <v-text-field v-model="report.location_detail" :rules="[requiredRule]" />
           </v-col>
-          <v-col cols="12" md="12">
+          <v-col cols="12" md="12" class="pt-0">
             <v-label class="mb-1" style="white-space: inherit"
               >Describe the event in your own words. Please include any details or thoughts that may be helpful to know
               such as weather or time of day</v-label
             >
-            <v-textarea v-model="report.description" hide-details />
+            <v-textarea v-model="report.description" :rules="[requiredRule]" />
           </v-col>
         </v-row>
       </v-card>
@@ -182,12 +177,14 @@
 <script setup>
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
+import { isNil } from "lodash";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import DirectorySelector from "@/components/DirectorySelector.vue";
+import { requiredRule } from "@/utils/validation";
 
 const reportStore = useReportStore();
 const { initialize, addReport } = reportStore;
@@ -196,12 +193,18 @@ const { locations, urgencies } = storeToRefs(reportStore);
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
 
+const isValid = ref(false);
+
 await initialize();
 
 const report = ref({ eventType: null, date: new Date(), urgency: "Medium" });
 
 const canSave = computed(() => {
-  return report.value.eventType;
+  if (report.value.on_behalf == "Yes") {
+    if (isNil(report.value.on_behalf_email)) return false;
+  }
+
+  return report.value.eventType && isValid.value && report.value.supervisor_email && report.value.on_behalf;
 });
 
 async function saveReport() {
@@ -215,9 +218,11 @@ async function saveReport() {
 }
 
 function handleSupervisorSelect(value) {
-  report.value.supervisor_email = value.email;
+  if (value) report.value.supervisor_email = value.email;
+  else report.value.supervisor_email = null;
 }
 function handleBehalfSelect(value) {
-  report.value.on_behalf_email = value.email;
+  if (value) report.value.on_behalf_email = value.email;
+  else report.value.on_behalf_email = null;
 }
 </script>
