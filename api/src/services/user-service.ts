@@ -25,7 +25,7 @@ export class UserService {
 
   async getByEmail(email: string): Promise<User | undefined> {
     if (email) {
-      let user = await db<User>("users").where({ email }).first();
+      let user = await db<User>("users").whereRaw(`LOWER("email") = '${email.toLowerCase()}'`).first();
       if (user) user.roles = await roleService.getRolesForUser(user.id);
       return user;
     }

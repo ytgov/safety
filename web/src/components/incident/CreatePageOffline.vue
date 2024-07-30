@@ -5,6 +5,11 @@
     Incident investigation and corrective action. For further information, contant the Director of Health, Safety &
     Wellbeing at 867-332-5974.
   </p>
+  <v-overlay v-model="isLoading" class="align-center justify-center">
+    <div class="text-center">
+      <v-progress-circular indeterminate size="64" class="mb-5" color="#f3b228" width="6"></v-progress-circular>
+    </div>
+  </v-overlay>
 
   <v-form class="mt-6" v-model="isValid">
     <section>
@@ -103,7 +108,7 @@
           <v-row>
             <v-col cols="12" sm="6" class="py-0">
               <v-label>Your email</v-label>
-              <v-text-field v-model="report.email" :rules="[requiredRule, emailRule]" type="email" />
+              <v-text-field v-model="report.on_behalf_email" :rules="[requiredRule, emailRule]" type="email" />
             </v-col>
             <v-col cols="12" sm="6" class="py-0">
               <v-label>Supervisor's email</v-label>
@@ -134,7 +139,7 @@ import { requiredRule, emailRule } from "@/utils/validation";
 
 const reportStore = useReportStore();
 const { initialize, addReportOffline } = reportStore;
-const { locations, urgencies } = storeToRefs(reportStore);
+const { locations, urgencies, isLoading } = storeToRefs(reportStore);
 
 const isValid = ref(false);
 
