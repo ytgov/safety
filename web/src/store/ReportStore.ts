@@ -9,6 +9,7 @@ export const useReportStore = defineStore("reports", {
     locations: [] as Location[],
     urgencies: [] as Urgency[],
     selectedReport: undefined as Incident | undefined,
+    isLoading: false,
   }),
   actions: {
     async initialize() {
@@ -89,6 +90,7 @@ export const useReportStore = defineStore("reports", {
 
     async addReportOffline(report: Incident) {
       console.log("ADDREPORTOFFLINE", report);
+      this.isLoading = true;
 
       const api = useApiStore();
 
@@ -107,7 +109,9 @@ export const useReportStore = defineStore("reports", {
         formData.append("files", file);
       }
 
-      return api.upload("post", `${OFFLINEREPORTS_URL}`, formData);
+      return api.upload("post", `${OFFLINEREPORTS_URL}`, formData).finally(() => {
+        this.isLoading = false;
+      });
 
       /* const storedJson = this.getStoredReports();
       storedJson.push(report);

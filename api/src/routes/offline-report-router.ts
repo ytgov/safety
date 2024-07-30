@@ -26,9 +26,9 @@ const userService = new UserService();
 offlineReportRouter.post("/", async (req: Request, res: Response) => {
   const {} = req.body;
 
-  let currentUserEmail = req.body.email;
+  let currentUserEmail = req.body.on_behalf_email;
   let currentUserId = 1;
-  let currentUserName = req.body.email;
+  let currentUserName = req.body.on_behalf_email;
 
   const existingUser = await userService.getByEmail(currentUserEmail);
 
@@ -36,7 +36,11 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
     currentUserId = existingUser.id;
     currentUserEmail = existingUser.email;
     currentUserName = existingUser.display_name;
+
+    console.log("Using Existing user", req.body.on_behalf_email);
   } else {
+    console.log("Creating new user", req.body.on_behalf_email);
+
     const createdUser = await userService.create({
       department: "",
       division: "",
