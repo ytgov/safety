@@ -19,26 +19,11 @@ self.skipWaiting();
 precacheAndRoute(self.__WB_MANIFEST);
 
 // Works if app is a single page app
-registerRoute(new NavigationRoute(createHandlerBoundToURL("/index.html")));
-
-// Example cache GET req (import removed)
-// workbox.routing.registerRoute(({ url }) => {
-//  return url.pathname.startsWith('/node_modules/');
-// },
-// new strategies.CacheFirst({
-//     cacheName: 'node-module-cache',
-//     plugins: [
-//       new expiration.ExpirationPlugin({
-//         maxEntries: 255,
-//         maxAgeSeconds: 60 * 60 * 24 * 30,
-//       }),
-//     ],
-//   })
-// );
-
-/*
- * Attempt to cache simple api calls
- */
+registerRoute(
+  new NavigationRoute(createHandlerBoundToURL("/index.html"), {
+    denylist: [new RegExp(/^\/api/), new RegExp(/^\/migrate/)],
+  })
+);
 
 // Cache fonts
 registerRoute(
