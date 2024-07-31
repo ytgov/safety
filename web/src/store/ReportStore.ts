@@ -271,8 +271,6 @@ export const useReportStore = defineStore("reports", {
     openAttachment(attachment: any) {
       if (!this.selectedReport) return;
 
-      console.log("OLPENING", attachment);
-
       window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
     },
   },
