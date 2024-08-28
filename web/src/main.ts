@@ -10,7 +10,7 @@ const pinia = createPinia();
 
 import App from "./App.vue";
 const app = createApp(App);
-app.use(pinia).use(router).use(vuetify).use(auth0);
+app.use(pinia).use(auth0).use(router).use(vuetify);
 
 registerPlugins(app);
 
