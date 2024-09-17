@@ -30,7 +30,7 @@
     "@types/node": "^20.14.12",
     "@vitejs/plugin-vue": "^5.1.0",
     "typescript": "^5.5.2",
-    "vite": "^5.3.5",
+    "vite": "^5.4.6",
     "vite-plugin-preload-prefetch": "^0.1.8",
     "vite-plugin-pwa": "^0.20.1",
     "vite-plugin-vuetify": "^2.0.3",
