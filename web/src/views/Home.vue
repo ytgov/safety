@@ -16,6 +16,8 @@
       </p>
 
       <CreateIncidentButton />
+
+      <v-btn v-if="user" color="info" to="/inspection">Start Inspection </v-btn>
     </v-col>
     <!-- <v-divider vertical /> -->
 

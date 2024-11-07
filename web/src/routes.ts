@@ -47,6 +47,13 @@ const routes: RouteRecordRaw[] = [
       },
 
       {
+        path: "inspection",
+        component: () => import("@/components/inspection/CreateInspectionPage.vue"),
+      },
+
+
+
+      {
         path: "sign-in",
         component: () => import("@/modules/authentication/views/SignIn.vue"),
         meta: {

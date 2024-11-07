@@ -36,17 +36,7 @@ import { useReportStore } from "@/store/ReportStore";
 
 const reportStore = useReportStore();
 const { completeStep, revertStep } = reportStore;
-const { selectedReport } = storeToRefs(reportStore);
-
-const currentStep = computed(() => {
-  if (selectedReport.value) {
-    for (const step of selectedReport.value.steps) {
-      if (step.complete_date) continue;
-      return step;
-    }
-  }
-  return {};
-});
+const { currentStep, selectedReport } = storeToRefs(reportStore);
 
 const previousStep = computed(() => {
   if (selectedReport.value) {
