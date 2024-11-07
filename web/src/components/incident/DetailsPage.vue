@@ -30,7 +30,7 @@
         <v-stepper-vertical-item
           v-for="(step, idx) of selectedReport.steps"
           :value="idx + 1"
-          :complete="step.complete_date"
+          :complete="!isNil(step.complete_date)"
           :title="step.step_title"
           :color="step.complete_date ? 'success' : ''"
           :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
@@ -49,7 +49,7 @@
           <v-stepper-item
             v-for="(step, idx) of selectedReport.steps"
             :value="idx + 1"
-            :complete="step.complete_date"
+            :complete="!isNil(step.complete_date)"
             :title="step.step_title"
             :color="step.complete_date ? 'success' : ''"
             :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
@@ -147,10 +147,13 @@
               </v-col>
 
               <v-col cols="12" md="12">
-                <v-label>Investigation</v-label>
+                <!-- <v-label>Investigation</v-label>
                 <v-textarea v-model="selectedReport.investigation_notes" hide-details />
-
+ -->
                 <v-btn color="primary" class="mb-0 mt-6" @click="saveClick">Save</v-btn>
+                <v-btn v-if="investigationIsActive" color="primary" class="mb-0 mt-6 ml-6" @click="investigationClick">
+                  Start Investigation
+                </v-btn>
               </v-col>
             </v-row>
           </v-card>
@@ -173,6 +176,11 @@
         </v-col>
       </v-row>
     </section>
+
+    <InvestigationForm
+      v-model="showInvestigationDialog"
+      @complete="completeInvestigation"
+      @close="showInvestigationDialog = false" />
   </div>
 </template>
 
@@ -181,6 +189,7 @@ import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useRoute } from "vue-router";
+import { isNil } from "lodash";
 
 import { useDisplay } from "vuetify";
 const { smAndDown } = useDisplay();
@@ -190,12 +199,13 @@ import ActionList from "@/components/action/ActionList.vue";
 import HazardList from "@/components/hazard/HazardList.vue";
 import ActionCreate from "@/components/action/ActionCreate.vue";
 import ActionEdit from "@/components/action/ActionEdit.vue";
+import InvestigationForm from "./InvestigationForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 
 const reportStore = useReportStore();
-const { initialize, loadReport, updateReport, openAttachment } = reportStore;
-const { locations, urgencies, selectedReport } = storeToRefs(reportStore);
+const { initialize, loadReport, updateReport, openAttachment, completeStep } = reportStore;
+const { currentStep, selectedReport } = storeToRefs(reportStore);
 
 const router = useRoute();
 const reportId = router.params.id;
@@ -203,9 +213,19 @@ const reportId = router.params.id;
 await initialize();
 await loadReport(reportId);
 
+const showInvestigationDialog = ref(false);
+
 const showActionAdd = ref(false);
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
+
+const investigationIsActive = computed(() => {
+  if (currentStep.value) {
+    return currentStep.value.step_title.indexOf("Investig") >= 0;
+  }
+
+  return false;
+});
 
 const tickLabels = {
   0: "Low",
@@ -282,6 +302,17 @@ function doShowActionEdit(action) {
 
 async function saveClick() {
   await updateReport();
+}
+
+function investigationClick() {
+  showInvestigationDialog.value = true;
+}
+
+async function completeInvestigation() {
+  if (currentStep.value) {
+    await completeStep(currentStep.value);
+    showInvestigationDialog.value = false;
+  }
 }
 
 function openAttachmentClick(attachment) {

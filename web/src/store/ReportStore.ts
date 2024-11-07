@@ -11,6 +11,17 @@ export const useReportStore = defineStore("reports", {
     selectedReport: undefined as Incident | undefined,
     isLoading: false,
   }),
+  getters: {
+    currentStep(state) {
+      if (state.selectedReport && state.selectedReport.steps) {
+        for (const step of state.selectedReport.steps) {
+          if (step.complete_date) continue;
+          return step;
+        }
+      }
+      return {};
+    },
+  },
   actions: {
     async initialize() {
       console.log("Initializing Report Store");
@@ -66,7 +77,6 @@ export const useReportStore = defineStore("reports", {
     },
 
     async addReport(report: Incident) {
-      console.log("ADDREPORT", report);
       this.myReports.push(report);
       const api = useApiStore();
 
@@ -89,7 +99,6 @@ export const useReportStore = defineStore("reports", {
     },
 
     async addReportOffline(report: Incident) {
-      console.log("ADDREPORTOFFLINE", report);
       this.isLoading = true;
 
       const api = useApiStore();

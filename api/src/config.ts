@@ -36,6 +36,7 @@ export const API_GATEWAY_KEY = process.env.API_GATEWAY_KEY || "";
 export const DB_CONFIG = {
   client: DB_CLIENT,
   connection: { host: DB_HOST, user: DB_USER, password: DB_PASS, database: DB_NAME, port: DB_PORT },
+  pool: { min: 0, reapIntervalMillis: 600000 },
 };
 
 export const DB_CONFIG_DEV = {

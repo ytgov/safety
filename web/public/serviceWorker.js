@@ -35,7 +35,7 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 64,
-        maxAgeSeconds: 60 * 60 * 24 * 30,
+        maxAgeSeconds: 60 * 60 * 24 * 90,
       }),
     ],
   })
@@ -50,15 +50,15 @@ registerRoute(
     cacheName: "api-location",
     plugins: [
       new ExpirationPlugin({
-        maxEntries: 16,
-        maxAgeSeconds: 30 * 24 * 60, // 30 days
+        maxEntries: 1,
+        //maxAgeSeconds: 30 * 24 * 60, // 30 days
       }),
     ],
   })
 );
 
 const bgSyncPlugin = new BackgroundSyncPlugin("reportQueue", {
-  maxRetentionTime: 30 * 24 * 60, // Retry for max of 30 days (specified in minutes)
+  maxRetentionTime: 30 * 24 * 60 , // Retry for max of 30 days (specified in minutes)
 });
 
 // Queue report submissions
