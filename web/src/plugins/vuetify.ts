@@ -75,6 +75,13 @@ export default createVuetify({
       bgColor: "white",
       //hideDetails: "true",
     },
+    VCombobox: {
+      variant: "outlined",
+      density: "comfortable",
+      color: "primary",
+      bgColor: "white",
+      //hideDetails: "true",
+    },
     VFileInput: {
       variant: "outlined",
       density: "comfortable",
