@@ -1,34 +1,8 @@
 version: "3"
 
 services:
-  #web:
-  #  build: .
-  #  restart: unless-stopped
-  #  ports:
-  #    - 3000:3000
-  
-  db:
-    image: postgres:alpine
+  web:
+    build: .
     restart: unless-stopped
-    ports: 
-      - 5432:5432
-    environment: 
-      POSTGRES_USER_FILE: "/run/secrets/postgres-user"
-      POSTGRES_PASSWORD_FILE: "/run/secrets/postgres-password"
-    volumes:
-      - pg-data:/var/lib/postgresql/data
-      - ./db/secrets/:/run/secrets
-
-  pgadmin:
-    image: dpage/pgadmin4
-    environment:
-      PGADMIN_DEFAULT_EMAIL: info@icefoganalytics.com
-      PGADMIN_DEFAULT_PASSWORD: testing1122
     ports:
-      - "8111:80"
-    volumes:
-      - my-data:/var/lib/pgadmin
-      
-volumes:
-  pg-data:
-  my-data:
+      - 3000:3000
