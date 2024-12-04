@@ -14,6 +14,7 @@ export interface Incident {
   supervisor_email?: string;
   proxy_user_id?: number;
   description: string;
+  description_moderated: string;
   created_at: Date | Knex.Raw<any>;
   reported_at: Date | Knex.Raw<any>;
   urgency_code: string;
