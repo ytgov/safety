@@ -8,14 +8,25 @@
 
     <v-list>
       <v-list-item
+        v-if="isInvestigation"
+        title="Begin Investigation"
+        :subtitle="currentStep.step_title"
+        @click="showInvestigationDialog = true">
+        <template #prepend>
+          <v-icon color="green">mdi-eye-check-outline</v-icon>
+        </template>
+      </v-list-item>
+
+      <v-list-item
         title="Complete Next Step"
         :subtitle="currentStep.step_title"
         @click="completeClick(currentStep)"
-        v-if="currentStep.id">
+        v-else-if="currentStep.id">
         <template #prepend>
           <v-icon color="green">mdi-check-bold</v-icon>
         </template>
       </v-list-item>
+
       <v-list-item
         title="Revert Previous Step"
         :subtitle="previousStep.step_title"
@@ -25,18 +36,40 @@
           <v-icon color="error">mdi-arrow-u-left-top-bold</v-icon>
         </template>
       </v-list-item>
+
+      <v-divider v-if="isSystemAdmin" class="mt-1" />
+      <v-list-item v-if="isSystemAdmin" title="Delete" subtitle="This cannot be undone" @click="deleteClick">
+        <template #prepend>
+          <v-icon color="error">mdi-delete</v-icon>
+        </template>
+      </v-list-item>
     </v-list>
   </v-menu>
+  <ConfirmDialog ref="confirm" />
+  
+  <InvestigationForm
+      v-model="showInvestigationDialog"
+      @complete="completeInvestigation"
+      @close="showInvestigationDialog = false" />
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useReportStore } from "@/store/ReportStore";
+import { useUserStore } from "@/store/UserStore";
+import ConfirmDialog from "@/components/ConfirmDialog";
+import { router } from "@/routes";
+import InvestigationForm from "./InvestigationForm.vue";
 
 const reportStore = useReportStore();
-const { completeStep, revertStep } = reportStore;
+const { completeStep, revertStep, deleteIncident } = reportStore;
 const { currentStep, selectedReport } = storeToRefs(reportStore);
+const userStore = useUserStore();
+
+const { isSystemAdmin } = userStore;
+const confirm = ref(null);
+const showInvestigationDialog = ref(false);
 
 const previousStep = computed(() => {
   if (selectedReport.value) {
@@ -48,10 +81,24 @@ const previousStep = computed(() => {
   return {};
 });
 
+const isInvestigation = computed(() => {
+  return currentStep.value.step_title === "Investigation";
+});
+
 async function completeClick(step) {
   await completeStep(step);
 }
 async function revertClick(step) {
   await revertStep(step);
+}
+async function deleteClick(step) {
+  confirm.value.show("Delete Incident", "Are you sure you want to delete this incident?", async () => {
+    await deleteIncident();
+    router.push("/");
+  });
+}
+
+async function completeInvestigation() {
+  await completeStep(currentStep.value);
 }
 </script>

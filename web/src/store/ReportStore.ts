@@ -88,6 +88,7 @@ export const useReportStore = defineStore("reports", {
       formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
+      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -96,6 +97,13 @@ export const useReportStore = defineStore("reports", {
       }
 
       return api.secureUpload("post", `${REPORTS_URL}`, formData);
+    },
+
+    async deleteIncident() {
+      if (!this.selectedReport) return;
+
+      const api = useApiStore();
+      return api.secureCall("delete", `${REPORTS_URL}/${this.selectedReport.id}`);
     },
 
     async addReportOffline(report: Incident) {
@@ -111,6 +119,7 @@ export const useReportStore = defineStore("reports", {
       formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
+      formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -138,6 +147,7 @@ export const useReportStore = defineStore("reports", {
       const body = {
         investigation_notes: this.selectedReport.investigation_notes,
         description: this.selectedReport.description,
+        additional_description: this.selectedReport.additional_description,
       };
 
       const api = useApiStore();
@@ -295,7 +305,8 @@ export interface Report {
   location_code: string;
   specificLocation: string;
   description: string;
-  supervisor_email: string;
+  supervisor_email?: string;
+  supervisor_alt_email?: string;
   on_behalf: string;
   on_behalf_email: string;
 
@@ -313,9 +324,11 @@ export interface Incident {
   specificLocation: string;
   description: string;
   supervisor_email: string;
+  supervisor_alt_email?: string;
   on_behalf: string;
   on_behalf_email: string;
   investigation_notes?: string;
+  additional_description?: string;
   location_detail?: string;
 
   incident_type_description: string;

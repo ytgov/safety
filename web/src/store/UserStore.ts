@@ -38,8 +38,8 @@ export const useUserStore = defineStore("user", {
         .then((resp) => {
           this.user = resp.data;
         })
-        .catch(resp => {
-          console.log("ERROR LOADING CURRENT USER",resp)
+        .catch((resp) => {
+          console.log("ERROR LOADING CURRENT USER", resp);
         })
         .finally(() => {
           this.isLoading = false;

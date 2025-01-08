@@ -86,6 +86,12 @@
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
+              <v-label>Alternate Supervisor</v-label>
+              <v-text-field
+                :value="selectedReport.supervisor_alt_email"
+                append-inner-icon="mdi-lock"
+                readonly></v-text-field>
+
               <div v-if="selectedReport.attachments && selectedReport.attachments.length > 0">
                 <v-label>Supporting images</v-label>
 
@@ -143,22 +149,28 @@
             <v-row class="pa-5 pt-2 pb-6">
               <v-col cols="12" md="12">
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
-                <v-textarea v-model="selectedReport.description" hide-details />
+                <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" />
+
+                <v-label class="mb-1" style="white-space: inherit">Additional information (from employee)</v-label>
+                <v-textarea v-model="selectedReport.additional_description" />
+
+                <v-label class="mb-1" style="white-space: inherit">Investigator commemts</v-label>
+                <v-textarea v-model="selectedReport.investigation_notes" hide-details />
               </v-col>
 
               <v-col cols="12" md="12">
                 <!-- <v-label>Investigation</v-label>
                 <v-textarea v-model="selectedReport.investigation_notes" hide-details />
  -->
-                <v-btn color="primary" class="mb-0 mt-6" @click="saveClick">Save</v-btn>
-                <v-btn v-if="investigationIsActive" color="primary" class="mb-0 mt-6 ml-6" @click="investigationClick">
+                <v-btn color="primary" class="mb-0 mt-0" @click="saveClick">Save</v-btn>
+                <!-- <v-btn v-if="investigationIsActive" color="primary" class="mb-0 mt-6 ml-6" @click="investigationClick">
                   Start Investigation
-                </v-btn>
+                </v-btn> -->
               </v-col>
             </v-row>
           </v-card>
 
-          <v-card class="default">
+          <!-- <v-card class="default">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <h4 class="text-h6">Urgency</h4>
             </v-card-item>
@@ -172,15 +184,11 @@
                 tick-size="4"
                 :color="urgencyColor"></v-slider>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
       </v-row>
     </section>
 
-    <InvestigationForm
-      v-model="showInvestigationDialog"
-      @complete="completeInvestigation"
-      @close="showInvestigationDialog = false" />
   </div>
 </template>
 
@@ -202,8 +210,10 @@ import ActionEdit from "@/components/action/ActionEdit.vue";
 import InvestigationForm from "./InvestigationForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
+import { useNotificationStore } from "@/store/NotificationStore";
 
 const reportStore = useReportStore();
+const notifications = useNotificationStore();
 const { initialize, loadReport, updateReport, openAttachment, completeStep } = reportStore;
 const { currentStep, selectedReport } = storeToRefs(reportStore);
 
@@ -227,7 +237,7 @@ const investigationIsActive = computed(() => {
   return false;
 });
 
-const tickLabels = {
+/* const tickLabels = {
   0: "Low",
   1: "Medium",
   2: "High",
@@ -255,7 +265,7 @@ const urgencyLevel = computed(() => {
     default:
       return 0;
   }
-});
+}); */
 
 setTimeout(() => {
   let list = document.getElementsByClassName("v-stepper-item");
@@ -301,7 +311,7 @@ function doShowActionEdit(action) {
 }
 
 async function saveClick() {
-  await updateReport();
+  await updateReport().then(() => {});
 }
 
 function investigationClick() {

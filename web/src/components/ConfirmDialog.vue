@@ -8,7 +8,7 @@
           <v-icon @click="doDeny" icon="mdi-close" size="small" class="my-auto" />
         </div>
       </v-card-item>
-      <v-card-text>
+      <v-card-text class="pt-4">
         {{ message }}
         <v-divider class="mt-2" />
       </v-card-text>
