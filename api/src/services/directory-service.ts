@@ -50,7 +50,7 @@ export class DirectoryService {
         if (piece == "") continue;
 
         queryStmts.push(
-          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') )`
+          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`
         );
       }
 

@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { isArray } from "lodash";
+import { isArray, isEmpty } from "lodash";
 
 import { db as knex } from "../data";
 import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
@@ -58,11 +58,29 @@ reportRouter.get("/:id", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, investigation_notes } = req.body;
+  const { description, investigation_notes, additional_description } = req.body;
 
-  await knex("incidents").where({ id }).update({ description, investigation_notes });
+  await knex("incidents").where({ id }).update({ description, investigation_notes, additional_description });
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
+});
+
+reportRouter.delete("/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const trx = await knex.transaction();
+
+  try {
+    await trx("incident_hazards").where({ incident_id: id }).delete();
+    await trx("incident_attachments").where({ incident_id: id }).delete();
+    await trx("incident_steps").where({ incident_id: id }).delete();
+    await trx("incidents").where({ id }).delete();
+    trx.commit();
+    return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Removed" }] });
+  } catch (error) {
+    trx.rollback();
+    return res.json({ data: {}, messages: [{ variant: "error", text: "Error Removing Incident" }] });
+  }
 });
 
 reportRouter.post("/", async (req: Request, res: Response) => {
@@ -77,6 +95,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     location_code,
     location_detail,
     supervisor_email,
+    supervisor_alt_email,
     on_behalf,
     on_behalf_email,
     urgency,
@@ -117,6 +136,8 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       urgency_code: urgency,
     } as Hazard;
 
+    console.log("supervisor_alt_email", supervisor_alt_email);
+
     const incident = {
       created_at: InsertableDate(new Date().toISOString()),
       reported_at: InsertableDate(date),
@@ -125,6 +146,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       status_code: IncidentStatuses.OPEN.code,
       sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
       supervisor_email,
+      supervisor_alt_email,
       incident_type_id: defaultIncidentType.id,
       reporting_person_email,
       proxy_user_id: req.user.id,
@@ -148,11 +170,10 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     const basicSteps = [
       "Incident Reported",
-      "Investigation Completed",
-      "Action Plan Created",
-      "Action Plan Approved",
-      "Remediation Completed",
-      "Final Review",
+      "Investigation",
+      "Control Plan",
+      "Controls Implemented",
+      "Employee Notification",
     ];
 
     for (let i = 1; i <= basicSteps.length; i++) {
@@ -300,10 +321,16 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
   const { id, action_id } = req.params;
-  const { description, notes, actor_user_email, actor_user_id, actor_role_type_id, due_date } = req.body;
+  const { description, notes, actor_user_email, actor_role_type_id, due_date, status_code } = req.body;
+  let { actor_user_id } = req.body;
 
   const action = await knex("actions").where({ incident_id: id, id: action_id }).first();
   if (!action) return res.status(404).send();
+
+  if (!isEmpty(actor_user_email)) {
+    const actorUser = await knex("users").where({ email: actor_user_email }).first();
+    if (actorUser) actor_user_id = actorUser.id;
+  }
 
   await knex("actions").where({ id: action_id }).update({
     description,
@@ -312,6 +339,7 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
     actor_user_id,
     actor_role_type_id,
     due_date,
+    status_code,
   });
 
   return res.json({ data: {} });

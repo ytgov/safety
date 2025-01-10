@@ -59,7 +59,6 @@ import { useDirectoryStore } from "@/store/DirectoryStore";
 import { ref, watch } from "vue";
 
 const props = defineProps(["label"]);
-
 const emit = defineEmits(["selected"]);
 
 const directoryStore = useDirectoryStore();
@@ -70,10 +69,7 @@ const items = ref([] as any[]);
 const search = ref("");
 
 const model = ref(null as any);
-const searchIndex = ref(1);
-
 const timerId = ref(null as any);
-
 const selectedPerson = ref(null as any);
 
 watch(search, async (nv) => {
@@ -95,6 +91,7 @@ watch(model, async (nv) => {
 
   doSelect();
 });
+
 async function doDirectorySearch(val: string) {
   clearTimeout(timerId.value);
 
