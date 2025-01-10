@@ -38,14 +38,14 @@
 
 <script setup lang="ts">
 import { ref, watch } from "vue";
-import { storeToRefs } from "pinia";
 import { useDirectoryStore } from "@/store/DirectoryStore";
 
 const props = defineProps(["label"]);
 const emit = defineEmits(["selected"]);
+defineExpose({ setModel });
 
 const directoryStore = useDirectoryStore();
-const { searchActionDirectory } = directoryStore;
+const { searchActionDirectory, searchActionDirectoryEmail } = directoryStore;
 
 const isLoading = ref(false);
 const items = ref([] as any[]);
@@ -102,5 +102,23 @@ function clear() {
 function doSelect() {
   selectedPerson.value = model.value;
   emit("selected", model.value);
+}
+
+function setModel(email: string, otherActor: object) {
+  if (email) {
+    searchActionDirectoryEmail({ terms: email, showRoles: false })
+      .then((res) => {
+        selectedPerson.value = res[0];
+        //model.value = res[0];
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        isLoading.value = false;
+      });
+  } else {
+    selectedPerson.value = otherActor;
+  }
 }
 </script>

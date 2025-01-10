@@ -9,13 +9,12 @@
       v-model="output"
       format="yyyy/MM/dd"
       :auto-position="true"
-      :teleport="false"
       :auto-apply="true"
       :text-input="true"
       :enable-time-picker="false"
       :max-date="max"
+      teleport-center
       :min-date="min"
-      ssef
       @open="has_focus = true"
       @closed="has_focus = false"
       @update:model-value=""
@@ -33,7 +32,7 @@ import VueDatePicker from "@vuepic/vue-datepicker";
 import "@vuepic/vue-datepicker/dist/main.css";
 
 export default {
-  props: ["modelValue", "label", "max", "readonly", "min"],
+  props: ["modelValue", "label", "max", "readonly", "min", "teleport"],
   components: { VueDatePicker },
   computed: {},
   data() {

@@ -38,7 +38,7 @@ export class IncidentService {
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
 
     item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
-    item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date");
+    item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
     item.hazards = await db("incident_hazards")
       .where({ incident_id: item.id })
       .innerJoin("incident_hazard_types", "incident_hazards.incident_hazard_type_code", "incident_hazard_types.code")

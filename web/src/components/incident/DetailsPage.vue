@@ -74,11 +74,13 @@
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
-              <v-label>Reported by</v-label>
-              <v-text-field
-                :value="selectedReport.reporting_person_email"
-                append-inner-icon="mdi-lock"
-                readonly></v-text-field>
+              <div v-if="stepperValue < 3">
+                <v-label>Reported by</v-label>
+                <v-text-field
+                  :value="selectedReport.reporting_person_email"
+                  append-inner-icon="mdi-lock"
+                  readonly></v-text-field>
+              </div>
 
               <v-label>Supervisor</v-label>
               <v-text-field
@@ -113,9 +115,9 @@
           <v-card class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
-                <h4 class="text-h6">Action Plan</h4>
-                <v-spacer />
-                <v-btn size="x-small" icon="mdi-plus" color="primary" class="my-0" @click="addActionClick"></v-btn>
+                <h4 class="text-h6">Control Plan</h4>
+                <!-- <v-spacer />
+                <v-btn size="x-small" icon="mdi-plus" color="primary" class="my-0" @click="addActionClick"></v-btn> -->
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
@@ -188,7 +190,6 @@
         </v-col>
       </v-row>
     </section>
-
   </div>
 </template>
 

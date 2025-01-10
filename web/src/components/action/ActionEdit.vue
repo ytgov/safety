@@ -3,13 +3,183 @@
     <template #default>
       <v-card v-if="props.action">
         <v-toolbar color="primary" density="comfortable">
-          <v-toolbar-title class="text-white" style="">Edit Task in Action Plan</v-toolbar-title>
+          <v-toolbar-title class="text-white" style="">Edit Task in Control Plan</v-toolbar-title>
           <v-spacer> </v-spacer>
           <v-toolbar-items>
             <v-btn icon="mdi-close" @click="closeClick"></v-btn>
           </v-toolbar-items>
         </v-toolbar>
-        <v-card-text class="pt-5">
+        <div v-if="action.status_code == 'Open'" class="px-2">
+          <v-window v-model="setupStep" style="max-height: 550px; overflow-y: scroll">
+            <v-window-item :value="0" @vue:mounted="loadCurrentStepUser">
+              <v-card-text>
+                <h3>{{ currentStep.title }}</h3>
+
+                <v-row>
+                  <v-col>
+                    <p class="mb-2">This task is currently assigned to {{ action.actor_display_name }}.</p>
+                    <p class="mb-4">
+                      If you would you like to reassign it before the categorization steps, use the box below then close
+                      this dialog.
+                    </p>
+
+                    <ActionUserSelector
+                      ref="directorySelectorField"
+                      label="Current assigned to"
+                      @selected="handleUserSelect" />
+                  </v-col>
+                </v-row>
+              </v-card-text>
+            </v-window-item>
+
+            <v-window-item :value="1">
+              <v-card-text>
+                <h3>{{ currentStep.title }}</h3>
+
+                <v-checkbox v-model="categories" value="Chemical" hide-details density="compact">
+                  <template #label
+                    >Chemical
+                    <v-tooltip location="right" activator="parent" width="600">
+                      Examples: Chemical Asbestos, chemical storage, chemicals, dust/smoke/fumes, lead paint, mists and
+                      vapours, radon gas
+                    </v-tooltip>
+                  </template>
+                </v-checkbox>
+                <v-checkbox v-model="categories" value="Biological" hide-details density="compact">
+                  <template #label
+                    >Biological
+                    <v-tooltip location="right" activator="parent" width="600">
+                      Examples: Blood and bodily fluids, human waste, insect/animal bite, medical waste, mold,
+                      viruses/bacteria
+                    </v-tooltip>
+                  </template>
+                </v-checkbox>
+
+                <v-checkbox v-model="categories" value="Ergonomic" hide-details density="compact">
+                  <template #label
+                    >Ergonomic
+                    <v-tooltip location="right" activator="parent" width="600">
+                      Examples: Improper lifting, improper workstations, repetitive activity, strenuous activity
+                    </v-tooltip>
+                  </template>
+                </v-checkbox>
+                <v-checkbox v-model="categories" value="Physical Conditions" hide-details density="compact">
+                  <template #label
+                    >Physical Conditions
+                    <v-tooltip location="right" activator="parent" width="600">
+                      Examples: Electrical, temperature, humidity, fire/explosion potential, housekeeping, lighting,
+                      pressure systems, road conditions, slippery or uneven surface, vibration, wildlife, working alone
+                    </v-tooltip>
+                  </template>
+                </v-checkbox>
+                <v-checkbox v-model="categories" value="Safety" hide-details density="compact">
+                  <template #label
+                    >Safety
+                    <v-tooltip location="right" activator="parent" width="600">
+                      Examples: Blocked exit routes, confined space, falling from heights, falling items, faulty
+                      equipment, machinery in motion, overhead hazard, pinch/nip points, sharp objects
+                    </v-tooltip>
+                  </template>
+                </v-checkbox>
+              </v-card-text>
+            </v-window-item>
+
+            <v-window-item :value="2">
+              <v-card-text>
+                <h3>{{ currentStep.title }}</h3>
+
+                <p class="mb-4">
+                  Use the matrix below and select the cell that best fits this risk's likelihood and consequence.
+                </p>
+                <table class="score-table">
+                  <tr>
+                    <td rowspan="2" style="text-align: left; font-weight: bold; font-size: 1rem">Likelihood</td>
+                    <td colspan="5" style="font-weight: bold; font-size: 1rem">Consequence</td>
+                  </tr>
+                  <tr>
+                    <td>Insignificant</td>
+                    <td>Minor</td>
+                    <td>Moderate</td>
+                    <td>Major</td>
+                    <td>Catastrophic</td>
+                  </tr>
+                  <tr>
+                    <td style="width: 125px; text-align: left">Almost Certain</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                    <td class="red" @click="selectPriority('Critical')">C</td>
+                    <td class="red" @click="selectPriority('Critical')">C</td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: left">Likely</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                    <td class="red" @click="selectPriority('Critical')">C</td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: left">Possible</td>
+                    <td class="green" @click="selectPriority('Low')">L</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                    <td class="red" @click="selectPriority('Critical')">C</td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: left">Unlikely</td>
+                    <td class="green" @click="selectPriority('Low')">L</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                  </tr>
+                  <tr>
+                    <td style="text-align: left">Rare</td>
+                    <td class="green" @click="selectPriority('Low')">L</td>
+                    <td class="green" @click="selectPriority('Low')">L</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="yellow" @click="selectPriority('Medium')">M</td>
+                    <td class="orange" @click="selectPriority('High')">H</td>
+                  </tr>
+                </table>
+
+                <p v-if="riskPriority" class="mt-4">
+                  You have selected: <strong>{{ riskPriority }}</strong>
+                </p>
+              </v-card-text>
+            </v-window-item>
+
+            <v-window-item :value="3">
+              <v-card-text>
+                <h3>{{ currentStep.title }}</h3>
+
+                <p class="text-subtitle-1 mb-5">
+                  Since the risk priority is set to <strong>{{ riskPriority }}</strong
+                  >, all controls must be implemented within <strong>{{ maxDays }}</strong> day{{
+                    maxDays > 1 ? "s" : ""
+                  }}
+                  (before {{ maxDueDate }}). The Due Date for this task has been automatically set to this date, but you
+                  may make it sooner.
+                </p>
+
+                <DateSelector v-model="action.due_date" ref="dater" label="Due date" :max="maxDueDate" :min="today" />
+              </v-card-text>
+            </v-window-item>
+          </v-window>
+
+          <v-card-text class="d-flex">
+            <v-btn :disabled="!isPrev" color="primary" @click="setupStep--">Prev</v-btn>
+            <v-spacer />
+            <div class="pt-1">Step {{ setupStep + 1 }}: {{ currentStep.title }}</div>
+            <v-spacer />
+            <v-btn v-if="!isDone" :disabled="!isNext" color="primary" @click="setupStep++">Next</v-btn>
+            <v-btn v-else :disabled="isNext" color="success" @click="saveClick">Save</v-btn>
+          </v-card-text>
+        </div>
+
+        <v-card-text v-else>
           <v-row>
             <v-col>
               <v-label>Due date</v-label>
@@ -58,9 +228,10 @@
 </template>
 
 <script setup>
-import { ref, computed, defineProps } from "vue";
+import { ref, computed, defineProps, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
+import { isNil } from "lodash";
 import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
 
@@ -68,7 +239,11 @@ const props = defineProps(["action"]);
 
 const emit = defineEmits(["doClose"]);
 
-import DateSelector from "@/components/DateSelector.vue";
+import ActionUserSelector from "./ActionUserSelector.vue";
+import DateSelector from "../DateSelector.vue";
+
+const directorySelectorField = ref(null);
+const dater = ref(null);
 
 const userStore = useUserStore();
 const { user } = storeToRefs(userStore);
@@ -76,19 +251,67 @@ const { user } = storeToRefs(userStore);
 const reportStore = useReportStore();
 const { saveAction, deleteAction, completeAction, revertAction } = reportStore;
 
-const dp = ref(null);
+const setupStep = ref(0);
+const setupStepOptions = ref([
+  { title: "Task Assignment", step: 0 },
+  { title: "Hazard Categories", step: 1 },
+  { title: "Risk Priority", step: 2 },
+  { title: "Summary", step: 3 },
+]);
+watch(
+  () => setupStep.value,
+  (val) => {
+    if (val == 3 && dater.value) {
+      dater.value.setManual(maxDueDate.value);
+    }
+  }
+);
 
-const canSave = computed(() => {
-  if (props.action.due_date && props.action.description) return true;
+const currentStep = computed(() => {
+  return setupStepOptions.value[setupStep.value];
+});
 
-  return false;
+const isPrev = computed(() => {
+  return currentStep.value.step > 0;
+});
+const isNext = computed(() => {
+  if (setupStep.value == 1) return categories.value.length > 0;
+  if (setupStep.value == 2) return !isNil(riskPriority.value);
+  return currentStep.value.step < setupStepOptions.value.length - 1;
+});
+
+const isDone = computed(() => {
+  return setupStep.value == setupStepOptions.value.length - 1;
+});
+
+const categories = ref([]);
+const riskPriority = ref(null);
+const maxDays = computed(() => {
+  let daysToComplete = 30;
+
+  if (riskPriority.value == "Medium") daysToComplete = 14;
+  if (riskPriority.value == "High") daysToComplete = 7;
+  if (riskPriority.value == "Critical") daysToComplete = 1;
+
+  return daysToComplete;
+});
+const maxDueDate = computed(() => {
+  return formatDate(DateTime.now().plus({ days: maxDays.value }).toISODate());
+});
+const today = computed(() => {
+  return formatDate(DateTime.now().toISODate());
 });
 
 function closeClick() {
+  categories.value = [];
+  riskPriority.value = null;
+  setupStep.value = 0;
+
   emit("doClose");
 }
 
 async function saveClick() {
+  props.action.status_code = "Ready";
   await saveAction(props.action).then(() => {
     closeClick();
   });
@@ -119,17 +342,71 @@ function formatDate(input) {
 
 function actionUserSelected(actor) {
   if (actor.actor_role_type_id) {
-    action.value.actor_role_type_id = actor.actor_role_type_id;
-    action.value.actor_user_id = null;
-    action.value.actor_user_email = null;
+    props.action.actor_role_type_id = actor.actor_role_type_id;
+    props.action.actor_display_name = actor.long_name;
+    props.action.actor_user_id = null;
+    props.action.actor_user_email = null;
   } else if (actor.user_id) {
-    action.value.actor_role_type_id = null;
-    action.value.actor_user_id = actor.user_id;
-    action.value.actor_user_email = actor.email;
+    props.action.actor_role_type_id = null;
+    props.action.actor_user_id = actor.user_id;
+    props.action.actor_user_email = actor.email;
   } else if (actor.email) {
-    action.value.actor_role_type_id = null;
-    action.value.actor_user_id = null;
-    action.value.actor_user_email = actor.email;
+    props.action.actor_role_type_id = null;
+    props.action.actor_user_id = null;
+    props.action.actor_user_email = actor.email;
   }
 }
+
+async function handleUserSelect(value) {
+  if (value) {
+    actionUserSelected(value);
+    await saveAction(props.action).then(() => {});
+  } else props.action.actor_user_email = null;
+}
+
+async function loadCurrentStepUser() {
+  if (directorySelectorField.value) {
+    await directorySelectorField.value.setModel(props.action.actor_user_email, {
+      long_name: props.action.actor_display_name,
+      actor_role_type_id: props.action.actor_role_type_id,
+    });
+  }
+}
+
+function selectPriority(riskLevel) {
+  riskPriority.value = riskLevel;
+  props.action.due_date = maxDueDate.value;
+}
 </script>
+
+<style scoped>
+.score-table {
+  border-collapse: collapse;
+  border-bottom: 1px black solid;
+  border-right: 1px black solid;
+}
+.score-table td {
+  width: 99px;
+  padding: 5px;
+  border-top: 1px black solid;
+  border-left: 1px black solid;
+  text-align: center;
+  background-color: #ccc;
+}
+.score-table td.green {
+  background-color: green;
+  cursor: pointer;
+}
+.score-table td.yellow {
+  background-color: yellow;
+  cursor: pointer;
+}
+.score-table td.orange {
+  background-color: orangered;
+  cursor: pointer;
+}
+.score-table td.red {
+  background-color: red;
+  cursor: pointer;
+}
+</style>

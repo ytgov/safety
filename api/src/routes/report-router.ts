@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { isArray } from "lodash";
+import { isArray, isEmpty } from "lodash";
 
 import { db as knex } from "../data";
 import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
@@ -136,7 +136,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       urgency_code: urgency,
     } as Hazard;
 
-    console.log("supervisor_alt_email", supervisor_alt_email)
+    console.log("supervisor_alt_email", supervisor_alt_email);
 
     const incident = {
       created_at: InsertableDate(new Date().toISOString()),
@@ -321,10 +321,16 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
   const { id, action_id } = req.params;
-  const { description, notes, actor_user_email, actor_user_id, actor_role_type_id, due_date } = req.body;
+  const { description, notes, actor_user_email, actor_role_type_id, due_date, status_code } = req.body;
+  let { actor_user_id } = req.body;
 
   const action = await knex("actions").where({ incident_id: id, id: action_id }).first();
   if (!action) return res.status(404).send();
+
+  if (!isEmpty(actor_user_email)) {
+    const actorUser = await knex("users").where({ email: actor_user_email }).first();
+    if (actorUser) actor_user_id = actorUser.id;
+  }
 
   await knex("actions").where({ id: action_id }).update({
     description,
@@ -333,6 +339,7 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
     actor_user_id,
     actor_role_type_id,
     due_date,
+    status_code,
   });
 
   return res.json({ data: {} });

@@ -17,6 +17,13 @@
                 color="success"
                 size="x-small"
                 icon="mdi-check"></v-btn>
+              <v-btn
+                v-else-if="action.status_code == 'Ready'"
+                fab
+                class="my-0"
+                color="grey"
+                size="x-small"
+                icon="mdi-circle-outline"></v-btn>
               <v-btn v-else fab class="my-0" color="warning" size="x-small" icon="mdi-alert-circle-outline"></v-btn>
             </template>
           </v-list-item>
@@ -24,7 +31,7 @@
         </div>
       </v-list>
     </div>
-    <div v-else>The Actions Plan is currently empty</div>
+    <div v-else>The Control Plan is currently empty</div>
   </div>
 </template>
 
