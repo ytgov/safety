@@ -21,6 +21,7 @@ import {
   UserRole,
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
+import { DateTime } from "luxon";
 
 export const reportRouter = express.Router();
 const db = new IncidentService();
@@ -72,15 +73,9 @@ reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
   investigation_data.completed_on = new Date().toISOString();
   investigation_data.completed_by = req.user.display_name;
   investigation_data.completed_by_ud = req.user.id;
-
-  console.log("investigation_data", investigation_data);
   const jsonString = JSON.stringify(investigation_data);
 
-  console.log("jsonString", jsonString);
-
   await knex("investigations").insert({ incident_id: id, investigation_data: jsonString });
-
-  //await knex("incidents").where({ id }).update({ description, investigation_notes, additional_description });
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
@@ -153,15 +148,13 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       description,
       location_detail,
       reopen_count: 0,
-      created_at: InsertableDate(new Date().toISOString()),
+      created_at: InsertableDate(DateTime.utc().toISO()),
       reported_at: InsertableDate(date),
       urgency_code: urgency,
     } as Hazard;
 
-    console.log("supervisor_alt_email", supervisor_alt_email);
-
     const incident = {
-      created_at: InsertableDate(new Date().toISOString()),
+      created_at: InsertableDate(DateTime.utc().toISO()),
       reported_at: InsertableDate(date),
       description,
       department_code: department.code,
@@ -190,16 +183,16 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     await trx("incident_hazards").insert(link);
 
-    const basicSteps = [
-      "Incident Reported",
-      "Investigation",
-      "Control Plan",
-      "Controls Implemented",
-      "Employee Notification",
-    ];
+    let steps = new Array<string>();
 
-    for (let i = 1; i <= basicSteps.length; i++) {
-      const step_title = basicSteps[i - 1];
+    if (eventType == "hazard") {
+      steps = ["Hazard Identified", "Assessment of Hazard", "Control the Hazard", "Employee Notification"];
+    } else {
+      steps = ["Incident Reported", "Investigation", "Control Plan", "Controls Implemented", "Employee Notification"];
+    }
+
+    for (let i = 1; i <= steps.length; i++) {
+      const step_title = steps[i - 1];
 
       const step = {
         incident_id: insertedIncidentId,
@@ -209,7 +202,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       } as IncidentStep;
 
       if (i == 1) {
-        (step as any).complete_date = InsertableDate(new Date().toISOString());
+        (step as any).complete_date = InsertableDate(DateTime.utc().toISO());
         step.complete_name = req.user.display_name;
         step.complete_user_id = req.user.id;
       }
@@ -230,7 +223,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
           file_type: file.mimetype,
           file_size: file.size,
           file: file.data,
-          added_date: InsertableDate(new Date().toISOString()),
+          added_date: InsertableDate(DateTime.utc().toISO()),
         } as IncidentAttachment;
 
         await trx("incident_attachments").insert(attachment);
@@ -282,7 +275,7 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
         .where({ incident_id: id, id: step_id })
         .update({
           complete_name: req.user.display_name,
-          complete_date: InsertableDate(new Date().toISOString()),
+          complete_date: InsertableDate(DateTime.utc().toISO()),
           complete_user_id: req.user.id,
         });
     } else if (operation == "revert") {
@@ -322,7 +315,7 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
 
   const action = {
     incident_id: parseInt(id),
-    created_at: InsertableDate(new Date().toISOString()),
+    created_at: InsertableDate(DateTime.utc().toISO()),
     description,
     notes,
     action_type_code: ActionTypes.USER_GENERATED.code,
@@ -397,7 +390,7 @@ reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: 
     await knex("actions")
       .where({ incident_id: id, id: action_id })
       .update({
-        complete_date: InsertableDate(new Date().toISOString()),
+        complete_date: InsertableDate(DateTime.utc().toISO()),
         complete_name: req.user.display_name,
         complete_user_id: req.user.id,
       });
