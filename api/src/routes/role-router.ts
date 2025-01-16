@@ -3,6 +3,7 @@ import { db as knex } from "../data";
 import { isEmpty } from "lodash";
 import { UserRole } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
+import { DateTime } from "luxon";
 
 export const roleRouter = express.Router();
 
@@ -25,7 +26,7 @@ roleRouter.post("/user/:user_id", async (req: Request, res: Response) => {
         role.create_user_id = req.user.id;
         role.start_date = InsertableDate(role.start_date);
         role.end_date = InsertableDate(role.end_date);
-        role.created_at = InsertableDate(new Date().toISOString());
+        role.created_at = InsertableDate(DateTime.utc().toISO());
 
         if (isEmpty(role.department_code)) role.department_code = null;
         await trx("user_roles").insert(roleForInsert(role));

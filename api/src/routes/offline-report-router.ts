@@ -16,6 +16,7 @@ import {
   SensitivityLevels,
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
+import { DateTime } from "luxon";
 
 export const offlineReportRouter = express.Router();
 const db = new IncidentService();
@@ -93,13 +94,13 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       description,
       location_detail,
       reopen_count: 0,
-      created_at: InsertableDate(new Date().toISOString()),
+      created_at: InsertableDate(DateTime.utc().toISO()),
       reported_at: InsertableDate(date),
       urgency_code: urgency,
     } as Hazard;
 
     const incident = {
-      created_at: InsertableDate(new Date().toISOString()),
+      created_at: InsertableDate(DateTime.utc().toISO()),
       reported_at: InsertableDate(date),
       description,
       department_code: department.code,
@@ -146,7 +147,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       } as IncidentStep;
 
       if (i == 1) {
-        (step as any).complete_date = InsertableDate(new Date().toISOString());
+        (step as any).complete_date = InsertableDate(DateTime.utc().toISO());
         step.complete_name = currentUserName;
         step.complete_user_id = currentUserId;
       }
@@ -167,7 +168,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
           file_type: file.mimetype,
           file_size: file.size,
           file: file.data,
-          added_date: InsertableDate(new Date().toISOString()),
+          added_date: InsertableDate(DateTime.utc().toISO()),
         } as IncidentAttachment;
 
         await trx("incident_attachments").insert(attachment);

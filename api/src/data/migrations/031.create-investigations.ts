@@ -7,7 +7,7 @@ export async function up(knex: knex.Knex) {
     table.integer("incident_id").nullable();
     table.integer("creator_user_id").nullable();
     table.text("investigation_data").nullable();
-    
+
     table.foreign("hazard_id").references("hazards.id");
     table.foreign("incident_id").references("incidents.id");
     table.foreign("creator_user_id").references("users.id");

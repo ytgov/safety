@@ -11,8 +11,8 @@ export async function up(knex: knex.Knex) {
     table.string("sensitivity_code", 8).nullable();
     table.string("description", 4000).nullable();
     table.string("location_detail", 1000).nullable();
-    table.datetime("created_at").nullable().defaultTo(knex.fn.now());
-    table.datetime("reported_at").nullable();
+    table.specificType("created_at", "TIMESTAMP(0) WITH TIME ZONE").nullable().defaultTo(knex.fn.now());
+    table.specificType("reported_at", "TIMESTAMP(0) WITH TIME ZONE").nullable();
     table.integer("reopen_count").notNullable().defaultTo(0);
     table.string("urgency_code", 8).notNullable();
     table.string("notes", 4000).nullable();

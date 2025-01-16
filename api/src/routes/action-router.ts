@@ -5,6 +5,7 @@ import { db as knex } from "../data";
 import { ReturnValidationErrors } from "../middleware";
 import { Action, ActionStatuses, ActionTypes, SensitivityLevels } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
+import { DateTime } from "luxon";
 
 export const actionRouter = express.Router();
 actionRouter.get("/me", async (req: Request, res: Response) => {
@@ -30,7 +31,7 @@ actionRouter.post("/:incident_id", async (req: Request, res: Response) => {
 
   const action = {
     incident_id: parseInt(incident_id),
-    created_at: InsertableDate(new Date().toISOString()),
+    created_at: InsertableDate(DateTime.utc().toISO()),
     description,
     action_type_code: ActionTypes.USER_GENERATED.code,
     sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
