@@ -2,6 +2,7 @@ import { Knex } from "knex";
 import { IncidentStep } from "./incident-step-model";
 import { Action } from "./action-model";
 import { IncidentHazard } from "./incident-hazard-model";
+import { Investigation } from "./investigation-model";
 
 export interface Incident {
   id?: number;
@@ -25,4 +26,5 @@ export interface Incident {
   steps?: IncidentStep[];
   actions?: Action[];
   hazards?: IncidentHazard[];
+  investigation?: Investigation;
 }

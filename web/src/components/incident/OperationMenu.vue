@@ -46,11 +46,13 @@
     </v-list>
   </v-menu>
   <ConfirmDialog ref="confirm" />
-  
+
   <InvestigationForm
-      v-model="showInvestigationDialog"
-      @complete="completeInvestigation"
-      @close="showInvestigationDialog = false" />
+    v-model="showInvestigationDialog"
+    :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description"
+    @complete="completeInvestigation"
+    @close="showInvestigationDialog = false" />
 </template>
 
 <script setup>

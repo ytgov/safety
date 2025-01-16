@@ -65,12 +65,30 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
 
+reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { investigation_data } = req.body;
+
+  //console.log("investigation_data", investigation_data);
+
+  investigation_data.completed_on = InsertableDate(new Date().toISOString());
+  investigation_data.completed_by = req.user.display_name;
+  investigation_data.completed_by_ud = req.user.id;
+
+  await knex("investigations").insert({ incident_id: id, investigation_data });
+
+  //await knex("incidents").where({ id }).update({ description, investigation_notes, additional_description });
+
+  return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
+});
+
 reportRouter.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
 
   const trx = await knex.transaction();
 
   try {
+    await trx("actions").where({ incident_id: id }).delete();
     await trx("incident_hazards").where({ incident_id: id }).delete();
     await trx("incident_attachments").where({ incident_id: id }).delete();
     await trx("incident_steps").where({ incident_id: id }).delete();
@@ -78,6 +96,7 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
     trx.commit();
     return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Removed" }] });
   } catch (error) {
+    console.log("ERROR IN TRANSACTION", error);
     trx.rollback();
     return res.json({ data: {}, messages: [{ variant: "error", text: "Error Removing Incident" }] });
   }
@@ -269,6 +288,11 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
         complete_date: null,
         complete_user_id: null,
       });
+
+      if (step.step_title == "Investigation") {
+        await knex("actions").where({ incident_id: id }).delete();
+        await knex("investigations").where({ incident_id: id }).delete();
+      }
     }
   }
 
@@ -338,7 +362,7 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
     actor_user_email,
     actor_user_id,
     actor_role_type_id,
-    due_date,
+    due_date: InsertableDate(due_date),
     status_code,
   });
 
