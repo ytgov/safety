@@ -69,16 +69,14 @@ reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { investigation_data } = req.body;
 
-  console.log("investigation_data", investigation_data);
-
-  investigation_data.completed_on = InsertableDate(new Date().toISOString());
+  investigation_data.completed_on = new Date().toISOString();
   investigation_data.completed_by = req.user.display_name;
   investigation_data.completed_by_ud = req.user.id;
 
+  console.log("investigation_data", investigation_data);
   const jsonString = JSON.stringify(investigation_data);
 
   console.log("jsonString", jsonString);
-
 
   await knex("investigations").insert({ incident_id: id, investigation_data: jsonString });
 
@@ -361,15 +359,17 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
     if (actorUser) actor_user_id = actorUser.id;
   }
 
-  await knex("actions").where({ id: action_id }).update({
-    description,
-    notes,
-    actor_user_email,
-    actor_user_id,
-    actor_role_type_id,
-    due_date: InsertableDate(due_date),
-    status_code,
-  });
+  await knex("actions")
+    .where({ id: action_id })
+    .update({
+      description,
+      notes,
+      actor_user_email,
+      actor_user_id,
+      actor_role_type_id,
+      due_date: InsertableDate(due_date),
+      status_code,
+    });
 
   return res.json({ data: {} });
 });
