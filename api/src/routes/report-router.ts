@@ -69,13 +69,18 @@ reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { investigation_data } = req.body;
 
-  //console.log("investigation_data", investigation_data);
+  console.log("investigation_data", investigation_data);
 
   investigation_data.completed_on = InsertableDate(new Date().toISOString());
   investigation_data.completed_by = req.user.display_name;
   investigation_data.completed_by_ud = req.user.id;
 
-  await knex("investigations").insert({ incident_id: id, investigation_data });
+  const jsonString = JSON.stringify(investigation_data);
+
+  console.log("jsonString", jsonString);
+
+
+  await knex("investigations").insert({ incident_id: id, investigation_data: jsonString });
 
   //await knex("incidents").where({ id }).update({ description, investigation_notes, additional_description });
 
