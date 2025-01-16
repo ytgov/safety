@@ -12,9 +12,9 @@ export async function up(knex: knex.Knex) {
     table.string("supervisor_email", 250).nullable();
     table.integer("proxy_user_id").nullable();
     table.string("description", 4000).notNullable();
-    table.datetime("created_at").notNullable().defaultTo(knex.fn.now());
-    table.datetime("reported_at").nullable();
-    table.string("urgency_code",8).notNullable();
+    table.specificType("created_at", "TIMESTAMP(0) WITH TIME ZONE").notNullable().defaultTo(knex.fn.now());
+    table.specificType("reported_at", "TIMESTAMP(0) WITH TIME ZONE").nullable();
+    table.string("urgency_code", 8).notNullable();
     table.string("investigation_notes", 4000).nullable();
 
     table.foreign("sensitivity_code").references("sensitivities.code");

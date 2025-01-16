@@ -10,15 +10,15 @@ export async function up(knex: knex.Knex) {
     table.integer("actor_user_id").nullable();
     table.string("actor_user_email", 250).nullable();
     table.integer("actor_role_type_id").nullable();
-    table.datetime("created_at").notNullable().defaultTo(knex.fn.now());
-    table.datetime("modified_at").nullable().defaultTo(knex.fn.now());
-    table.datetime("due_date").nullable();
+    table.specificType("created_at", "TIMESTAMP(0) WITH TIME ZONE").notNullable().defaultTo(knex.fn.now());
+    table.specificType("modified_at", "TIMESTAMP(0) WITH TIME ZONE").nullable().defaultTo(knex.fn.now());
+    table.specificType("due_date", "TIMESTAMP(0) WITH TIME ZONE").nullable();
     table.string("description", 4000).notNullable();
     table.string("action_type_code", 8).notNullable();
     table.string("sensitivity_code", 8).nullable();
     table.string("status_code", 8).nullable();
     table.string("notes", 4000).nullable();
-    table.datetime("complete_date").nullable();
+    table.specificType("complete_date", "TIMESTAMP(0) WITH TIME ZONE").nullable();
     table.string("complete_name", 200).nullable();
     table.integer("complete_user_id").nullable();
 

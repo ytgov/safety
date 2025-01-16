@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import { join } from "path";
 
-import { NODE_ENV } from "../config";
 import { db } from "./";
 
 export class Migrator {
@@ -17,6 +16,15 @@ export class Migrator {
     this.migrationRouter.get("/up", async (_req: Request, res: Response) => {
       try {
         await this.migrateUp();
+      } catch (err) {
+        console.error(err);
+      }
+      return res.json({ data: await migrator.listMigrations() });
+    });
+
+    this.migrationRouter.get("/latest", async (_req: Request, res: Response) => {
+      try {
+        await this.migrateLatest();
       } catch (err) {
         console.error(err);
       }

@@ -6,8 +6,8 @@ export async function up(knex: knex.Knex) {
     table.integer("incident_id").notNullable();
     table.string("step_title", 150).notNullable();
     table.integer("order").notNullable();
-    table.datetime("activate_date").nullable();
-    table.datetime("complete_date").nullable();
+    table.specificType("activate_date", "TIMESTAMP(0) WITH TIME ZONE").nullable();
+    table.specificType("complete_date", "TIMESTAMP(0) WITH TIME ZONE").nullable();
     table.string("complete_name", 200).nullable();
     table.integer("complete_user_id").nullable();
 
