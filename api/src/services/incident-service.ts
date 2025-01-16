@@ -40,6 +40,11 @@ export class IncidentService {
     item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
     item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
     item.investigation = await db("investigations").where({ incident_id: item.id }).first();
+
+    if (item.investigation) {
+      item.investigation.investigation_data = JSON.parse(item.investigation.investigation_data);
+    }
+
     item.hazards = await db("incident_hazards")
       .where({ incident_id: item.id })
       .innerJoin("incident_hazard_types", "incident_hazards.incident_hazard_type_code", "incident_hazard_types.code")
