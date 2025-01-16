@@ -64,7 +64,7 @@
           <v-card class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
-                <h4 class="text-h6">Incident Information</h4>
+                <h4 class="text-h6">{{ selectedReport.incident_type_description }} Information</h4>
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
@@ -187,6 +187,10 @@
                 :color="urgencyColor"></v-slider>
             </v-card-text>
           </v-card> -->
+
+          <InvestigationCard
+            v-if="selectedReport.investigation"
+            :investigation="selectedReport.investigation"></InvestigationCard>
         </v-col>
       </v-row>
     </section>
@@ -208,13 +212,11 @@ import ActionList from "@/components/action/ActionList.vue";
 import HazardList from "@/components/hazard/HazardList.vue";
 import ActionCreate from "@/components/action/ActionCreate.vue";
 import ActionEdit from "@/components/action/ActionEdit.vue";
-import InvestigationForm from "./InvestigationForm.vue";
+import InvestigationCard from "./InvestigationCard.vue";
 
 import { useReportStore } from "@/store/ReportStore";
-import { useNotificationStore } from "@/store/NotificationStore";
 
 const reportStore = useReportStore();
-const notifications = useNotificationStore();
 const { initialize, loadReport, updateReport, openAttachment, completeStep } = reportStore;
 const { currentStep, selectedReport } = storeToRefs(reportStore);
 
@@ -229,14 +231,6 @@ const showInvestigationDialog = ref(false);
 const showActionAdd = ref(false);
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
-
-const investigationIsActive = computed(() => {
-  if (currentStep.value) {
-    return currentStep.value.step_title.indexOf("Investig") >= 0;
-  }
-
-  return false;
-});
 
 /* const tickLabels = {
   0: "Low",

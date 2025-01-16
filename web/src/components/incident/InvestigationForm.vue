@@ -12,8 +12,7 @@
             <h3>Data Collection</h3>
             <p class="mb-5">
               All the collected data must be stored in a secure file. Only the investigator/ investigation team should
-              have access to the file. Use the following as a checklist. If one is not being collected, provide
-              rationale.
+              have access to the file. Use the following as a checklist. Check all that apply.
             </p>
 
             <v-checkbox
@@ -22,14 +21,20 @@
               :value="option.value"
               :label="option.title"
               hide-details
+              return-object
               density="compact" />
 
-            <v-textarea label="Rationale for any data that was not able to be collected at this time" rows="2" />
+            <v-textarea
+              v-model="collections_other"
+              class="mt-2"
+              label="Rationale for any data that was not able to be collected at this time"
+              rows="2" />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="1">
           <v-card-text>
-            <h3>Event Type</h3>
+            <h3>{{ incident_type_description == "Hazard" ? "Potential" : "" }} Event Type</h3>
+            <p class="mb-5">Check all that apply.</p>
 
             <v-checkbox
               v-for="option in eventOptions.filter((o) => o.value != 'serious')"
@@ -37,6 +42,7 @@
               :value="option.value"
               :label="option.title"
               hide-details
+              return-object
               density="compact">
             </v-checkbox>
 
@@ -70,47 +76,37 @@
           <v-card-text>
             <h3>Incident Type</h3>
 
-            <v-checkbox
-              v-for="option in incidentOptions"
-              v-model="incidents"
-              :value="option.value"
-              :label="option.title"
-              hide-details
-              density="compact" />
+            <p class="mb-5">Select the most relevant type.</p>
 
-            <v-textarea label="Additional applicable information" rows="2" />
+            <v-select v-model="incidents" label="Incident type" :items="incidentOptions" return-object />
+
+            <v-textarea v-model="incidents_other" class="mt-3" label="Additional applicable information" rows="2" />
           </v-card-text>
         </v-window-item>
 
         <v-window-item :value="3">
           <v-card-text>
             <h3>Immediate Cause</h3>
+            <p class="mb-5">Select the most relevant cause.</p>
 
             <v-select
               v-model="acts"
-              label="Acting/Practice"
-              :items="actOptions"
-              item-text="title"
+              label="Cause"
+              :items="actsAndConditions"
+              :item-props="true"
               return-object
-              chips
-              clearable
-              multiple />
-
-            <v-select
-              v-model="conditions"
-              label="Conditions"
-              :items="conditionOptions"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
+              item-text="title">
+              <template #selection="{ item }">
+                <strong>{{ item.props.subtitle }}:&nbsp;</strong> {{ item.title }}
+              </template>
+            </v-select>
           </v-card-text>
         </v-window-item>
 
         <v-window-item :value="4">
           <v-card-text>
             <h3>Contributing Factors</h3>
+            <p class="mb-5">Select all that apply.</p>
 
             <v-select
               v-model="factors"
@@ -127,6 +123,7 @@
         <v-window-item :value="5">
           <v-card-text>
             <h3>Root Cause</h3>
+            <p class="mb-5">Select all that apply.</p>
 
             <v-select
               v-model="causes"
@@ -157,11 +154,17 @@
 import { computed, ref } from "vue";
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
+import { useInterfaceStore } from "@/store/InterfaceStore";
+import { isNil } from "lodash";
 
+const props = defineProps(["incidentId", "incident_type_description"]);
 const emits = defineEmits(["complete", "close"]);
 
 const reportStore = useReportStore();
-const { saveAction } = reportStore;
+const { saveAction, saveInvestigation } = reportStore;
+
+const interfaceStore = useInterfaceStore();
+const { showOverlay, hideOverlay } = interfaceStore;
 
 const step = ref(0);
 const stepName = computed(() => {
@@ -177,6 +180,7 @@ const steps = ref([
   { name: "Root Cause" },
 ]);
 
+const collections_other = ref("");
 const collections = ref([]);
 const collectionOptions = [
   { title: "Photos and/or sketching of scene", value: "photo", required: true },
@@ -187,7 +191,7 @@ const collectionOptions = [
   { title: "Other, Please explain below", value: "other", required: false },
 ];
 const hasAllRequiredCollections = computed(() => {
-  return collectionOptions.filter((o) => o.required).every((o) => collections.value.includes(o.value));
+  return collections.value.length > 0;
 });
 
 const events = ref([]);
@@ -203,63 +207,70 @@ const hasAllRequiredEvents = computed(() => {
   return events.value.length > 0;
 });
 
-const incidents = ref([]);
+const incidents_other = ref("");
+const incidents = ref(null);
 const incidentOptions = [
-  { title: "Slip, trip or fall", value: "1" },
-  { title: "Fall from height", value: "2" },
-  { title: "Musculoskeletal Damage (MSD) / Overexertion", value: "3" },
-  { title: "Exposure", value: "4" },
-  { title: "Sharps / puncture / laceration", value: "5" },
-  { title: "Physical abuse / violence", value: "6" },
-  { title: "Motor vehicle accident", value: "7" },
-  { title: "Caught in/ on/ between objects", value: "8" },
-  { title: "Struck against/ Struck by", value: "9" },
-  { title: "Fire/explosion", value: "10" },
-  { title: "Contact with electrical component", value: "11" },
-  { title: "Spill/ containment breach", value: "12" },
+  { title: "Slip, trip or fall", value: "slip_trip_or_fall" },
+  { title: "Fall from height", value: "fall_from_height" },
+  { title: "Musculoskeletal Damage (MSD) / Overexertion", value: "musculoskeletal_damage_msd_overexertion" },
+  { title: "Exposure", value: "exposure" },
+  { title: "Sharps / puncture / laceration", value: "sharps_puncture_laceration" },
+  { title: "Physical abuse / violence", value: "physical_abuse_violence" },
+  { title: "Motor vehicle accident", value: "motor_vehicle_accident" },
+  { title: "Caught in/ on/ between objects", value: "caught_in_on_between_objects" },
+  { title: "Struck against/ Struck by", value: "struck_against_struck_by" },
+  { title: "Fire/explosion", value: "fire_explosion" },
+  { title: "Contact with electrical component", value: "contact_with_electrical_component" },
+  { title: "Spill/ containment breach", value: "spill_containment_breach" },
 ];
 const hasAllRequiredIncidents = computed(() => {
-  return incidents.value.length > 0;
+  return !isNil(incidents.value);
 });
 
-const acts = ref([]);
-const actOptions = [
-  { title: "Operating without authority", value: "operating_without_authority" },
-  { title: "Failure to secure or warn", value: "failure_to_secure_or_warn" },
-  { title: "Working at unsafe speed", value: "working_at_unsafe_speed" },
-  { title: "Removing safety devices", value: "removing_safety_devices" },
-  { title: "Improper position or posture", value: "improper_position_or_posture" },
-  { title: "Improper lifting, loading, placing", value: "improper_lifting_loading_placing" },
-  { title: "Working on operating equipment", value: "working_on_operating_equipment" },
-  { title: "Improper activity or behavior", value: "improper_activity_or_behavior" },
-  { title: "Failure to use PPE", value: "failure_to_use_ppe" },
-  { title: "Failure to lockout", value: "failure_to_lockout" },
-  { title: "3rd party action", value: "third_party_action" },
-  { title: "Impairment", value: "impairment" },
-];
+const acts = ref(null);
+const actsAndConditions = ref([
+  { title: "Operating without authority", subtitle: "Act or Practice", value: "operating_without_authority" },
+  { title: "Failure to secure or warn", subtitle: "Act or Practice", value: "failure_to_secure_or_warn" },
+  { title: "Working at unsafe speed", subtitle: "Act or Practice", value: "working_at_unsafe_speed" },
+  { title: "Removing safety devices", subtitle: "Act or Practice", value: "removing_safety_devices" },
+  { title: "Improper position or posture", subtitle: "Act or Practice", value: "improper_position_or_posture" },
+  {
+    title: "Improper lifting, loading, placing",
+    subtitle: "Act or Practice",
+    value: "improper_lifting_loading_placing",
+  },
+  { title: "Working on operating equipment", subtitle: "Act or Practice", value: "working_on_operating_equipment" },
+  { title: "Improper activity or behavior", subtitle: "Act or Practice", value: "improper_activity_or_behavior" },
+  { title: "Failure to use PPE", subtitle: "Act or Practice", value: "failure_to_use_ppe" },
+  { title: "Failure to lockout", subtitle: "Act or Practice", value: "failure_to_lockout" },
+  { title: "3rd party action", subtitle: "Act or Practice", value: "third_party_action" },
+  { title: "Impairment", subtitle: "Act or Practice", value: "impairment" },
 
-const conditions = ref([]);
-const conditionOptions = [
-  { title: "Improper guard/ barrier", value: "improper_guard_barrier" },
-  { title: "Inadequate visibility", value: "inadequate_visibility" },
-  { title: "Fire, explosion, atmospheric hazard", value: "fire_explosion_atmospheric_hazard" },
-  { title: "Hazardous personal attire", value: "hazardous_personal_attire" },
-  { title: "Hazardous method or procedure", value: "hazardous_method_or_procedure" },
-  { title: "Hazardous design or procedure", value: "hazardous_design_or_procedure" },
-  { title: "Outside hazardous condition", value: "outside_hazardous_condition" },
-  { title: "Slippery surface", value: "slippery_surface" },
-  { title: "Improperly labelled or identified", value: "improperly_labelled_or_identified" },
-  { title: "Defective tools, equipment or materials", value: "defective_tools_equipment_materials" },
-  { title: "Congestion", value: "congestion" },
-  { title: "Inadequate warning", value: "inadequate_warning" },
-  { title: "Poor housekeeping", value: "poor_housekeeping" },
-  { title: "Noise exposure", value: "noise_exposure" },
-  { title: "Radiation exposures", value: "radiation_exposures" },
-  { title: "High or low temperature exposures", value: "high_low_temperature_exposures" },
-  { title: "Improper ventilation", value: "improper_ventilation" },
-];
+  { title: "Improper guard/ barrier", subtitle: "Condition", value: "improper_guard_barrier" },
+  { title: "Inadequate visibility", subtitle: "Condition", value: "inadequate_visibility" },
+  { title: "Fire, explosion, atmospheric hazard", subtitle: "Condition", value: "fire_explosion_atmospheric_hazard" },
+  { title: "Hazardous personal attire", subtitle: "Condition", value: "hazardous_personal_attire" },
+  { title: "Hazardous method or procedure", subtitle: "Condition", value: "hazardous_method_or_procedure" },
+  { title: "Hazardous design or procedure", subtitle: "Condition", value: "hazardous_design_or_procedure" },
+  { title: "Outside hazardous condition", subtitle: "Condition", value: "outside_hazardous_condition" },
+  { title: "Slippery surface", subtitle: "Condition", value: "slippery_surface" },
+  { title: "Improperly labelled or identified", subtitle: "Condition", value: "improperly_labelled_or_identified" },
+  {
+    title: "Defective tools, equipment or materials",
+    subtitle: "Condition",
+    value: "defective_tools_equipment_materials",
+  },
+  { title: "Congestion", subtitle: "Condition", value: "congestion" },
+  { title: "Inadequate warning", subtitle: "Condition", value: "inadequate_warning" },
+  { title: "Poor housekeeping", subtitle: "Condition", value: "poor_housekeeping" },
+  { title: "Noise exposure", subtitle: "Condition", value: "noise_exposure" },
+  { title: "Radiation exposures", subtitle: "Condition", value: "radiation_exposures" },
+  { title: "High or low temperature exposures", subtitle: "Condition", value: "high_low_temperature_exposures" },
+  { title: "Improper ventilation", subtitle: "Condition", value: "improper_ventilation" },
+]);
+
 const hasAllRequiredCauses = computed(() => {
-  return acts.value.length > 0 || conditions.value.length > 0;
+  return !isNil(acts.value);
 });
 
 const factors = ref([]);
@@ -360,30 +371,39 @@ function close() {
   step.value = 0;
 }
 async function save() {
+  showOverlay();
+
   const userStore = useUserStore();
   const { user } = userStore;
 
-  for (let item of acts.value) {
-    console.log("ACT", item);
+  const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
+  const eventInfo = eventOptions.filter((o) => events.value.includes(o.value));
 
-    await saveAction({
-      description: `REMEDIATE Acting/Practice: ${item.title}`,
-      actor_user_id: user.id,
-      actor_user_email: user.email,
-      actor_display_name: user.display_name,
-    });
-  }
-  for (let item of conditions.value) {
-    console.log("COND", item);
-    await saveAction({
-      description: `REMEDIATE Condition: ${item.title}`,
-      actor_user_id: user.id,
-      actor_user_email: user.email,
-      actor_display_name: user.display_name,
-    });
-  }
+  const investigation = {
+    incident_id: props.incidentId,
+    investigation_data: {
+      collections_other: collections_other.value,
+      collections: collectionInfo,
+      events: eventInfo,
+      incidents_other: incidents_other.value,
+      incidents: incidents.value,
+      acts: acts.value,
+      factors: factors.value,
+      causes: causes.value,
+    },
+  };
+
+  await saveInvestigation(investigation);
+
+  await saveAction({
+    description: `REMEDIATE Acting/Practice: ${acts.value.title}`,
+    actor_user_id: user.id,
+    actor_user_email: user.email,
+    actor_display_name: user.display_name,
+  });
+
   for (let item of factors.value) {
-    console.log("FACTOR", item);
+    //console.log("FACTOR", item);
     await saveAction({
       description: `REMEDIATE Contributing Factor: ${item.title}`,
       actor_user_id: user.id,
@@ -392,7 +412,7 @@ async function save() {
     });
   }
   for (let item of causes.value) {
-    console.log("CAUSE", item);
+    //console.log("CAUSE", item);
     await saveAction({
       description: `REMEDIATE Root Cause: ${item.title}`,
       actor_user_id: user.id,
@@ -404,5 +424,6 @@ async function save() {
   emits("complete");
   emits("close");
   //step.value = 0;
+  hideOverlay();
 }
 </script>

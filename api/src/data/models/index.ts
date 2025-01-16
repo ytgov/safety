@@ -18,6 +18,7 @@ export { Incident } from "./incident-model";
 export { IncidentStatus, IncidentStatuses } from "./incident-status-model";
 export { IncidentStep } from "./incident-step-model";
 export { IncidentType } from "./incident-type-model";
+export { Investigation } from "./investigation-model";
 export { Location } from "./location-model";
 export { Report } from "./report-model";
 export { RoleLog } from "./role-log-model";

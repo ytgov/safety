@@ -292,6 +292,22 @@ export const useReportStore = defineStore("reports", {
 
       window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
     },
+
+    saveInvestigation(investigation: any) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+
+      return api
+        .secureCall("post", `${REPORTS_URL}/${reportId}/investigation`, investigation)
+        .then((resp) => {
+          if (this.selectedReport) this.loadReport(reportId);
+        })
+        .catch(() => {
+          console.log(`Error in deleteAction /${reportId}/investigation`);
+        });
+    },
   },
 });
 
