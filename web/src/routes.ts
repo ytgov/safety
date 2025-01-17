@@ -51,7 +51,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/components/inspection/CreateInspectionPage.vue"),
       },
 
-
+      {
+        path: "hazard-library",
+        component: () => import("@/components/hazard-library/HazardListPage.vue"),
+      },
 
       {
         path: "sign-in",

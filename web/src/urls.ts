@@ -14,3 +14,4 @@ export const DEPARTMENT_URL = `${config.apiBaseUrl}/api/department`;
 export const ROLE_URL = `${config.apiBaseUrl}/api/role`;
 export const LOCATION_URL = `${config.apiBaseUrl}/api/location`;
 export const ATTACHMENT_URL = `${config.apiBaseUrl}/api/attachment`;
+export const HAZARD_URL = `${config.apiBaseUrl}/api/hazard`;
