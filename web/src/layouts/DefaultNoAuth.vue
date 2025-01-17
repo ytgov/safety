@@ -19,6 +19,12 @@
           </template>
 
           <v-list density="compact">
+            <v-list-item to="/hazard-library">
+              <template v-slot:prepend>
+                <v-icon>mdi-hazard-lights</v-icon>
+              </template>
+              <v-list-item-title style="font-size: 0.9rem !important">Hazard Library</v-list-item-title>
+            </v-list-item>
             <v-list-item to="/administration" v-if="isSystemAdmin">
               <template v-slot:prepend>
                 <v-icon>mdi-account-cog</v-icon>
