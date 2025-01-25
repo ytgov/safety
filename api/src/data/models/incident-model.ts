@@ -21,6 +21,8 @@ export interface Incident {
   reported_at: Date | Knex.Raw<any>;
   urgency_code: string;
   investigation_notes?: string;
+  location_code?: string;
+  location_detail?: string;
 
   attachments?: any[];
   steps?: IncidentStep[];

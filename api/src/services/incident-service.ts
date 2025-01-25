@@ -22,12 +22,14 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
+      .innerJoin("locations", "incidents.location_code", "locations.code")
       .select<Incident>(
         "incidents.*",
         "incident_types.name as incident_type_name",
         "incident_types.description as incident_type_description",
         "incident_statuses.name as status_name",
-        "departments.name as department_name"
+        "departments.name as department_name",
+        "locations.name as location_name"
       )
       .first();
 
