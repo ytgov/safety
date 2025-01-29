@@ -4,7 +4,7 @@ import { Department, Urgencies } from "../models";
 export async function seed(knex: knex.Knex) {
   const locations = await knex<Department>("urgencies");
 
-  const toInsert = [Urgencies.LOW, Urgencies.MEDIUM, Urgencies.HIGH] as Array<Department>;
+  const toInsert = [Urgencies.LOW, Urgencies.MEDIUM, Urgencies.HIGH, Urgencies.CRITICAL] as Array<Department>;
 
   for (const item of toInsert) {
     if (locations.find((d) => d.code == item.code)) continue;

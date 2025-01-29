@@ -17,11 +17,12 @@ import {
   IncidentStep,
   Scopes,
   SensitivityLevels,
-  Urgencies,
+  User,
   UserRole,
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
 import { DateTime } from "luxon";
+import { all } from "axios";
 
 export const reportRouter = express.Router();
 const db = new IncidentService();
@@ -86,11 +87,20 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
   const trx = await knex.transaction();
 
   try {
-    await trx("actions").where({ incident_id: id }).delete();
+    const linkedHazards = await trx("incident_hazards").where({ incident_id: id });
     await trx("incident_hazards").where({ incident_id: id }).delete();
+
+    for (const link of linkedHazards) {
+      await trx("actions").where({ hazard_id: link.hazard_id }).delete();
+      await trx("hazards").where({ id: link.hazard_id }).delete();
+    }
+
+    await trx("actions").where({ incident_id: id }).delete();
     await trx("incident_attachments").where({ incident_id: id }).delete();
     await trx("incident_steps").where({ incident_id: id }).delete();
+    await trx("investigations").where({ incident_id: id }).delete();
     await trx("incidents").where({ id }).delete();
+
     trx.commit();
     return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Removed" }] });
   } catch (error) {
@@ -120,7 +130,6 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
   const reporting_person_email = on_behalf == "Yes" ? on_behalf_email : req.user.email;
 
-  const defaultHazardType = await knex("hazard_types").orderBy("id").select("id").first();
   const defaultIncidentType = await knex("incident_types").where({ name: eventType }).select("id").first();
   const department = await new DepartmentService().determineDepartment(
     reporting_person_email,
@@ -138,21 +147,6 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   const trx = await knex.transaction();
 
   try {
-    const hazard = {
-      hazard_type_id: defaultHazardType.id,
-      location_code,
-      department_code: department.code,
-      scope_code: Scopes.DEFAULT.code,
-      status_code: HazardStatuses.OPEN.code,
-      sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-      description,
-      location_detail,
-      reopen_count: 0,
-      created_at: InsertableDate(DateTime.utc().toISO()),
-      reported_at: InsertableDate(date),
-      urgency_code: urgency,
-    } as Hazard;
-
     const incident = {
       created_at: InsertableDate(DateTime.utc().toISO()),
       reported_at: InsertableDate(date),
@@ -166,27 +160,67 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       reporting_person_email,
       proxy_user_id: req.user.id,
       urgency_code: urgency,
+      location_code,
+      location_detail,
     } as Incident;
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");
-    const insertedHazards = await trx("hazards").insert(hazard).returning("*");
-
     let insertedIncidentId = insertedIncidents[0].id;
-    let insertedHazardId = insertedHazards[0].id;
-
-    const link = {
-      hazard_id: insertedHazardId,
-      incident_id: insertedIncidentId,
-      priority_order: 1,
-      incident_hazard_type_code: IncidentHazardTypes.CONTRIBUTING_FACTOR.code,
-    } as IncidentHazard;
-
-    await trx("incident_hazards").insert(link);
 
     let steps = new Array<string>();
 
     if (eventType == "hazard") {
       steps = ["Hazard Identified", "Assessment of Hazard", "Control the Hazard", "Employee Notification"];
+
+      let hazard_id = undefined;
+
+      const hazard = {
+        hazard_type_id: 1,
+        location_code: incident.location_code,
+        department_code: incident.department_code,
+        scope_code: Scopes.DEFAULT.code,
+        status_code: HazardStatuses.OPEN.code,
+        sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
+        description: `Hazard: ${description}`,
+        location_detail: incident.location_detail,
+        reopen_count: 0,
+        created_at: InsertableDate(DateTime.utc().toISO()),
+        reported_at: incident.reported_at,
+        urgency_code: "Low",
+      } as Hazard;
+
+      const insertedHazards = await trx("hazards").insert(hazard).returning("*");
+      hazard_id = insertedHazards[0].id;
+
+      const link = {
+        hazard_id: hazard_id,
+        incident_id: parseInt(insertedIncidentId),
+        priority_order: 1,
+        incident_hazard_type_code: IncidentHazardTypes.CONTRIBUTING_FACTOR.code,
+      } as IncidentHazard;
+
+      await trx("incident_hazards").insert(link);
+
+      const action = {
+        incident_id: parseInt(insertedIncidentId),
+        hazard_id,
+        created_at: InsertableDate(DateTime.utc().toISO()),
+        description: `Hazard: ${description}`,
+        action_type_code: ActionTypes.USER_GENERATED.code,
+        sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
+        status_code: ActionStatuses.OPEN.code,
+        actor_user_email: req.user.email,
+        actor_user_id: req.user.id,
+      } as Action;
+
+      await trx("actions").insert(action);
+      /* 
+      if (actor_user_email) {
+        await emailService.sendTaskAssignmentNotification(
+          { fullName: actor_display_name, email: actor_user_email },
+          action
+        );
+      } */
     } else {
       steps = ["Incident Reported", "Investigation", "Control Plan", "Controls Implemented", "Employee Notification"];
     }
@@ -288,6 +322,13 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
       if (step.step_title == "Investigation") {
         await knex("actions").where({ incident_id: id }).delete();
         await knex("investigations").where({ incident_id: id }).delete();
+
+        const linkedHazards = await knex("incident_hazards").where({ incident_id: id });
+        await knex("incident_hazards").where({ incident_id: id }).delete();
+
+        for (const link of linkedHazards) {
+          await knex("hazards").where({ id: link.hazard_id }).delete();
+        }
       }
     }
   }
@@ -310,13 +351,63 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
 
 reportRouter.post("/:id/action", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, notes, actor_user_email, actor_user_id, actor_display_name, actor_role_type_id, due_date } =
-    req.body;
+  const {
+    description,
+    notes,
+    actor_user_email,
+    actor_user_id,
+    actor_display_name,
+    actor_role_type_id,
+    due_date,
+    create_hazard,
+    hazard_type_id,
+    urgency_code,
+  } = req.body;
+
+  // create hazards here too!
+  const incident = await knex("incidents")
+    .innerJoin("incident_types", "incidents.incident_type_id", "incident_types.id")
+    .where({ "incidents.id": id })
+    .select("incidents.*", "incident_types.description as incident_type_description")
+    .first();
+  //const defaultIncidentType = await knex("incident_types").where({ name: eventType }).select("id").first();
+
+  let hazard_id = undefined;
+
+  if (create_hazard) {
+    const hazard = {
+      hazard_type_id: hazard_type_id,
+      location_code: incident.location_code,
+      department_code: incident.department_code,
+      scope_code: Scopes.DEFAULT.code,
+      status_code: HazardStatuses.OPEN.code,
+      sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
+      description: `${incident.incident_type_description} ${description}`,
+      location_detail: incident.location_detail,
+      reopen_count: 0,
+      created_at: InsertableDate(DateTime.utc().toISO()),
+      reported_at: incident.reported_at,
+      urgency_code: urgency_code,
+    } as Hazard;
+
+    const insertedHazards = await knex("hazards").insert(hazard).returning("*");
+    hazard_id = insertedHazards[0].id;
+
+    const link = {
+      hazard_id: hazard_id,
+      incident_id: parseInt(id),
+      priority_order: 1,
+      incident_hazard_type_code: IncidentHazardTypes.CONTRIBUTING_FACTOR.code,
+    } as IncidentHazard;
+
+    await knex("incident_hazards").insert(link);
+  }
 
   const action = {
     incident_id: parseInt(id),
+    hazard_id,
     created_at: InsertableDate(DateTime.utc().toISO()),
-    description,
+    description: `${incident.incident_type_description.replace(/\(.*\)/g, "")} ${description}`,
     notes,
     action_type_code: ActionTypes.USER_GENERATED.code,
     sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
@@ -340,11 +431,11 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
 });
 
 reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
-  const { id, action_id } = req.params;
-  const { description, notes, actor_user_email, actor_role_type_id, due_date, status_code } = req.body;
+  const { action_id } = req.params;
+  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code } = req.body;
   let { actor_user_id } = req.body;
 
-  const action = await knex("actions").where({ incident_id: id, id: action_id }).first();
+  const action = await knex("actions").where({ id: action_id }).first();
   if (!action) return res.status(404).send();
 
   if (!isEmpty(actor_user_email)) {
@@ -355,7 +446,6 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
   await knex("actions")
     .where({ id: action_id })
     .update({
-      description,
       notes,
       actor_user_email,
       actor_user_id,
@@ -364,43 +454,130 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
       status_code,
     });
 
-  return res.json({ data: {} });
-});
-
-reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
-  const { id, action_id } = req.params;
-
-  await knex("actions").where({ incident_id: id, id: action_id }).delete();
+  await updateActionHazards(action, status_code, urgency_code);
+  await updateIncidentStatus(action, req.user);
 
   return res.json({ data: {} });
 });
 
 reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
-  const { id, action_id } = req.params;
+  const { action_id } = req.params;
 
-  await knex("actions").where({ incident_id: id, id: action_id }).delete();
+  await knex("actions").where({ id: action_id }).delete();
+
+  return res.json({ data: {} });
+});
+
+reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
+  const { action_id } = req.params;
+
+  await knex("actions").where({ id: action_id }).delete();
 
   return res.json({ data: {} });
 });
 
 reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: Response) => {
-  const { id, action_id, operation } = req.params;
+  const { action_id, operation } = req.params;
+
+  const action = await knex("actions").where({ id: action_id }).first();
+  if (!action) return res.status(404).send();
 
   if (operation == "complete") {
     await knex("actions")
-      .where({ incident_id: id, id: action_id })
+      .where({ id: action_id })
       .update({
         complete_date: InsertableDate(DateTime.utc().toISO()),
         complete_name: req.user.display_name,
         complete_user_id: req.user.id,
+        status_code: ActionStatuses.COMPLETE.code,
       });
+
+    await updateActionHazards(action, ActionStatuses.COMPLETE.code, action.urgency_code);
+    await updateIncidentStatus(action, req.user);
   } else if (operation == "revert") {
-    await knex("actions").where({ incident_id: id, id: action_id }).update({
+    await knex("actions").where({ id: action_id }).update({
       complete_date: null,
       complete_name: null,
       complete_user_id: null,
+      status_code: ActionStatuses.READY.code,
     });
+
+    await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code);
+    await updateIncidentStatus(action, req.user);
   }
 
   return res.json({ data: {} });
 });
+
+async function updateActionHazards(action: Action, status_code: string, urgency_code: string) {
+  let hazardStatus = HazardStatuses.OPEN.code;
+
+  if (status_code == ActionStatuses.READY.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
+  if (status_code == ActionStatuses.COMPLETE.code) hazardStatus = HazardStatuses.REMEDIATED.code;
+
+  const hazards = await knex("hazards").where({ id: action.hazard_id });
+
+  for (const hazard of hazards) {
+    await knex("hazards").where({ id: hazard.id }).update({ urgency_code, status_code: hazardStatus });
+  }
+}
+
+export async function updateIncidentStatus(action: Action, user: User) {
+  if (action.incident_id) {
+    const allActions = await knex("actions").where({ incident_id: action.incident_id });
+
+    let allComplete = true;
+    let allReady = true;
+
+    for (const act of allActions) {
+      if (act.status_code == ActionStatuses.OPEN.code) {
+        allReady = false;
+        allComplete = false;
+        break;
+      }
+      if (act.status_code != ActionStatuses.COMPLETE.code) allComplete = false;
+    }
+
+    const steps = await knex("incident_steps").where({ incident_id: action.incident_id }).orderBy("order");
+    const completeStepNames = ["Controls Implemented", "Control the Hazard"];
+    const readyStepNames = ["Control Plan", "Assessment of Hazard"];
+
+    for (const step of steps) {
+      if (completeStepNames.includes(step.step_title)) {
+        if (allComplete && !step.complete_date) {
+          await knex("incident_steps")
+            .where({ incident_id: action.incident_id, id: step.id })
+            .update({
+              complete_date: InsertableDate(DateTime.utc().toISO()),
+              complete_name: user.display_name,
+              complete_user_id: user.id,
+            });
+        } else if (!allComplete && step.complete_date) {
+          await knex("incident_steps").where({ incident_id: action.incident_id, id: step.id }).update({
+            complete_date: null,
+            complete_name: null,
+            complete_user_id: null,
+          });
+        }
+      }
+
+      if (readyStepNames.includes(step.step_title)) {
+        if (allReady && !step.complete_date) {
+          await knex("incident_steps")
+            .where({ incident_id: action.incident_id, id: step.id })
+            .update({
+              complete_date: InsertableDate(DateTime.utc().toISO()),
+              complete_name: user.display_name,
+              complete_user_id: user.id,
+            });
+        }
+      } else if (!allReady && step.complete_date) {
+        await knex("incident_steps").where({ incident_id: action.incident_id, id: step.id }).update({
+          complete_date: null,
+          complete_name: null,
+          complete_user_id: null,
+        });
+      }
+    }
+  }
+}

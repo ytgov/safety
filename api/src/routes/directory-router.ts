@@ -64,6 +64,31 @@ directoryRouter.post("/search-action-directory-email", async (req: Request, res:
 
   await directoryService.connect();
   const allUsers = await knex("users").where({ email: terms });
+
+  if (allUsers.length == 1) {
+    const nonDirectoryUser = allUsers[0];
+
+    return res.json({
+      data: [
+        {
+          display_name: `${nonDirectoryUser.first_name} ${nonDirectoryUser.last_name}`,
+          first_name: nonDirectoryUser.first_name,
+          last_name: nonDirectoryUser.last_name,
+          ynet_id: nonDirectoryUser.ynet_id,
+          email: nonDirectoryUser.email,
+          long_name: `${nonDirectoryUser.first_name} ${nonDirectoryUser.last_name} (${nonDirectoryUser.email}) ${nonDirectoryUser.department} : ${nonDirectoryUser.title}`,
+          title: nonDirectoryUser.title,
+          department: nonDirectoryUser.department,
+          officeLocation: nonDirectoryUser.officeLocation,
+          userPrincipalName: nonDirectoryUser.userPrincipalName,
+          user_id: nonDirectoryUser.id,
+        },
+      ],
+    });
+  }
+
+  console.log("Searching directory for", terms);
+
   const data = await directoryService.searchByEmail(terms);
 
   if (data.length > 0) {

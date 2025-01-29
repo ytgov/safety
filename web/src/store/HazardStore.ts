@@ -2,12 +2,14 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
 import { HAZARD_URL, LOCATION_URL } from "@/urls";
 import { Location, Urgency } from "./ReportStore";
+import { isEmpty, isNil } from "lodash";
 
 export const useHazardStore = defineStore("hazards", {
   state: () => ({
     locations: [] as Location[],
     urgencies: [] as Urgency[],
     hazards: [] as Hazard[],
+    totalCount: 0,
     selectedHazard: null as Hazard | null,
     isLoading: false,
   }),
@@ -18,7 +20,7 @@ export const useHazardStore = defineStore("hazards", {
 
       await this.loadLocations();
       await this.loadUrgency();
-      await this.loadHazards();
+      //await this.loadHazards();
     },
 
     async loadLocations() {
@@ -31,18 +33,41 @@ export const useHazardStore = defineStore("hazards", {
 
     async loadUrgency() {
       this.urgencies = [
+        { code: "Critical", name: "Critical" },
         { code: "High", name: "High" },
         { code: "Medium", name: "Medium" },
         { code: "Low", name: "Low" },
       ];
     },
 
-    async loadHazards() {
+    async loadHazards({
+      page,
+      perPage,
+      search,
+      status,
+      urgency,
+      location,
+    }: {
+      page: number | null;
+      perPage: number | null;
+      search: string | null;
+      status: string | null;
+      urgency: string | null;
+      location: string | null;
+    }) {
       this.isLoading = true;
       const api = useApiStore();
 
-      return api.secureCall("get", HAZARD_URL).then((resp) => {
+      let queryUrl = `${HAZARD_URL}?page=${page}&perPage=${perPage}&`;
+
+      if (!isEmpty(search)) queryUrl += `search=${search}&`;
+      if (!isNil(status)) queryUrl += `status=${status}&`;
+      if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
+      if (!isNil(location)) queryUrl += `location=${location}&`;
+
+      return api.secureCall("get", queryUrl).then((resp) => {
         this.hazards = resp.data;
+        this.totalCount = resp.totalCount;
         this.isLoading = false;
         return resp.data;
       });

@@ -31,6 +31,17 @@ a {
   color: #323232;
 }
 
+.v-main .v-data-table-footer .v-btn {
+  text-transform: none;
+  color: black !important;
+  /* border: 1px #000 solid !important; */
+  text-decoration: none;
+  margin: 15px 0;
+  box-shadow: none;
+  font-size: 16px;
+  font-weight: 400;
+}
+
 .v-main .v-btn,
 .v-dialog__content .v-btn {
   text-transform: none;
@@ -143,7 +154,7 @@ ul.v-breadcrumbs {
   color: #9b1b27 !important;
 }
 .text-warning {
-  color: #Fb8C00 !important;
+  color: #fb8c00 !important;
 }
 
 .v-btn.v-size--small {
