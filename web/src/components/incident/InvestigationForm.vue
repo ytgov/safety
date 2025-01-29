@@ -395,29 +395,42 @@ async function save() {
 
   await saveInvestigation(investigation);
 
+  const urgency_code = "Low";
+  const hazard_type_id = 1;
+  const create_hazard = true;
+
   await saveAction({
-    description: `REMEDIATE Acting/Practice: ${acts.value.title}`,
+    description: `Acting/Practice: ${acts.value.title}`,
     actor_user_id: user.id,
     actor_user_email: user.email,
     actor_display_name: user.display_name,
+    urgency_code,
+    hazard_type_id,
+    create_hazard,
   });
 
   for (let item of factors.value) {
     //console.log("FACTOR", item);
     await saveAction({
-      description: `REMEDIATE Contributing Factor: ${item.title}`,
+      description: `Contributing Factor: ${item.title}`,
       actor_user_id: user.id,
       actor_user_email: user.email,
       actor_display_name: user.display_name,
+      urgency_code,
+      hazard_type_id,
+      create_hazard,
     });
   }
   for (let item of causes.value) {
     //console.log("CAUSE", item);
     await saveAction({
-      description: `REMEDIATE Root Cause: ${item.title}`,
+      description: `Root Cause: ${item.title}`,
       actor_user_id: user.id,
       actor_user_email: user.email,
       actor_display_name: user.display_name,
+      urgency_code,
+      hazard_type_id,
+      create_hazard,
     });
   }
 

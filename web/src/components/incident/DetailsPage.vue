@@ -94,6 +94,12 @@
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
+              <v-label class="mb-1" style="white-space: inherit">General location</v-label>
+              <v-text-field v-model="selectedReport.location_name" readonly append-inner-icon="mdi-lock" />
+
+              <v-label class="mb-1" style="white-space: inherit">Specific location</v-label>
+              <v-text-field v-model="selectedReport.location_detail" readonly append-inner-icon="mdi-lock" />
+
               <div v-if="selectedReport.attachments && selectedReport.attachments.length > 0">
                 <v-label>Supporting images</v-label>
 
@@ -132,14 +138,14 @@
             </v-card-text>
           </v-card>
 
-          <v-card class="default">
+          <!-- <v-card class="default">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <h4 class="text-h6">Hazards</h4>
             </v-card-item>
             <v-card-text class="pt-2">
               <HazardList></HazardList>
             </v-card-text>
-          </v-card>
+          </v-card> -->
         </v-col>
 
         <v-col>
@@ -154,10 +160,12 @@
                 <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" />
 
                 <v-label class="mb-1" style="white-space: inherit">Additional information (from employee)</v-label>
-                <v-textarea v-model="selectedReport.additional_description" />
+                <v-textarea v-model="selectedReport.additional_description" hide-details />
 
-                <v-label class="mb-1" style="white-space: inherit">Investigator commemts</v-label>
-                <v-textarea v-model="selectedReport.investigation_notes" hide-details />
+                <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-5">
+                  <v-label class="mb-1" style="white-space: inherit">Investigator commemts</v-label>
+                  <v-textarea v-model="selectedReport.investigation_notes" hide-details />
+                </div>
               </v-col>
 
               <v-col cols="12" md="12">
@@ -231,36 +239,6 @@ const showInvestigationDialog = ref(false);
 const showActionAdd = ref(false);
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
-
-/* const tickLabels = {
-  0: "Low",
-  1: "Medium",
-  2: "High",
-};
-
-const urgencyColor = computed(() => {
-  if (!selectedReport.value) return 0;
-  switch (selectedReport.value.urgency_code) {
-    case "Medium":
-      return "warning";
-    case "High":
-      return "error";
-    default:
-      return "success";
-  }
-});
-
-const urgencyLevel = computed(() => {
-  if (!selectedReport.value) return 0;
-  switch (selectedReport.value.urgency_code) {
-    case "Medium":
-      return 1;
-    case "High":
-      return 2;
-    default:
-      return 0;
-  }
-}); */
 
 setTimeout(() => {
   let list = document.getElementsByClassName("v-stepper-item");

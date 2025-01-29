@@ -3,8 +3,7 @@
     <template #default>
       <v-card v-if="props.action">
         <v-toolbar color="primary" density="comfortable">
-          <v-toolbar-title class="text-white" style="">Edit Task in Control Plan</v-toolbar-title>
-          <v-spacer> </v-spacer>
+          <v-toolbar-title class="text-white" style="">{{ action.description }}</v-toolbar-title>
           <v-toolbar-items>
             <v-btn icon="mdi-close" @click="closeClick"></v-btn>
           </v-toolbar-items>
@@ -312,6 +311,11 @@ function closeClick() {
 
 async function saveClick() {
   props.action.status_code = "Ready";
+  props.action.urgency_code = riskPriority.value;
+  //props.action.hazard_type_id =
+
+  console.log("CALLING SAVE ACTION", props.action);
+
   await saveAction(props.action).then(() => {
     closeClick();
   });

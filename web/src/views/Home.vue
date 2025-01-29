@@ -1,5 +1,5 @@
 <template>
-  <h1 class="text-h4">YG Safety Portal</h1>
+  <h1 class="text-h4">Safety Portal</h1>
 
   <p class="text-h6 mb-8">
     This portal is managed by PSC and used by all YG staff to submit and track Health, Safety and Wellbeing hazards,

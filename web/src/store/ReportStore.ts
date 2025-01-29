@@ -44,6 +44,7 @@ export const useReportStore = defineStore("reports", {
 
     async loadUrgency() {
       this.urgencies = [
+        { code: "Critical", name: "Critical" },
         { code: "High", name: "High" },
         { code: "Medium", name: "Medium" },
         { code: "Low", name: "Low" },
@@ -207,8 +208,8 @@ export const useReportStore = defineStore("reports", {
     },
 
     async saveAction(action: any) {
-      if (!this.selectedReport) return;
-      let reportId = this.selectedReport.id;
+      //if (!this.selectedReport) return;
+      let reportId = this.selectedReport?.id ?? -1;
 
       const api = useApiStore();
 
@@ -216,7 +217,7 @@ export const useReportStore = defineStore("reports", {
         return api
           .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}`, action)
           .then((resp) => {
-            if (this.selectedReport) this.loadReport(reportId);
+            if (reportId != -1) this.loadReport(reportId);
           })
           .catch(() => {
             console.log(`Error in completeStep /${reportId}/action/${action.id}`);
@@ -225,7 +226,7 @@ export const useReportStore = defineStore("reports", {
         return api
           .secureCall("post", `${REPORTS_URL}/${reportId}/action`, action)
           .then((resp) => {
-            if (this.selectedReport) this.loadReport(reportId);
+            if (reportId != -1) this.loadReport(reportId);
           })
           .catch(() => {
             console.log(`Error in saveAction /${reportId}/action/${action.id}`);
@@ -293,7 +294,7 @@ export const useReportStore = defineStore("reports", {
       window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
     },
 
-    saveInvestigation(investigation: any) {
+    async saveInvestigation(investigation: any) {
       if (!this.selectedReport) return;
       let reportId = this.selectedReport.id;
 
@@ -303,6 +304,7 @@ export const useReportStore = defineStore("reports", {
         .secureCall("post", `${REPORTS_URL}/${reportId}/investigation`, investigation)
         .then((resp) => {
           if (this.selectedReport) this.loadReport(reportId);
+          return this.selectedReport;
         })
         .catch(() => {
           console.log(`Error in deleteAction /${reportId}/investigation`);
