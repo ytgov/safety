@@ -70,6 +70,14 @@
                 Serious Incident (as per WSCA)
               </template>
             </v-checkbox>
+
+            <v-alert v-if="showWCBLink" type="warning" class="mt-5">
+              Events of this type should also be reported to WSCB via the
+              <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
+              <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank" style="text-decoration: underline"
+                >https://www.wcb.yk.ca/web-0063/f-0036
+              </a>
+            </v-alert>
           </v-card-text>
         </v-window-item>
         <v-window-item :value="2">
@@ -205,6 +213,11 @@ const eventOptions = [
 ];
 const hasAllRequiredEvents = computed(() => {
   return events.value.length > 0;
+});
+
+const showWCBLink = computed(() => {
+  const linkItems = ["medical_aid", "serious"];
+  return events.value.filter((e) => linkItems.includes(e)).length > 0;
 });
 
 const incidents_other = ref("");
