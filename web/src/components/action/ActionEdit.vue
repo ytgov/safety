@@ -193,6 +193,13 @@
               <!-- <a @click="setMe" class="cursor-pointer text-info">Me</a> -->
             </v-col>
             <v-col cols="12">
+
+              <v-label>Hierarchy of Controls</v-label>
+            </v-col>
+
+
+
+            <v-col cols="12">
               <v-label>Task</v-label>
               <v-text-field v-model="props.action.description" hide-details />
             </v-col>

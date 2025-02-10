@@ -1,7 +1,7 @@
 <template>
   <v-card class="default mb-5" v-if="mySupervisorReports && mySupervisorReports.length > 0">
     <v-card-text>
-      <h4 class="text-h5 mb-4">Supervior Reports</h4>
+      <h4 class="text-h5 mb-4">Supervisory Reports</h4>
 
       <v-list
         v-if="mySupervisorReports && mySupervisorReports.length > 0"
