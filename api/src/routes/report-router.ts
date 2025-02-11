@@ -432,7 +432,7 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
   const { action_id } = req.params;
-  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code } = req.body;
+  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code, control } = req.body;
   let { actor_user_id } = req.body;
 
   const action = await knex("actions").where({ id: action_id }).first();
@@ -452,9 +452,10 @@ reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) =
       actor_role_type_id,
       due_date: InsertableDate(due_date),
       status_code,
+      control,
     });
 
-  await updateActionHazards(action, status_code, urgency_code);
+  await updateActionHazards(action, status_code, urgency_code, control);
   await updateIncidentStatus(action, req.user);
 
   return res.json({ data: {} });
@@ -478,9 +479,12 @@ reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response
 
 reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: Response) => {
   const { action_id, operation } = req.params;
+  const { control, notes } = req.body;
 
   const action = await knex("actions").where({ id: action_id }).first();
   if (!action) return res.status(404).send();
+
+  console.log(operation, control);
 
   if (operation == "complete") {
     await knex("actions")
@@ -490,9 +494,11 @@ reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: 
         complete_name: req.user.display_name,
         complete_user_id: req.user.id,
         status_code: ActionStatuses.COMPLETE.code,
+        control,
+        notes,
       });
 
-    await updateActionHazards(action, ActionStatuses.COMPLETE.code, action.urgency_code);
+    await updateActionHazards(action, ActionStatuses.COMPLETE.code, action.urgency_code, control);
     await updateIncidentStatus(action, req.user);
   } else if (operation == "revert") {
     await knex("actions").where({ id: action_id }).update({
@@ -500,16 +506,17 @@ reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: 
       complete_name: null,
       complete_user_id: null,
       status_code: ActionStatuses.READY.code,
+      control: null,
     });
 
-    await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code);
+    await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code, null);
     await updateIncidentStatus(action, req.user);
   }
 
   return res.json({ data: {} });
 });
 
-async function updateActionHazards(action: Action, status_code: string, urgency_code: string) {
+async function updateActionHazards(action: Action, status_code: string, urgency_code: string, control?: string | null) {
   let hazardStatus = HazardStatuses.OPEN.code;
 
   if (status_code == ActionStatuses.READY.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
@@ -518,7 +525,7 @@ async function updateActionHazards(action: Action, status_code: string, urgency_
   const hazards = await knex("hazards").where({ id: action.hazard_id });
 
   for (const hazard of hazards) {
-    await knex("hazards").where({ id: hazard.id }).update({ urgency_code, status_code: hazardStatus });
+    await knex("hazards").where({ id: hazard.id }).update({ urgency_code, status_code: hazardStatus, control });
   }
 }
 

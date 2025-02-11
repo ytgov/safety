@@ -193,19 +193,25 @@
               <!-- <a @click="setMe" class="cursor-pointer text-info">Me</a> -->
             </v-col>
             <v-col cols="12">
-
               <v-label>Hierarchy of Controls</v-label>
+              <v-select
+                v-model="props.action.control"
+                :items="controlOptions"
+                :readonly="!isNil(props.action.complete_date)"
+                :item-props="true"
+                hide-details />
             </v-col>
-
-
 
             <v-col cols="12">
               <v-label>Task</v-label>
-              <v-text-field v-model="props.action.description" hide-details />
+              <v-text-field
+                v-model="props.action.description"
+                :readonly="!isNil(props.action.complete_date)"
+                hide-details />
             </v-col>
             <v-col cols="12">
               <v-label>Notes</v-label>
-              <v-textarea v-model="props.action.notes" rows="3" />
+              <v-textarea v-model="props.action.notes" :readonly="!isNil(props.action.complete_date)" rows="3" />
             </v-col>
 
             <!--
@@ -217,15 +223,17 @@
           </v-row>
           <!-- <v-btn color="primary" :disabled="!canSave" @click="saveClick">Save</v-btn> -->
           <div class="d-flex">
-            <v-btn v-if="props.action.complete_date" color="info" @click="revertClick"
+            <v-btn v-if="!isNil(props.action.complete_date)" color="info" @click="revertClick"
               ><v-icon class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn
             >
-            <v-btn v-else color="success" @click="completeClick"
+            <v-btn v-else :disabled="!canComplete" color="success" @click="completeClick"
               ><v-icon class="mr-2">mdi-check</v-icon> Mark Complete</v-btn
             >
 
             <v-spacer />
-            <v-btn color="warning" @click="deleteClick"><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn>
+            <v-btn v-if="isSystemAdmin" color="warning" @click="deleteClick"
+              ><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn
+            >
           </div>
         </v-card-text>
       </v-card>
@@ -252,7 +260,7 @@ const directorySelectorField = ref(null);
 const dater = ref(null);
 
 const userStore = useUserStore();
-const { user } = storeToRefs(userStore);
+const { user, isSystemAdmin } = storeToRefs(userStore);
 
 const reportStore = useReportStore();
 const { saveAction, deleteAction, completeAction, revertAction } = reportStore;
@@ -308,6 +316,30 @@ const today = computed(() => {
   return formatDate(DateTime.now().toISODate());
 });
 
+const controlOptions = ref([
+  { title: "Eliminate", value: "Eliminate", subtitle: "Remove hazard or redesign process so hazard does not exist" },
+  {
+    title: "Substitute",
+    value: "Substitute",
+    subtitle: "Substitute hazard with something of a lesser risk (replace ladder with scissor lift)",
+  },
+  { title: "Engineering", value: "Engineering", subtitle: "Control hazard through isolation (machine guarding)" },
+  {
+    title: "Administration",
+    value: "Administration",
+    subtitle: "Control hazard by influencing people (saftety procedures, signs, training)",
+  },
+  {
+    title: "Personal Protective Equipment",
+    value: "Personal Protective Equipment",
+    subtitle: "Control hazard by use of PPE (respirator, hard hat, hearing protection)",
+  },
+]);
+
+const canComplete = computed(() => {
+  return !isNil(props.action.control);
+});
+
 function closeClick() {
   categories.value = [];
   riskPriority.value = null;
@@ -319,9 +351,6 @@ function closeClick() {
 async function saveClick() {
   props.action.status_code = "Ready";
   props.action.urgency_code = riskPriority.value;
-  //props.action.hazard_type_id =
-
-  console.log("CALLING SAVE ACTION", props.action);
 
   await saveAction(props.action).then(() => {
     closeClick();
