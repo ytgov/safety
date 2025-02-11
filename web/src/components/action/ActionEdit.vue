@@ -211,7 +211,18 @@
             </v-col>
             <v-col cols="12">
               <v-label>Notes</v-label>
-              <v-textarea v-model="props.action.notes" :readonly="!isNil(props.action.complete_date)" rows="3" />
+              <v-textarea
+                v-model="props.action.notes"
+                :readonly="!isNil(props.action.complete_date)"
+                rows="3"
+                hide-details />
+            </v-col>
+            <v-col v-if="!isNil(props.action.complete_name)" cols="12">
+              <v-label>Completed</v-label>
+              <v-text-field
+                :model-value="`By: ${props.action.complete_name} On: ${formatDate(props.action.complete_date)}`"
+                readonly
+                hide-details />
             </v-col>
 
             <!--
@@ -222,7 +233,7 @@
           -->
           </v-row>
           <!-- <v-btn color="primary" :disabled="!canSave" @click="saveClick">Save</v-btn> -->
-          <div class="d-flex">
+          <div class="d-flex mt-5">
             <v-btn v-if="!isNil(props.action.complete_date)" color="info" @click="revertClick"
               ><v-icon class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn
             >
@@ -260,7 +271,7 @@ const directorySelectorField = ref(null);
 const dater = ref(null);
 
 const userStore = useUserStore();
-const { user, isSystemAdmin } = storeToRefs(userStore);
+const { isSystemAdmin } = storeToRefs(userStore);
 
 const reportStore = useReportStore();
 const { saveAction, deleteAction, completeAction, revertAction } = reportStore;
