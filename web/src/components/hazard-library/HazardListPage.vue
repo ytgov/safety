@@ -18,7 +18,7 @@
           <HazardStatusSelect v-model="status" label="Status" clearable />
         </v-col>
         <v-col cols="12" md="3">
-          <HazardUrgencySelect v-model="urgency" label="Ugency" clearable />
+          <HazardUrgencySelect v-model="urgency" label="Urgency" clearable />
         </v-col>
         <v-col cols="12" md="3">
           <LocationSelect v-model="location" label="Location" clearable />
