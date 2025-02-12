@@ -1,19 +1,21 @@
 <template>
   <v-card class="default mb-5" v-if="mySupervisorReports && mySupervisorReports.length > 0">
     <v-card-text>
-      <h4 class="text-h5 mb-4">Supervior Reports</h4>
+      <h4 class="text-h5 mb-4">Supervisory Reports</h4>
 
       <v-list
         v-if="mySupervisorReports && mySupervisorReports.length > 0"
-        bg-color="#ddd"
+        bg-color="#fff"
+        class="py-0"
         style="border: 1px #aaa solid"
         rounded>
         <div v-for="(report, idx) of mySupervisorReports">
           <v-list-item
             :title="makeTitle(report)"
             :subtitle="makeSubtitle(report)"
+            class="pt-1 pb-2"
             @click="openReportClick(report)"></v-list-item>
-          <v-divider v-if="idx < mySupervisorReports.length - 1" class="mt-2 mb-1" />
+          <v-divider v-if="idx < mySupervisorReports.length - 1" />
         </div>
       </v-list>
 

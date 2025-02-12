@@ -1,6 +1,6 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
-import { HAZARD_URL, LOCATION_URL } from "@/urls";
+import { ATTACHMENT_URL, HAZARD_URL, LOCATION_URL } from "@/urls";
 import { Location, Urgency } from "./ReportStore";
 import { isEmpty, isNil } from "lodash";
 
@@ -11,6 +11,7 @@ export const useHazardStore = defineStore("hazards", {
     hazards: [] as Hazard[],
     totalCount: 0,
     selectedHazard: null as Hazard | null,
+    attachments: [] as any[],
     isLoading: false,
   }),
   getters: {},
@@ -75,6 +76,32 @@ export const useHazardStore = defineStore("hazards", {
 
     select(item: Hazard) {
       this.selectedHazard = item;
+    },
+
+    loadAttachments(hazardId: number) {
+      const api = useApiStore();
+      return api.secureCall("get", `${HAZARD_URL}/${hazardId}/attachments`).then((resp) => {
+        this.attachments = resp.data;
+        return resp.data;
+      });
+    },
+
+    upload(hazardId: number, files: any[]) {
+      this.isLoading = true;
+      const api = useApiStore();
+
+      const formData = new FormData();
+      for (const file of files || []) {
+        formData.append("files", file);
+      }
+
+      return api.secureUpload("post", `${HAZARD_URL}/${hazardId}/attachments`, formData).finally(() => {
+        this.isLoading = false;
+      });
+    },
+
+    openAttachment(attachment: any) {
+      window.open(`${ATTACHMENT_URL}/hazard/${attachment.hazard_id}/attachment/${attachment.id}`);
     },
   },
 });

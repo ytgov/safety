@@ -122,8 +122,6 @@
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
-                <!-- <v-spacer />
-                <v-btn size="x-small" icon="mdi-plus" color="primary" class="my-0" @click="addActionClick"></v-btn> -->
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
@@ -134,18 +132,10 @@
               <ActionEdit
                 v-model="showActionEdit"
                 :action="actionToEdit"
+                :hazard-id="actionToEdit?.hazard_id"
                 @doClose="showActionEdit = false"></ActionEdit>
             </v-card-text>
           </v-card>
-
-          <!-- <v-card class="default">
-            <v-card-item class="py-4 px-6 mb-2 bg-sun">
-              <h4 class="text-h6">Hazards</h4>
-            </v-card-item>
-            <v-card-text class="pt-2">
-              <HazardList></HazardList>
-            </v-card-text>
-          </v-card> -->
         </v-col>
 
         <v-col>
@@ -159,42 +149,20 @@
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
                 <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" />
 
-                <v-label class="mb-1" style="white-space: inherit">Additional information (from employee)</v-label>
-                <v-textarea v-model="selectedReport.additional_description" hide-details />
+                <!-- <v-label class="mb-1" style="white-space: inherit">Additional information (from employee)</v-label>
+                <v-textarea v-model="selectedReport.additional_description" hide-details /> -->
 
                 <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-5">
-                  <v-label class="mb-1" style="white-space: inherit">Investigator commemts</v-label>
+                  <v-label class="mb-1" style="white-space: inherit">General commemts</v-label>
                   <v-textarea v-model="selectedReport.investigation_notes" hide-details />
                 </div>
               </v-col>
 
               <v-col cols="12" md="12">
-                <!-- <v-label>Investigation</v-label>
-                <v-textarea v-model="selectedReport.investigation_notes" hide-details />
- -->
                 <v-btn color="primary" class="mb-0 mt-0" @click="saveClick">Save</v-btn>
-                <!-- <v-btn v-if="investigationIsActive" color="primary" class="mb-0 mt-6 ml-6" @click="investigationClick">
-                  Start Investigation
-                </v-btn> -->
               </v-col>
             </v-row>
           </v-card>
-
-          <!-- <v-card class="default">
-            <v-card-item class="py-4 px-6 mb-2 bg-sun">
-              <h4 class="text-h6">Urgency</h4>
-            </v-card-item>
-            <v-card-text class="pt-2">
-              <v-slider
-                readonly
-                :max="2"
-                :ticks="tickLabels"
-                show-ticks="always"
-                v-model="urgencyLevel"
-                tick-size="4"
-                :color="urgencyColor"></v-slider>
-            </v-card-text>
-          </v-card> -->
 
           <InvestigationCard
             v-if="selectedReport.investigation"
@@ -217,7 +185,6 @@ const { smAndDown } = useDisplay();
 
 import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
-import HazardList from "@/components/hazard/HazardList.vue";
 import ActionCreate from "@/components/action/ActionCreate.vue";
 import ActionEdit from "@/components/action/ActionEdit.vue";
 import InvestigationCard from "./InvestigationCard.vue";
@@ -256,8 +223,6 @@ setTimeout(() => {
 
 const stepperValue = computed(() => {
   if (selectedReport.value) {
-    let current = null;
-
     for (let i = 1; i < selectedReport.value.steps.length; i++) {
       const step = selectedReport.value.steps[i - 1];
 
@@ -274,10 +239,6 @@ function formatDate(input) {
   return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:ma");
 }
 
-function addActionClick() {
-  showActionAdd.value = true;
-}
-
 function doShowActionEdit(action) {
   actionToEdit.value = action;
   showActionEdit.value = true;
@@ -286,7 +247,7 @@ function doShowActionEdit(action) {
 async function saveClick() {
   await updateReport().then(() => {});
 }
-
+/* 
 function investigationClick() {
   showInvestigationDialog.value = true;
 }
@@ -296,7 +257,7 @@ async function completeInvestigation() {
     await completeStep(currentStep.value);
     showInvestigationDialog.value = false;
   }
-}
+} */
 
 function openAttachmentClick(attachment) {
   openAttachment(attachment);

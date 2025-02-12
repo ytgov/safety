@@ -3,13 +3,19 @@
     <v-card-text>
       <h4 class="text-h5 mb-4">My Reports</h4>
 
-      <v-list v-if="myReports && myReports.length > 0" bg-color="#ddd" style="border: 1px #aaa solid" rounded>
+      <v-list
+        v-if="myReports && myReports.length > 0"
+        bg-color="#fff"
+        class="py-0"
+        style="border: 1px #aaa solid"
+        rounded>
         <div v-for="(report, idx) of myReports">
           <v-list-item
             :title="makeTitle(report)"
             :subtitle="makeSubtitle(report)"
+            class="pt-1 pb-2"
             @click="openReportClick(report)"></v-list-item>
-          <v-divider v-if="idx < myReports.length - 1" class="mt-2 mb-1" />
+          <v-divider v-if="idx < myReports.length - 1"  />
         </div>
       </v-list>
 

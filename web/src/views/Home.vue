@@ -15,9 +15,12 @@
         the button below.
       </p>
 
-      <CreateIncidentButton />
+      <CreateIncidentButton block />
 
-      <v-btn v-if="user" color="info" to="/inspection">Start Inspection </v-btn>
+      <v-btn v-if="user" color="info" to="/inspection" size="large" block>
+        <v-icon class="mr-4">mdi-magnify-scan</v-icon>
+        Start Inspection
+      </v-btn>
     </v-col>
     <!-- <v-divider vertical /> -->
 

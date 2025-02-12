@@ -184,7 +184,9 @@ export const useReportStore = defineStore("reports", {
 
       const api = useApiStore();
       return api
-        .secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}/step/${step.id}/complete`)
+        .secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}/step/${step.id}/complete`, {
+          control: step.control,
+        })
         .then((resp) => {
           if (this.selectedReport) this.loadReport(this.selectedReport.id);
         })
@@ -208,9 +210,7 @@ export const useReportStore = defineStore("reports", {
     },
 
     async saveAction(action: any) {
-      //if (!this.selectedReport) return;
-      let reportId = this.selectedReport?.id ?? -1;
-
+      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
       const api = useApiStore();
 
       if (action.id) {
@@ -235,9 +235,7 @@ export const useReportStore = defineStore("reports", {
     },
 
     async deleteAction(action: any) {
-      if (!this.selectedReport) return;
-      let reportId = this.selectedReport.id;
-
+      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
       const api = useApiStore();
 
       if (action.id) {
@@ -253,14 +251,15 @@ export const useReportStore = defineStore("reports", {
     },
 
     async completeAction(action: any) {
-      if (!this.selectedReport) return;
-      let reportId = this.selectedReport.id;
-
+      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
       const api = useApiStore();
 
       if (action.id) {
         return api
-          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}/complete`)
+          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}/complete`, {
+            control: action.control,
+            notes: action.notes,
+          })
           .then((resp) => {
             if (this.selectedReport) this.loadReport(reportId);
           })
@@ -271,8 +270,7 @@ export const useReportStore = defineStore("reports", {
     },
 
     async revertAction(action: any) {
-      if (!this.selectedReport) return;
-      let reportId = this.selectedReport.id;
+      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
 
       const api = useApiStore();
 
