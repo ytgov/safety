@@ -153,7 +153,7 @@
                 <v-textarea v-model="selectedReport.additional_description" hide-details /> -->
 
                 <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-5">
-                  <v-label class="mb-1" style="white-space: inherit">General commemts</v-label>
+                  <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
                   <v-textarea v-model="selectedReport.investigation_notes" hide-details />
                 </div>
               </v-col>
