@@ -92,6 +92,7 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
 
     for (const link of linkedHazards) {
       await trx("actions").where({ hazard_id: link.hazard_id }).delete();
+      await trx("hazard_attachments").where({ hazard_id: link.hazard_id }).delete();
       await trx("hazards").where({ id: link.hazard_id }).delete();
     }
 
@@ -327,6 +328,7 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
         await knex("incident_hazards").where({ incident_id: id }).delete();
 
         for (const link of linkedHazards) {
+          await knex("hazard_attachments").where({ hazard_id: link.hazard_id }).delete();
           await knex("hazards").where({ id: link.hazard_id }).delete();
         }
       }
@@ -577,13 +579,13 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_name: user.display_name,
               complete_user_id: user.id,
             });
+        } else if (!allReady && step.complete_date) {
+          await knex("incident_steps").where({ incident_id: action.incident_id, id: step.id }).update({
+            complete_date: null,
+            complete_name: null,
+            complete_user_id: null,
+          });
         }
-      } else if (!allReady && step.complete_date) {
-        await knex("incident_steps").where({ incident_id: action.incident_id, id: step.id }).update({
-          complete_date: null,
-          complete_name: null,
-          complete_user_id: null,
-        });
       }
     }
   }

@@ -246,6 +246,36 @@
               ><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn
             >
           </div>
+
+          <div v-if="hazardId" class="mt-5">
+            <v-label>Attachments</v-label>
+            <div class="d-flex">
+              <v-file-input
+                v-model="upload"
+                density="compact"
+                class="mr-5"
+                prepend-icon=""
+                prepend-inner-icon="mdi-camera"
+                chips
+                multiple
+                accept="image/*" />
+              <v-btn color="primary" style="height: 40px" :disabled="upload.length == 0" @click="uploadClick"
+                >Upload</v-btn
+              >
+            </div>
+
+            <div v-if="attachments && attachments.length > 0" class="d-flex flex-wrap">
+              <v-chip
+                v-for="attachment in attachments"
+                :key="attachment.id"
+                class="mr-2 mb-2"
+                @click="openAttachmentClick(attachment)">
+                <v-icon class="mr-3">mdi-camera</v-icon>
+                {{ attachment.file_name }}
+              </v-chip>
+            </div>
+            <div v-else>No attachments found</div>
+          </div>
         </v-card-text>
       </v-card>
     </template>
@@ -256,16 +286,17 @@
 import { ref, computed, defineProps, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
-import { isNil } from "lodash";
+import {  isNil, isNumber } from "lodash";
 import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
 
-const props = defineProps(["action"]);
+const props = defineProps(["action", "hazardId"]);
 
 const emit = defineEmits(["doClose"]);
 
 import ActionUserSelector from "./ActionUserSelector.vue";
 import DateSelector from "../DateSelector.vue";
+import { useHazardStore } from "@/store/HazardStore";
 
 const directorySelectorField = ref(null);
 const dater = ref(null);
@@ -275,6 +306,18 @@ const { isSystemAdmin } = storeToRefs(userStore);
 
 const reportStore = useReportStore();
 const { saveAction, deleteAction, completeAction, revertAction } = reportStore;
+
+const hazardStore = useHazardStore();
+const { attachments } = storeToRefs(hazardStore);
+const { openAttachment } = hazardStore;
+const upload = ref([]);
+
+watch(
+  () => props.hazardId,
+  (val) => {
+    if (!isNil(val) && isNumber(val)) hazardStore.loadAttachments(val);
+  }
+);
 
 const setupStep = ref(0);
 const setupStepOptions = ref([
@@ -389,6 +432,19 @@ async function revertClick() {
 function formatDate(input) {
   if (!input) return "";
   return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd");
+}
+
+async function uploadClick() {
+  if (isNil(props.hazardId) || upload.value.length == 0) return;
+
+  await hazardStore.upload(props.hazardId, upload.value).then(() => {
+    upload.value = [];
+    hazardStore.loadAttachments(props.hazardId);
+  });
+}
+
+function openAttachmentClick(attachment) {
+  openAttachment(attachment);
 }
 
 function actionUserSelected(actor) {

@@ -58,7 +58,7 @@
   <HazardDetailDialog v-model="dialog" />
   <ActionCreate v-model="showActionAdd" @doClose="closeDialog"></ActionCreate>
 
-  <ActionEdit v-model="showActionEdit" :action="actionToEdit" @doClose="closeDialog"></ActionEdit>
+  <ActionEdit v-model="showActionEdit" :action="actionToEdit" :hazard-id="hazardId" @doClose="closeDialog"></ActionEdit>
 </template>
 
 <script setup>
@@ -88,6 +88,7 @@ const urgency = ref(null);
 const location = ref(null);
 
 const actionToEdit = ref(null);
+const hazardId = ref(null);
 
 const headers = [
   { title: "Due", value: "due_date" },
@@ -156,6 +157,7 @@ function openDialog(_event, { item }) {
     dialog.value = true;
   } else {
     actionToEdit.value = actions[0];
+    hazardId.value = item.id;
     showActionEdit.value = true;
   }
 }

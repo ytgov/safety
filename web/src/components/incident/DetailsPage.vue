@@ -132,6 +132,7 @@
               <ActionEdit
                 v-model="showActionEdit"
                 :action="actionToEdit"
+                :hazard-id="actionToEdit?.hazard_id"
                 @doClose="showActionEdit = false"></ActionEdit>
             </v-card-text>
           </v-card>

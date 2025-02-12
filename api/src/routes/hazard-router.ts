@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { db as knex } from "../data";
 import { InsertableDate } from "../utils/formatters";
-import { isEmpty, isNil } from "lodash";
+import { isArray, isEmpty, isNil } from "lodash";
 import { Action, ActionStatuses, HazardStatuses } from "../data/models";
 import { DateTime } from "luxon";
 
@@ -110,4 +110,38 @@ hazardRouter.put("/:id/action", async (req: Request, res: Response) => {
   }
 
   return res.json({ data: {} });
+});
+
+hazardRouter.get("/:id/attachments", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const attachments = await knex("hazard_attachments").where({ hazard_id: id });
+
+  return res.json({ data: attachments });
+});
+
+hazardRouter.post("/:id/attachments", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  if (req.files && req.files.files) {
+    let files = req.files.files;
+
+    if (!isArray(files)) files = [files];
+
+    for (const file of files) {
+      let attachment = {
+        hazard_id: id,
+        added_by_email: req.user.email,
+        file_name: file.name,
+        file_type: file.mimetype,
+        file_size: file.size,
+        file: file.data,
+        added_date: InsertableDate(DateTime.utc().toISO()),
+      };
+
+      await knex("hazard_attachments").insert(attachment);
+    }
+  }
+
+  return res.json({ data: "success" });
 });
