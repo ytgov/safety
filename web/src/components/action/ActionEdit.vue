@@ -35,51 +35,72 @@
               <v-card-text>
                 <h3>{{ currentStep.title }}</h3>
 
-                <v-checkbox v-model="categories" value="Chemical" hide-details density="compact">
-                  <template #label
-                    >Chemical
-                    <v-tooltip location="right" activator="parent" width="600">
-                      Examples: Chemical Asbestos, chemical storage, chemicals, dust/smoke/fumes, lead paint, mists and
-                      vapours, radon gas
-                    </v-tooltip>
-                  </template>
-                </v-checkbox>
-                <v-checkbox v-model="categories" value="Biological" hide-details density="compact">
-                  <template #label
-                    >Biological
-                    <v-tooltip location="right" activator="parent" width="600">
-                      Examples: Blood and bodily fluids, human waste, insect/animal bite, medical waste, mold,
-                      viruses/bacteria
-                    </v-tooltip>
-                  </template>
-                </v-checkbox>
+                <div class="d-flex">
+                  <v-checkbox v-model="categories" value="Chemical" hide-details density="compact" label="Chemical" />
+                  <v-tooltip location="top" width="600" open-delay="250">
+                    <template #activator="{ props }">
+                      <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                    </template>
+                    Examples: Chemical Asbestos, chemical storage, chemicals, dust/smoke/fumes, lead paint, mists and
+                    vapours, radon gas
+                  </v-tooltip>
+                </div>
 
-                <v-checkbox v-model="categories" value="Ergonomic" hide-details density="compact">
-                  <template #label
-                    >Ergonomic
-                    <v-tooltip location="right" activator="parent" width="600">
-                      Examples: Improper lifting, improper workstations, repetitive activity, strenuous activity
-                    </v-tooltip>
-                  </template>
-                </v-checkbox>
-                <v-checkbox v-model="categories" value="Physical Conditions" hide-details density="compact">
-                  <template #label
-                    >Physical Conditions
-                    <v-tooltip location="right" activator="parent" width="600">
-                      Examples: Electrical, temperature, humidity, fire/explosion potential, housekeeping, lighting,
-                      pressure systems, road conditions, slippery or uneven surface, vibration, wildlife, working alone
-                    </v-tooltip>
-                  </template>
-                </v-checkbox>
-                <v-checkbox v-model="categories" value="Safety" hide-details density="compact">
-                  <template #label
-                    >Safety
-                    <v-tooltip location="right" activator="parent" width="600">
-                      Examples: Blocked exit routes, confined space, falling from heights, falling items, faulty
-                      equipment, machinery in motion, overhead hazard, pinch/nip points, sharp objects
-                    </v-tooltip>
-                  </template>
-                </v-checkbox>
+                <div class="d-flex">
+                  <v-checkbox
+                    v-model="categories"
+                    value="Biological"
+                    hide-details
+                    density="compact"
+                    label="Biological" />
+                  <v-tooltip location="top" width="600" open-delay="250">
+                    <template #activator="{ props }">
+                      <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                    </template>
+                    Examples: Blood and bodily fluids, human waste, insect/animal bite, medical waste, mold,
+                    viruses/bacteria
+                  </v-tooltip>
+                </div>
+
+                <div class="d-flex">
+                  <v-checkbox v-model="categories" value="Ergonomic" hide-details density="compact" label="Ergonomic" />
+                  <v-tooltip location="top" width="600" open-delay="250">
+                    <template #activator="{ props }">
+                      <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                    </template>
+                    Examples: Improper lifting, improper workstations, repetitive activity, strenuous activity
+                  </v-tooltip>
+                </div>
+
+                <div class="d-flex">
+                  <v-checkbox
+                    v-model="categories"
+                    value="Physical Conditions"
+                    hide-details
+                    density="compact"
+                    label="Physical Conditions" />
+
+                  <v-tooltip location="top" width="600" open-delay="250">
+                    <template #activator="{ props }">
+                      <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                    </template>
+                    Examples: Electrical, temperature, humidity, fire/explosion potential, housekeeping, lighting,
+                    pressure systems, road conditions, slippery or uneven surface, vibration, wildlife, working alone
+                  </v-tooltip>
+                </div>
+
+                <div class="d-flex">
+                  <v-checkbox v-model="categories" value="Safety" hide-details density="compact" label="Safety" />
+                  <v-tooltip location="top" width="600" open-delay="250">
+                    <template #activator="{ props }">
+                      <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" style="opacity: 1" v-bind="props"
+                        >mdi-information</v-icon
+                      >
+                    </template>
+                    Examples: Blocked exit routes, confined space, falling from heights, falling items, faulty
+                    equipment, machinery in motion, overhead hazard, pinch/nip points, sharp objects
+                  </v-tooltip>
+                </div>
               </v-card-text>
             </v-window-item>
 
@@ -286,7 +307,7 @@
 import { ref, computed, defineProps, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
-import {  isNil, isNumber } from "lodash";
+import { isNil, isNumber } from "lodash";
 import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
 
