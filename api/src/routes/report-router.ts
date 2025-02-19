@@ -60,9 +60,11 @@ reportRouter.get("/:id", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, investigation_notes, additional_description } = req.body;
+  const { description, investigation_notes, additional_description, urgency_code } = req.body;
 
-  await knex("incidents").where({ id }).update({ description, investigation_notes, additional_description });
+  await knex("incidents")
+    .where({ id })
+    .update({ description, investigation_notes, additional_description, urgency_code });
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
@@ -349,6 +351,43 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
   }
 
   return res.json({ data: {} });
+});
+
+reportRouter.post("/:id/send-notification", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { recipients } = req.body;
+
+  const incident = await knex("incidents").where({ id }).first();
+  if (!incident) return res.status(404).send();
+
+  const recipientList = recipients.split(/[\s,;]+/).filter(Boolean);
+
+  for (const recipient of recipientList) {
+    const directorySubmitter = await directoryService.searchByEmail(recipient);
+    const employeeName = directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : recipient;
+
+    await emailService.sendIncidentInviteNotification({ fullName: employeeName, email: recipient }, incident);
+  }
+
+  return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
+});
+
+reportRouter.post("/:id/send-employee-notification", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  const incident = await knex("incidents").where({ id }).first();
+  if (!incident) return res.status(404).send();
+
+  const directorySubmitter = await directoryService.searchByEmail(incident.reporting_person_email);
+  const employeeName =
+    directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : incident.reporting_person_email;
+
+  await emailService.sendIncidentCompleteEmployeeNotification(
+    { fullName: employeeName, email: incident.reporting_person_email },
+    incident
+  );
+
+  return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
 });
 
 reportRouter.post("/:id/action", async (req: Request, res: Response) => {
