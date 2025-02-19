@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { isArray, isEmpty } from "lodash";
+import { create, isArray, isEmpty } from "lodash";
 
 import { db as knex } from "../data";
 import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
@@ -362,6 +362,7 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
     actor_role_type_id,
     due_date,
     create_hazard,
+    create_action,
     hazard_type_id,
     urgency_code,
   } = req.body;
@@ -405,28 +406,30 @@ reportRouter.post("/:id/action", async (req: Request, res: Response) => {
     await knex("incident_hazards").insert(link);
   }
 
-  const action = {
-    incident_id: parseInt(id),
-    hazard_id,
-    created_at: InsertableDate(DateTime.utc().toISO()),
-    description: `${incident.incident_type_description.replace(/\(.*\)/g, "")} ${description}`,
-    notes,
-    action_type_code: ActionTypes.USER_GENERATED.code,
-    sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-    status_code: ActionStatuses.OPEN.code,
-    actor_user_email,
-    actor_user_id,
-    actor_role_type_id,
-    due_date: InsertableDate(due_date),
-  } as Action;
+  if (create_action) {
+    const action = {
+      incident_id: parseInt(id),
+      hazard_id,
+      created_at: InsertableDate(DateTime.utc().toISO()),
+      description: `${incident.incident_type_description.replace(/\(.*\)/g, "")} ${description}`,
+      notes,
+      action_type_code: ActionTypes.USER_GENERATED.code,
+      sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
+      status_code: ActionStatuses.OPEN.code,
+      actor_user_email,
+      actor_user_id,
+      actor_role_type_id,
+      due_date: InsertableDate(due_date),
+    } as Action;
 
-  await knex("actions").insert(action);
+    await knex("actions").insert(action);
 
-  if (actor_user_email) {
-    await emailService.sendTaskAssignmentNotification(
-      { fullName: actor_display_name, email: actor_user_email },
-      action
-    );
+    if (actor_user_email) {
+      await emailService.sendTaskAssignmentNotification(
+        { fullName: actor_display_name, email: actor_user_email },
+        action
+      );
+    }
   }
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Task Saved" }] });
