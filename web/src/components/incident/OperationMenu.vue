@@ -16,6 +16,15 @@
           <v-icon color="green">mdi-eye-check-outline</v-icon>
         </template>
       </v-list-item>
+      <v-list-item
+        v-if="isNotification"
+        title="Send Notifications"
+        :subtitle="currentStep.step_title"
+        @click="showNotificationDialog = true">
+        <template #prepend>
+          <v-icon color="green">mdi-email</v-icon>
+        </template>
+      </v-list-item>
 
       <v-list-item
         title="Complete Next Step"
@@ -53,6 +62,13 @@
     :incident_type_description="selectedReport.incident_type_description"
     @complete="completeInvestigation"
     @close="showInvestigationDialog = false" />
+
+  <NotificationForm
+    v-model="showNotificationDialog"
+    :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description"
+    @complete="completeNotification"
+    @close="showNotificationDialog = false" />
 </template>
 
 <script setup>
@@ -63,6 +79,8 @@ import { useUserStore } from "@/store/UserStore";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { router } from "@/routes";
 import InvestigationForm from "./InvestigationForm.vue";
+import NotificationForm from "./NotificationForm.vue";
+import { isNil } from "lodash";
 
 const reportStore = useReportStore();
 const { completeStep, revertStep, deleteIncident } = reportStore;
@@ -71,7 +89,9 @@ const userStore = useUserStore();
 
 const { isSystemAdmin } = userStore;
 const confirm = ref(null);
+
 const showInvestigationDialog = ref(false);
+const showNotificationDialog = ref(false);
 
 const previousStep = computed(() => {
   if (selectedReport.value) {
@@ -84,7 +104,13 @@ const previousStep = computed(() => {
 });
 
 const isInvestigation = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   return currentStep.value.step_title === "Investigation";
+});
+
+const isNotification = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+  return currentStep.value.step_title.includes("Notification");
 });
 
 async function completeClick(step) {
@@ -101,6 +127,10 @@ async function deleteClick(step) {
 }
 
 async function completeInvestigation() {
+  await completeStep(currentStep.value);
+}
+
+async function completeNotification() {
   await completeStep(currentStep.value);
 }
 </script>

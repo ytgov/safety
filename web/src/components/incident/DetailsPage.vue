@@ -146,20 +146,31 @@
 
             <v-row class="pa-5 pt-2 pb-6">
               <v-col cols="12" md="12">
+                <v-label class="mb-1" style="white-space: inherit">Urgency</v-label>
+                <v-btn-toggle
+                  v-model="selectedReport.urgency_code"
+                  mandatory
+                  base-color="#eee"
+                  class="mb-4"
+                  :border="true"
+                  style="width: 100%">
+                  <v-btn color="green" value="Low" style="width: 25%" class="my-0">Low</v-btn>
+                  <v-btn color="yellow" value="Medium" style="width: 25%" class="my-0">Medium</v-btn>
+                  <v-btn color="#ff4500" value="High" style="width: 25%" class="my-0">High</v-btn>
+                  <v-btn color="red" value="Critical" style="width: 25%" class="my-0">Critical</v-btn>
+                </v-btn-toggle>
+
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
-                <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" />
+                <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" hide-details />
 
-                <!-- <v-label class="mb-1" style="white-space: inherit">Additional information (from employee)</v-label>
-                <v-textarea v-model="selectedReport.additional_description" hide-details /> -->
-
-                <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-5">
+                <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-4">
                   <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
                   <v-textarea v-model="selectedReport.investigation_notes" hide-details />
                 </div>
               </v-col>
 
               <v-col cols="12" md="12">
-                <v-btn color="primary" class="mb-0 mt-0" @click="saveClick">Save</v-btn>
+                <v-btn color="primary" class="my-0" @click="saveClick">Save</v-btn>
               </v-col>
             </v-row>
           </v-card>
@@ -192,16 +203,14 @@ import InvestigationCard from "./InvestigationCard.vue";
 import { useReportStore } from "@/store/ReportStore";
 
 const reportStore = useReportStore();
-const { initialize, loadReport, updateReport, openAttachment, completeStep } = reportStore;
-const { currentStep, selectedReport } = storeToRefs(reportStore);
+const { initialize, loadReport, updateReport, openAttachment } = reportStore;
+const { selectedReport } = storeToRefs(reportStore);
 
 const router = useRoute();
 const reportId = router.params.id;
 
 await initialize();
 await loadReport(reportId);
-
-const showInvestigationDialog = ref(false);
 
 const showActionAdd = ref(false);
 const showActionEdit = ref(false);
@@ -247,17 +256,6 @@ function doShowActionEdit(action) {
 async function saveClick() {
   await updateReport().then(() => {});
 }
-/* 
-function investigationClick() {
-  showInvestigationDialog.value = true;
-}
-
-async function completeInvestigation() {
-  if (currentStep.value) {
-    await completeStep(currentStep.value);
-    showInvestigationDialog.value = false;
-  }
-} */
 
 function openAttachmentClick(attachment) {
   openAttachment(attachment);

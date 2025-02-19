@@ -14,6 +14,9 @@ const INCIDENT_REPORTER_TEMPLATE = "../templates/email/incident-notification-rep
 const INCIDENT_SUPERVISOR_TEMPLATE = "../templates/email/incident-notification-supervisor.html";
 const TASK_ASSIGNED_TEMPLATE = "../templates/email/task-assigned-notification.html";
 
+const INCIDENT_EMPLOYEE_COMPLETE_TEMPLATE = "../templates/email/incident-complete-employee.html";
+const INCIDENT_INVITE_TEMPLATE = "../templates/email/incident-invite.html";
+
 export class EmailService {
   transport: Transporter;
 
@@ -63,6 +66,34 @@ export class EmailService {
     console.log("-- EMAIL EMPLOYEE INCIDENT NOTIFICATION", recipient.email);
 
     await this.sendEmail(recipient.fullName, recipient.email, "We Received Your Report", content);
+  }
+
+  async sendIncidentCompleteEmployeeNotification(
+    recipient: { fullName: string; email: string },
+    incident: Incident
+  ): Promise<any> {
+    let templatePath = path.join(__dirname, INCIDENT_EMPLOYEE_COMPLETE_TEMPLATE);
+    let content = fs.readFileSync(templatePath).toString();
+
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+
+    console.log("-- EMAIL EMPLOYEE INCIDENT COMPLETE", recipient.email);
+
+    await this.sendEmail(recipient.fullName, recipient.email, "Your Report Is Complete", content);
+  }
+
+  async sendIncidentInviteNotification(
+    recipient: { fullName: string; email: string },
+    incident: Incident
+  ): Promise<any> {
+    let templatePath = path.join(__dirname, INCIDENT_INVITE_TEMPLATE);
+    let content = fs.readFileSync(templatePath).toString();
+
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+
+    console.log("-- EMAIL INVITE INCIDENT NOTIFICATION", recipient.email);
+
+    await this.sendEmail(recipient.fullName, recipient.email, "You Have Been Invited To A Report", content);
   }
 
   async sendIncidentSupervisorNotification(

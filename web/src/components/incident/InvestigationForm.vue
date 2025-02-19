@@ -46,31 +46,34 @@
               density="compact">
             </v-checkbox>
 
-            <v-checkbox v-model="events" value="serious" hide-details density="compact">
-              <template v-slot:label>
-                <v-tooltip location="top" activator="parent" width="600">
-                  <ul class="mx-5 my-3">
-                    <li>An incident that results in serious injury to or the death of a worker</li>
-                    <li>An incident or injury that results in a worker's admission to a hospital as an inpatient</li>
-                    <li>
-                      A major structural failure or collapse of a bridge, building, crane, excavation, hoist, mine,
-                      mining development, temporary construction support system, tower or any other like structure
-                    </li>
-                    <li>A major release of a hazardous substance</li>
-                    <li>
-                      An explosion or fire that has the potential to cause serious injury to or the death of a worker or
-                      other person
-                    </li>
-                    <li>
-                      An incident, injury or death that is required to be reported by the regulations or by order of the
-                      board
-                    </li>
-                  </ul>
-                </v-tooltip>
-                Serious Incident (as per WSCA)
-              </template>
-            </v-checkbox>
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="serious" hide-details density="compact">
+                <template v-slot:label> Serious Incident (as per WSCA) </template>
+              </v-checkbox>
 
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>An incident that results in serious injury to or the death of a worker</li>
+                  <li>An incident or injury that results in a worker's admission to a hospital as an inpatient</li>
+                  <li>
+                    A major structural failure or collapse of a bridge, building, crane, excavation, hoist, mine, mining
+                    development, temporary construction support system, tower or any other like structure
+                  </li>
+                  <li>A major release of a hazardous substance</li>
+                  <li>
+                    An explosion or fire that has the potential to cause serious injury to or the death of a worker or
+                    other person
+                  </li>
+                  <li>
+                    An incident, injury or death that is required to be reported by the regulations or by order of the
+                    board
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
             <v-alert v-if="showWCBLink" type="warning" class="mt-5">
               Events of this type should also be reported to WSCB via the
               <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
@@ -91,7 +94,6 @@
             <v-textarea v-model="incidents_other" class="mt-3" label="Additional applicable information" rows="2" />
           </v-card-text>
         </v-window-item>
-
         <v-window-item :value="3">
           <v-card-text>
             <h3>Immediate Cause</h3>
@@ -110,7 +112,6 @@
             </v-select>
           </v-card-text>
         </v-window-item>
-
         <v-window-item :value="4">
           <v-card-text>
             <h3>Contributing Factors</h3>
@@ -127,7 +128,6 @@
               multiple />
           </v-card-text>
         </v-window-item>
-
         <v-window-item :value="5">
           <v-card-text>
             <h3>Root Cause</h3>
@@ -142,6 +142,31 @@
               chips
               clearable
               multiple />
+          </v-card-text>
+        </v-window-item>
+        <v-window-item :value="6">
+          <v-card-text>
+            <h3>Review</h3>
+            <p class="mb-5">
+              In this investigation, you have identified several items. Please determine whether they required action,
+              is a hazard or both.
+            </p>
+            <table style="width: 100%; text-align: center">
+              <tr>
+                <th style="text-align: left">Item</th>
+                <th>Action</th>
+                <th>Hazard</th>
+              </tr>
+              <tr v-for="item of itemsToCreate" :key="item.description">
+                <td style="text-align: left">{{ item.description }}</td>
+                <td>
+                  <v-checkbox v-model="item.create_action" class="my-0 mx-auto" density="compact" hide-details style="width: 24px !important" />
+                </td>
+                <td>
+                  <v-checkbox v-model="item.create_hazard" class="my-0 mx-auto" density="compact" hide-details style="width: 24px !important" />
+                </td>
+              </tr>
+            </table>
           </v-card-text>
         </v-window-item>
       </v-window>
@@ -159,7 +184,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
@@ -174,6 +199,9 @@ const { saveAction, saveInvestigation } = reportStore;
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
 
+const userStore = useUserStore();
+const { user } = userStore;
+
 const step = ref(0);
 const stepName = computed(() => {
   return steps.value[step.value].name;
@@ -186,6 +214,7 @@ const steps = ref([
   { name: "Immediate Cause" },
   { name: "Contributing Factors" },
   { name: "Root Cause" },
+  { name: "Review" },
 ]);
 
 const collections_other = ref("");
@@ -362,6 +391,16 @@ const hasAllRootCauses = computed(() => {
   return causes.value.length > 0;
 });
 
+const itemsToCreate = ref([]);
+const hasItemsToCreate = computed(() => {
+  if (itemsToCreate.value.length == 0) return false;
+
+  const hasAction = itemsToCreate.value.filter((i) => i.create_action).length > 0;
+  const hasHazard = itemsToCreate.value.filter((i) => i.create_hazard).length > 0;
+
+  return hasAction || hasHazard;
+});
+
 const isPrev = computed(() => {
   return step.value > 0;
 });
@@ -372,6 +411,7 @@ const isNext = computed(() => {
   if (step.value == 3) return hasAllRequiredCauses.value;
   if (step.value == 4) return hasAllRequiredFactors.value;
   if (step.value == 5) return hasAllRootCauses.value;
+  if (step.value == 6) return hasItemsToCreate.value;
 
   return step.value < steps.value.length - 1;
 });
@@ -380,14 +420,69 @@ const isDone = computed(() => {
 });
 
 function close() {
+  collections_other.value = "";
+  collections.value = [];
+  events.value = [];
+  incidents_other.value = "";
+  incidents.value = null;
+  acts.value = null;
+  factors.value = [];
+  causes.value = [];
+
   emits("close");
   step.value = 0;
 }
+
+watch(step, (stepValue) => {
+  if (stepValue != 6) return;
+
+  const items = [];
+  const urgency_code = "Low";
+  const hazard_type_id = 1;
+  const create_hazard = false;
+  const create_action = false;
+
+  items.push({
+    description: `Acting/Practice: ${acts.value.title}`,
+    actor_user_id: user.id,
+    actor_user_email: user.email,
+    actor_display_name: user.display_name,
+    urgency_code,
+    hazard_type_id,
+    create_hazard,
+    create_action,
+  });
+
+  for (let item of factors.value) {
+    items.push({
+      description: `Contributing Factor: ${item.title}`,
+      actor_user_id: user.id,
+      actor_user_email: user.email,
+      actor_display_name: user.display_name,
+      urgency_code,
+      hazard_type_id,
+      create_hazard,
+      create_action,
+    });
+  }
+  for (let item of causes.value) {
+    items.push({
+      description: `Root Cause: ${item.title}`,
+      actor_user_id: user.id,
+      actor_user_email: user.email,
+      actor_display_name: user.display_name,
+      urgency_code,
+      hazard_type_id,
+      create_hazard,
+      create_action,
+    });
+  }
+
+  itemsToCreate.value = items;
+});
+
 async function save() {
   showOverlay();
-
-  const userStore = useUserStore();
-  const { user } = userStore;
 
   const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
   const eventInfo = eventOptions.filter((o) => events.value.includes(o.value));
@@ -408,47 +503,12 @@ async function save() {
 
   await saveInvestigation(investigation);
 
-  const urgency_code = "Low";
-  const hazard_type_id = 1;
-  const create_hazard = true;
-
-  await saveAction({
-    description: `Acting/Practice: ${acts.value.title}`,
-    actor_user_id: user.id,
-    actor_user_email: user.email,
-    actor_display_name: user.display_name,
-    urgency_code,
-    hazard_type_id,
-    create_hazard,
-  });
-
-  for (let item of factors.value) {
-    //console.log("FACTOR", item);
-    await saveAction({
-      description: `Contributing Factor: ${item.title}`,
-      actor_user_id: user.id,
-      actor_user_email: user.email,
-      actor_display_name: user.display_name,
-      urgency_code,
-      hazard_type_id,
-      create_hazard,
-    });
-  }
-  for (let item of causes.value) {
-    //console.log("CAUSE", item);
-    await saveAction({
-      description: `Root Cause: ${item.title}`,
-      actor_user_id: user.id,
-      actor_user_email: user.email,
-      actor_display_name: user.display_name,
-      urgency_code,
-      hazard_type_id,
-      create_hazard,
-    });
+  for (let item of itemsToCreate.value) {
+    await saveAction(item);
   }
 
   emits("complete");
-  emits("close");
+  close();
   //step.value = 0;
   hideOverlay();
 }

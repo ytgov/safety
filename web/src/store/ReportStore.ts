@@ -149,6 +149,7 @@ export const useReportStore = defineStore("reports", {
         investigation_notes: this.selectedReport.investigation_notes,
         description: this.selectedReport.description,
         additional_description: this.selectedReport.additional_description,
+        urgency_code: this.selectedReport.urgency_code,
       };
 
       const api = useApiStore();
@@ -308,6 +309,20 @@ export const useReportStore = defineStore("reports", {
           console.log(`Error in deleteAction /${reportId}/investigation`);
         });
     },
+    sendNotification(recipients: string) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+      return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-notification`, { recipients });
+    },
+    sendEmployeeNotification() {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+      return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-employee-notification`, {});
+    },
   },
 });
 
@@ -336,6 +351,7 @@ export interface Incident {
   eventType: string;
   status: string;
   urgency: string;
+  urgency_code: string;
   location_code: string;
   specificLocation: string;
   description: string;
