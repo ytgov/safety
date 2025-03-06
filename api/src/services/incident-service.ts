@@ -8,7 +8,7 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
-      .whereRaw("incidents.id IN (SELECT incident_id FROM incident_users_view WHERE user_email = ?)", [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
       .modify(where)
       .select(
         "incidents.*",
@@ -24,7 +24,7 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
-      .whereRaw("incidents.id IN (SELECT incident_id FROM incident_users_view WHERE user_email = ?)", [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
       .modify(where)
       .count("* as count")
       .first();
@@ -43,7 +43,7 @@ export class IncidentService {
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .innerJoin("locations", "incidents.location_code", "locations.code")
-      .whereRaw("incidents.id IN (SELECT incident_id FROM incident_users_view WHERE user_email = ?)", [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
       .select<Incident>(
         "incidents.*",
         "incident_types.name as incident_type_name",
