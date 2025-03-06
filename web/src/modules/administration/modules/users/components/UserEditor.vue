@@ -85,7 +85,7 @@ import { useRoleStore } from "@/store/RoleStore";
 export default {
   name: "UserEditor",
   data: () => ({
-    departmentRelevantList: [3, 4],
+    departmentRelevantList: [8, 9],
   }),
   computed: {
     ...mapState(useUserAdminStore, ["selectedUser"]),
@@ -110,7 +110,7 @@ export default {
         role_type_id: 1,
         user_id: this.selectedUser.id,
         start_date: new Date(),
-        department_code: undefined, 
+        department_code: undefined,
       });
     },
     removeRoleClick(idx: number) {

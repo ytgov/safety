@@ -2,7 +2,7 @@
   <v-breadcrumbs :items="[{ title: 'Home', to: '/' }, { title: 'Incident Details' }]" />
 
   <div v-if="selectedReport">
-    <div v-if="canUseActions" class="float-right">
+    <div class="float-right">
       <OperationMenu />
     </div>
 
@@ -19,7 +19,13 @@
     </h1>
     <div class="my-3" style="clear: both"></div>
 
+    <!-- <h2 class="text-h6">
+      Reported on {{ formatDate(selectedReport.created_at) }} by {{ selectedReport.reporting_person_email }}
+    </h2> -->
+
     <div class="mb-5" style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px">
+      <!-- {{ selectedReport.steps }} -->
+
       <v-stepper-vertical v-if="smAndDown" hide-actions>
         <v-stepper-vertical-item
           v-for="(step, idx) of selectedReport.steps"
@@ -82,7 +88,11 @@
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
-              <IncidentUserList :incident_id="selectedReport.id" />
+              <v-label>Alternate Supervisor</v-label>
+              <v-text-field
+                :value="selectedReport.supervisor_alt_email"
+                append-inner-icon="mdi-lock"
+                readonly></v-text-field>
 
               <v-label class="mb-1" style="white-space: inherit">General location</v-label>
               <v-text-field v-model="selectedReport.location_name" readonly append-inner-icon="mdi-lock" />
@@ -117,11 +127,13 @@
             <v-card-text class="pt-2">
               <ActionList @showAction="doShowActionEdit"></ActionList>
 
-              <ActionDialog
+              <ActionCreate v-model="showActionAdd" @doClose="showActionAdd = false"></ActionCreate>
+
+              <ActionEdit
                 v-model="showActionEdit"
                 :action="actionToEdit"
                 :hazard-id="actionToEdit?.hazard_id"
-                @doClose="actionReload"></ActionDialog>
+                @doClose="showActionEdit = false"></ActionEdit>
             </v-card-text>
           </v-card>
         </v-col>
@@ -142,14 +154,10 @@
                   class="mb-4"
                   :border="true"
                   style="width: 100%">
-                  <v-btn :readonly="!canEdit" color="green" value="Low" style="width: 25%" class="my-0">Low</v-btn>
-                  <v-btn :readonly="!canEdit" color="yellow" value="Medium" style="width: 25%" class="my-0"
-                    >Medium</v-btn
-                  >
-                  <v-btn :readonly="!canEdit" color="#ff4500" value="High" style="width: 25%" class="my-0">High</v-btn>
-                  <v-btn :readonly="!canEdit" color="red" value="Critical" style="width: 25%" class="my-0"
-                    >Critical</v-btn
-                  >
+                  <v-btn color="green" value="Low" style="width: 25%" class="my-0">Low</v-btn>
+                  <v-btn color="yellow" value="Medium" style="width: 25%" class="my-0">Medium</v-btn>
+                  <v-btn color="#ff4500" value="High" style="width: 25%" class="my-0">High</v-btn>
+                  <v-btn color="red" value="Critical" style="width: 25%" class="my-0">Critical</v-btn>
                 </v-btn-toggle>
 
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
@@ -157,11 +165,11 @@
 
                 <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-4">
                   <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
-                  <v-textarea v-model="selectedReport.investigation_notes" :readonly="!canEdit" hide-details />
+                  <v-textarea v-model="selectedReport.investigation_notes" hide-details />
                 </div>
               </v-col>
 
-              <v-col v-if="canEdit" cols="12" md="12">
+              <v-col cols="12" md="12">
                 <v-btn color="primary" class="my-0" @click="saveClick">Save</v-btn>
               </v-col>
             </v-row>
@@ -188,12 +196,11 @@ const { smAndDown } = useDisplay();
 
 import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
-import ActionDialog from "@/components/action/ActionDialog.vue";
+import ActionCreate from "@/components/action/ActionCreate.vue";
+import ActionEdit from "@/components/action/ActionDialog.vue";
 import InvestigationCard from "./InvestigationCard.vue";
 
 import { useReportStore } from "@/store/ReportStore";
-import { useUserStore } from "@/store/UserStore";
-import IncidentUserList from "./IncidentUserList.vue";
 
 const reportStore = useReportStore();
 const { initialize, loadReport, updateReport, openAttachment } = reportStore;
@@ -205,23 +212,9 @@ const reportId = router.params.id;
 await initialize();
 await loadReport(reportId);
 
+const showActionAdd = ref(false);
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
-
-const userStore = useUserStore();
-const { isSystemAdmin, user } = storeToRefs(userStore);
-
-const isReporter = computed(() => {
-  return selectedReport.value.access.filter((a) => a.reason == "reporter").length > 0;
-});
-
-const isSupervisor = computed(() => {
-  return selectedReport.value.access.filter((a) => a.reason == "supervisor").length > 0;
-});
-
-const isAction = computed(() => {
-  return selectedReport.value.access.filter((a) => a.reason == "action").length > 0;
-});
 
 setTimeout(() => {
   let list = document.getElementsByClassName("v-stepper-item");
@@ -250,39 +243,14 @@ const stepperValue = computed(() => {
   return 0;
 });
 
-const canEdit = computed(() => {
-  return isReporter.value || isSupervisor.value || isSystemAdmin.value;
-});
-
-const canUseActions = computed(() => {
-  return isSupervisor.value || isSystemAdmin.value;
-});
-
-function actionReload() {
-  showActionEdit.value = null;
-  showActionEdit.value = false;
-  loadReport(reportId);
-}
-
 function formatDate(input) {
   if (!input) return "";
   return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:ma");
 }
 
 function doShowActionEdit(action) {
-  if (isReporter.value || isSupervisor.value || isSystemAdmin.value) {
-    actionToEdit.value = action;
-    showActionEdit.value = true;
-    return;
-  }
-
-  if (action.actor_user_email == user.value.email) {
-    actionToEdit.value = action;
-    showActionEdit.value = true;
-    return;
-  }
-
-  alert("You do not have permission to edit this action");
+  actionToEdit.value = action;
+  showActionEdit.value = true;
 }
 
 async function saveClick() {

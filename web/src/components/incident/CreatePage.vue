@@ -121,10 +121,6 @@
             "
             @selected="handleSupervisorSelect"></DirectorySelector>
 
-          <DirectorySelector
-            label="Search and select an alternate supervisor"
-            @selected="handleAltSupervisorSelect"></DirectorySelector>
-
           <v-label>Attach supporting images</v-label>
           <v-file-input
             v-model="report.files"
@@ -192,10 +188,6 @@ function handleSupervisorSelect(value) {
   else report.value.supervisor_email = null;
 }
 
-function handleAltSupervisorSelect(value) {
-  if (value) report.value.supervisor_alt_email = value.email;
-  else report.value.supervisor_alt_email = null;
-}
 function handleBehalfSelect(value) {
   if (value) report.value.on_behalf_email = value.email;
   else report.value.on_behalf_email = null;

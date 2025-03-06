@@ -6,11 +6,11 @@ export async function seed(knex: knex.Knex) {
   
   const toInsert = [
     { name: "System Admin", permissions: 1, description: "System Admin" },
-    { name: "JOHSC", permissions: 1, description: "Joint Health and Safety Committee" },
-    { name: "SMT", permissions: 1, description: "Safety Management Team" },
-    { name: "RWO", permissions: 1, description: "Respectful Workplace Office" },
     { name: "Property Management", permissions: 1, description: "Property Management" },
-    { name: "Monitor", permissions: 1, description: "Monitor" },
+    { name: "Inspector", permissions: 1, description: "Inspector" },
+    { name: "Safety Practitioner", permissions: 1, description: "Safety Practitioner" },
+    { name: "Safety Authority", permissions: 1, description: "Safety Authority" },
+
   ] as Array<RoleType>;
 
   for (const item of toInsert) {

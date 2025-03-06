@@ -25,7 +25,7 @@
           <v-icon color="green">mdi-email</v-icon>
         </template>
       </v-list-item>
-
+<!-- 
       <v-list-item
         title="Complete Next Step"
         :subtitle="currentStep.step_title"
@@ -34,7 +34,7 @@
         <template #prepend>
           <v-icon color="green">mdi-check-bold</v-icon>
         </template>
-      </v-list-item>
+      </v-list-item> -->
 
       <v-list-item
         title="Revert Previous Step"

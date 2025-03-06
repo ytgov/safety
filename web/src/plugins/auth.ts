@@ -12,4 +12,5 @@ export default createAuth0({
     audience: config.audience,
     redirect_uri: window.location.origin,
   },
+  cacheLocation: "localstorage",
 });

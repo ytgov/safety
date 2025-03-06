@@ -3,6 +3,9 @@ import { IncidentStep } from "./incident-step-model";
 import { Action } from "./action-model";
 import { IncidentHazard } from "./incident-hazard-model";
 import { Investigation } from "./investigation-model";
+import { Location } from "./location-model";
+import { IncidentType } from "./incident-type-model";
+import { IncidentStatus } from "./incident-status-model";
 
 export interface Incident {
   id?: number;
@@ -23,10 +26,21 @@ export interface Incident {
   investigation_notes?: string;
   location_code?: string;
   location_detail?: string;
+  slug: string;
 
   attachments?: any[];
   steps?: IncidentStep[];
   actions?: Action[];
   hazards?: IncidentHazard[];
   investigation?: Investigation;
+  location?: Location;
+  type?: IncidentType;
+  status?: IncidentStatus;
+  access?: IncidentUserAccess[];
+}
+
+export interface IncidentUserAccess {
+  incident_id: number;
+  user_email: string;
+  reason: string;
 }

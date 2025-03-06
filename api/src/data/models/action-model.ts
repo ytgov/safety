@@ -1,5 +1,9 @@
+import { ActionStatus } from "./action-status-model";
+import { ActionType } from "./action-type-model";
+
 export interface Action {
   id?: number;
+  slug: string;
   hazard_id?: number;
   incident_id?: number;
   creator_user_id?: number;
@@ -18,6 +22,9 @@ export interface Action {
   complete_date?: Date;
   complete_name?: string;
   complete_user_id?: number;
+  hazard_review: number;
 
+  type?: ActionType;
+  status?: ActionStatus;
   actor_display_name?: string;
 }
