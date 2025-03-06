@@ -42,8 +42,28 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: "actions",
+        component: () => import("@/components/action/ActionListPage.vue"),
+      },
+      {
+        path: "actions/:id",
+        component: () => import("@/components/action/ActionPage.vue"),
+      },
+      {
+        path: "reports",
+        component: () => import("@/components/report/ReportListPage.vue"),
+      },
+      {
         path: "reports/:id",
         component: () => import("@/components/incident/DetailsPage.vue"),
+      },
+      {
+        path: "reports/:id/supervisor",
+        component: () => import("@/components/incident/SupervisorDetailsPage.vue"),
+      },
+      {
+        path: "task/:id",
+        component: () => import("@/components/incident/TaskDetailsPage.vue"),
       },
 
       {
@@ -55,6 +75,7 @@ const routes: RouteRecordRaw[] = [
         path: "hazard-library",
         component: () => import("@/components/hazard-library/HazardListPage.vue"),
       },
+
 
       {
         path: "sign-in",

@@ -1,17 +1,14 @@
 <template>
-  <v-col v-if="mySupervisorReports && mySupervisorReports.length > 0" cols="12" md="6">
+  <v-col v-if="myReports && myReports.length > 0" cols="12" md="6">
     <v-card class="default">
       <v-card-text>
-        <h4 class="text-h5">Supervisory Reports</h4>
-        <p class="mb-3">Unresolved reports submitted by my direct reports</p>
+        <h4 class="text-h5">
+          Reports Requiring Attention <small>({{ managedDepartments.join(", ") }})</small>
+        </h4>
+        <p class="mb-3">Urgent or delayed reports from my department</p>
 
-        <v-list
-          v-if="mySupervisorReports && mySupervisorReports.length > 0"
-          bg-color="#fff"
-          class="py-0"
-          style="border: 1px #aaa solid"
-          rounded>
-          <div v-for="(report, idx) of mySupervisorReports">
+        <v-list bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
+          <div v-for="(report, idx) of myReports">
             <v-list-item
               :title="makeTitle(report)"
               :subtitle="makeSubtitle(report)"
@@ -30,31 +27,34 @@
                 </v-avatar>
               </template>
             </v-list-item>
-            <v-divider v-if="idx < mySupervisorReports.length - 1" />
+            <v-divider v-if="idx < myReports.length - 1" />
           </div>
         </v-list>
-
-        <div v-else>
-          <v-divider class="mb-4" />
-
-          You haven't submitted any reports
-        </div>
       </v-card-text>
     </v-card>
   </v-col>
 </template>
 
 <script lang="ts" setup>
-import { DateTime } from "luxon";
-import { useReportStore, Incident } from "@/store/ReportStore";
-import { storeToRefs } from "pinia";
+import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import { DateTime } from "luxon";
+
+import { useReportStore, Incident } from "@/store/ReportStore";
+import { useUserStore } from "@/store/UserStore";
 
 const router = useRouter();
 
-const reportStore = useReportStore();
+const userStore = useUserStore();
+const { managedDepartments } = storeToRefs(userStore);
 
-const { mySupervisorReports } = storeToRefs(reportStore);
+const reportStore = useReportStore();
+const { loadReportsForRole } = reportStore;
+
+const myReports = ref([] as any[]);
+
+await loadReports();
 
 function makeTitle(input: Incident) {
   let title = input.incident_type_description;
@@ -68,5 +68,9 @@ function makeSubtitle(input: Incident) {
 
 function openReportClick(input: Incident) {
   router.push(`/reports/${input.slug}`);
+}
+
+async function loadReports() {
+  myReports.value = await loadReportsForRole("Safety Authority");
 }
 </script>

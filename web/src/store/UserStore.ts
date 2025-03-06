@@ -3,6 +3,7 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "@/store/ApiStore";
 import { PROFILE_URL } from "@/urls";
 import { User } from "@/modules/administration/modules/users/store";
+import { sortBy } from "lodash";
 
 const SYSTEM_ADMIN_ROLE_NAME = "System Admin";
 
@@ -19,6 +20,12 @@ export const useUserStore = defineStore("user", {
         if (admin) return true;
       }
       return false;
+    },
+    managedDepartments(state) {
+      if (!state.user) return [];
+      const deptCodes = sortBy(state.user.roles.map((r) => r.department_code).filter((d) => d));
+
+      return deptCodes;
     },
   },
   actions: {

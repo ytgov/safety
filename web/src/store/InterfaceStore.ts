@@ -4,6 +4,7 @@ import { defineStore } from "pinia";
 export const useInterfaceStore = defineStore("interface", () => {
   const showApplicationOverlay = ref(true);
   const isOffline = ref(false);
+  const overlayMessage = ref("");
 
   window.addEventListener("offline", function (e) {
     console.log("offline");
@@ -15,8 +16,9 @@ export const useInterfaceStore = defineStore("interface", () => {
     isOffline.value = false;
   });
 
-  function showOverlay() {
+  function showOverlay(message?: string) {
     console.log("SHOW OVER");
+    overlayMessage.value = message ?? "";
     showApplicationOverlay.value = true;
   }
 
@@ -25,5 +27,5 @@ export const useInterfaceStore = defineStore("interface", () => {
     showApplicationOverlay.value = false;
   }
 
-  return { showApplicationOverlay, isOffline, showOverlay, hideOverlay };
+  return { showApplicationOverlay, isOffline, showOverlay, hideOverlay, overlayMessage };
 });

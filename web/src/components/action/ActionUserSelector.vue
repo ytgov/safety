@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-label class="mb-1">{{ props.label }}</v-label>
+    <v-label>{{ props.label }}</v-label>
     <div v-if="selectedPerson">
       <v-text-field
         :value="selectedPerson.long_name"

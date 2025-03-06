@@ -45,7 +45,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
 
     console.log("-- EMAIL REPORTER INCIDENT NOTIFICATION", recipient.email);
 
@@ -61,7 +61,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
 
     console.log("-- EMAIL EMPLOYEE INCIDENT NOTIFICATION", recipient.email);
 
@@ -75,7 +75,7 @@ export class EmailService {
     let templatePath = path.join(__dirname, INCIDENT_EMPLOYEE_COMPLETE_TEMPLATE);
     let content = fs.readFileSync(templatePath).toString();
 
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
 
     console.log("-- EMAIL EMPLOYEE INCIDENT COMPLETE", recipient.email);
 
@@ -89,7 +89,7 @@ export class EmailService {
     let templatePath = path.join(__dirname, INCIDENT_INVITE_TEMPLATE);
     let content = fs.readFileSync(templatePath).toString();
 
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}/supervisor`);
 
     console.log("-- EMAIL INVITE INCIDENT NOTIFICATION", recipient.email);
 
@@ -105,7 +105,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}/supervisor`);
 
     console.log("-- EMAIL SUPERVISOR INCIDENT NOTIFICATION", recipient.email);
 
@@ -120,7 +120,7 @@ export class EmailService {
       /``TASK_DETAILS``/g,
       `${action.description}, due on ${FormatDate(action.due_date ?? new Date())}`
     );
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${action.incident_id}`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/task/${action.id}`);
 
     console.log("-- TASK ASSIGNED NOTIFICATION", recipient.email);
 

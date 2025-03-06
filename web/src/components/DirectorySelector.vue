@@ -60,6 +60,7 @@ import { ref, watch } from "vue";
 
 const props = defineProps(["label"]);
 const emit = defineEmits(["selected"]);
+defineExpose({ clear });
 
 const directoryStore = useDirectoryStore();
 const { searchDirectory } = directoryStore;

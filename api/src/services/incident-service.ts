@@ -1,28 +1,49 @@
 import { Incident } from "../data/models";
 import { db } from "../data";
+import { Knex } from "knex";
 
 export class IncidentService {
-  async getAll(): Promise<Incident[]> {
+  async getAll(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<Incident[]> {
     return db<Incident>("incidents")
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
+      .whereRaw("incidents.id IN (SELECT incident_id FROM incident_users_view WHERE user_email = ?)", [email])
+      .modify(where)
       .select(
         "incidents.*",
         "incident_types.name as incident_type_name",
         "incident_types.description as incident_type_description",
         "incident_statuses.name as status_name",
         "departments.name as department_name"
-      );
+      )
+      .orderBy("incidents.created_at", "desc");
+  }
+  async getCount(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<{ count: number }> {
+    return db<Incident>("incidents")
+      .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
+      .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
+      .innerJoin("departments", "departments.code", "incidents.department_code")
+      .whereRaw("incidents.id IN (SELECT incident_id FROM incident_users_view WHERE user_email = ?)", [email])
+      .modify(where)
+      .count("* as count")
+      .first();
   }
 
-  async getById(id: number | string): Promise<Incident | undefined> {
+  async getBySlug(slug: string, email: string): Promise<Incident | undefined> {
+    const item = await db("incidents").where({ slug }).first();
+    if (!item) return undefined;
+    return this.getById(item.id, email);
+  }
+
+  async getById(id: number | string, email: string): Promise<Incident | undefined> {
     const item = await db("incidents")
       .where("incidents.id", parseInt(`${id}`))
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .innerJoin("locations", "incidents.location_code", "locations.code")
+      .whereRaw("incidents.id IN (SELECT incident_id FROM incident_users_view WHERE user_email = ?)", [email])
       .select<Incident>(
         "incidents.*",
         "incident_types.name as incident_type_name",
@@ -42,6 +63,7 @@ export class IncidentService {
     item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
     item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
     item.investigation = await db("investigations").where({ incident_id: item.id }).first();
+    item.access = await db("incident_users_view").where({ incident_id: item.id, user_email: email });
 
     if (item.investigation) {
       item.investigation.investigation_data = JSON.parse(item.investigation.investigation_data);
@@ -78,7 +100,10 @@ export class IncidentService {
 
   async getByReportingEmail(email: string): Promise<Incident[]> {
     return db<Incident>("incidents")
-      .where({ reporting_person_email: email })
+      .where("incident_users_view.user_email", email)
+      .where("incident_users_view.reason", "reporter")
+      .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])
+      .innerJoin("incident_users_view", "incidents.id", "incident_users_view.incident_id")
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
@@ -93,7 +118,10 @@ export class IncidentService {
 
   async getBySupervisorEmail(email: string): Promise<Incident[]> {
     return db<Incident>("incidents")
-      .where({ supervisor_email: email })
+      .where("incident_users_view.user_email", email)
+      .where("incident_users_view.reason", "supervisor")
+      .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])
+      .innerJoin("incident_users_view", "incidents.id", "incident_users_view.incident_id")
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")

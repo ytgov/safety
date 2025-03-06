@@ -1,7 +1,11 @@
 <template>
-  <v-card class="default mb-5">
+  <v-card class="default">
     <v-card-text>
-      <h4 class="text-h5 mb-4">My Reports</h4>
+      <v-btn to="/reports" class="my-0 float-right text-subtitle-2" color="primary" size="small" variant="text"
+        >All Reports</v-btn
+      >
+      <h4 class="text-h5 mb-0">My Open Reports</h4>
+      <p class="mb-3">Unresolved reports submitted by me</p>
 
       <v-list
         v-if="myReports && myReports.length > 0"
@@ -63,6 +67,6 @@ function makeSubtitle(input: Incident) {
 }
 
 function openReportClick(input: Incident) {
-  router.push(`/reports/${input.id}`);
+  router.push(`/reports/${input.slug}`);
 }
 </script>

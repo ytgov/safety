@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
 import { ATTACHMENT_URL, LOCATION_URL, OFFLINEREPORTS_URL, REPORTS_URL } from "@/urls";
+import { isEmpty, isNil } from "lodash";
 
 export const useReportStore = defineStore("reports", {
   state: () => ({
@@ -10,6 +11,9 @@ export const useReportStore = defineStore("reports", {
     urgencies: [] as Urgency[],
     selectedReport: undefined as Incident | undefined,
     isLoading: false,
+    reports: [] as Incident[],
+    totalCount: 0,
+    linkedUsers: [] as any[],
   }),
   getters: {
     currentStep(state) {
@@ -38,6 +42,39 @@ export const useReportStore = defineStore("reports", {
       const api = useApiStore();
       return api.call("get", `${LOCATION_URL}`).then((resp) => {
         this.locations = resp.data;
+        return resp.data;
+      });
+    },
+
+    async loadReports({
+      page,
+      perPage,
+      search,
+      status,
+      urgency,
+      location,
+    }: {
+      page: number | null;
+      perPage: number | null;
+      search: string | null;
+      status: string | null;
+      urgency: string | null;
+      location: string | null;
+    }) {
+      this.isLoading = true;
+      const api = useApiStore();
+
+      let queryUrl = `${REPORTS_URL}?page=${page}&perPage=${perPage}&`;
+
+      if (!isEmpty(search)) queryUrl += `search=${search}&`;
+      if (!isNil(status)) queryUrl += `status=${status}&`;
+      if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
+      if (!isNil(location)) queryUrl += `location=${location}&`;
+
+      return api.secureCall("get", queryUrl).then((resp) => {
+        this.reports = resp.data;
+        this.totalCount = resp.totalCount;
+        this.isLoading = false;
         return resp.data;
       });
     },
@@ -131,10 +168,6 @@ export const useReportStore = defineStore("reports", {
       return api.upload("post", `${OFFLINEREPORTS_URL}`, formData).finally(() => {
         this.isLoading = false;
       });
-
-      /* const storedJson = this.getStoredReports();
-      storedJson.push(report);
-      localStorage.setItem("reports", JSON.stringify(storedJson)); */
     },
 
     getStoredReports() {
@@ -156,10 +189,10 @@ export const useReportStore = defineStore("reports", {
       return api.secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}`, body);
     },
 
-    async loadReport(reportId: number) {
+    async loadReport(slug: string) {
       const api = useApiStore();
       return api
-        .secureCall("get", `${REPORTS_URL}/${reportId}`)
+        .secureCall("get", `${REPORTS_URL}/${slug}`)
         .then((resp) => {
           this.selectedReport = resp.data;
         })
@@ -189,7 +222,7 @@ export const useReportStore = defineStore("reports", {
           control: step.control,
         })
         .then((resp) => {
-          if (this.selectedReport) this.loadReport(this.selectedReport.id);
+          if (this.selectedReport) this.loadReport(this.selectedReport.slug);
         })
         .catch(() => {
           console.log(`Error in completeStep /step/${step.id}/complete`);
@@ -203,88 +236,11 @@ export const useReportStore = defineStore("reports", {
       return api
         .secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}/step/${step.id}/revert`)
         .then((resp) => {
-          if (this.selectedReport) this.loadReport(this.selectedReport.id);
+          if (this.selectedReport) this.loadReport(this.selectedReport.slug);
         })
         .catch(() => {
           console.log(`Error in revertStep /step/${step.id}/complete`);
         });
-    },
-
-    async saveAction(action: any) {
-      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
-      const api = useApiStore();
-
-      if (action.id) {
-        return api
-          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}`, action)
-          .then((resp) => {
-            if (reportId != -1) this.loadReport(reportId);
-          })
-          .catch(() => {
-            console.log(`Error in completeStep /${reportId}/action/${action.id}`);
-          });
-      } else {
-        return api
-          .secureCall("post", `${REPORTS_URL}/${reportId}/action`, action)
-          .then((resp) => {
-            if (reportId != -1) this.loadReport(reportId);
-          })
-          .catch(() => {
-            console.log(`Error in saveAction /${reportId}/action/${action.id}`);
-          });
-      }
-    },
-
-    async deleteAction(action: any) {
-      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
-      const api = useApiStore();
-
-      if (action.id) {
-        return api
-          .secureCall("delete", `${REPORTS_URL}/${reportId}/action/${action.id}`)
-          .then((resp) => {
-            if (this.selectedReport) this.loadReport(reportId);
-          })
-          .catch(() => {
-            console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
-          });
-      }
-    },
-
-    async completeAction(action: any) {
-      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
-      const api = useApiStore();
-
-      if (action.id) {
-        return api
-          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}/complete`, {
-            control: action.control,
-            notes: action.notes,
-          })
-          .then((resp) => {
-            if (this.selectedReport) this.loadReport(reportId);
-          })
-          .catch(() => {
-            console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
-          });
-      }
-    },
-
-    async revertAction(action: any) {
-      const reportId = this.selectedReport?.id ?? action.incident_id ?? action.hazard_id ?? 0;
-
-      const api = useApiStore();
-
-      if (action.id) {
-        return api
-          .secureCall("put", `${REPORTS_URL}/${reportId}/action/${action.id}/revert`)
-          .then((resp) => {
-            if (this.selectedReport) this.loadReport(reportId);
-          })
-          .catch(() => {
-            console.log(`Error in deleteAction /${reportId}/action/${action.id}`);
-          });
-      }
     },
 
     openAttachment(attachment: any) {
@@ -295,12 +251,12 @@ export const useReportStore = defineStore("reports", {
 
     async saveInvestigation(investigation: any) {
       if (!this.selectedReport) return;
-      let reportId = this.selectedReport.id;
+      let reportId = this.selectedReport.slug;
 
       const api = useApiStore();
 
       return api
-        .secureCall("post", `${REPORTS_URL}/${reportId}/investigation`, investigation)
+        .secureCall("post", `${REPORTS_URL}/${this.selectedReport.id}/investigation`, investigation)
         .then((resp) => {
           if (this.selectedReport) this.loadReport(reportId);
           return this.selectedReport;
@@ -322,6 +278,31 @@ export const useReportStore = defineStore("reports", {
 
       const api = useApiStore();
       return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-employee-notification`, {});
+    },
+
+    loadLinkedUsers() {
+      let reportId = this.selectedReport?.slug;
+
+      const api = useApiStore();
+      return api.secureCall("get", `${REPORTS_URL}/${reportId}/linked-users`).then((resp) => {
+        this.linkedUsers = resp.data;
+      });
+    },
+
+    addLinkedUser(user: any) {
+      let reportId = this.selectedReport?.slug;
+      const api = useApiStore();
+      return api.secureCall("post", `${REPORTS_URL}/${reportId}/linked-users`, user).then(() => {
+        this.loadLinkedUsers();
+      });
+    },
+
+    removeLinkedUser(user: any) {
+      let reportId = this.selectedReport?.slug;
+      const api = useApiStore();
+      return api.secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`).then(() => {
+        this.loadLinkedUsers();
+      });
     },
   },
 });
@@ -362,6 +343,7 @@ export interface Incident {
   investigation_notes?: string;
   additional_description?: string;
   location_detail?: string;
+  slug: string;
 
   incident_type_description: string;
   status_name: string;

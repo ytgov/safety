@@ -1,33 +1,73 @@
 import express, { Request, Response } from "express";
-import { create, isArray, isEmpty } from "lodash";
+import { isArray, isNil } from "lodash";
 
+import { Knex } from "knex";
 import { db as knex } from "../data";
 import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
 import {
   Action,
   ActionStatuses,
-  ActionTypes,
-  Hazard,
   HazardStatuses,
   Incident,
   IncidentAttachment,
-  IncidentHazard,
-  IncidentHazardTypes,
   IncidentStatuses,
   IncidentStep,
-  Scopes,
   SensitivityLevels,
   User,
   UserRole,
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
 import { DateTime } from "luxon";
-import { all } from "axios";
+import { generateSlug } from "src/utils/generateSlug";
 
 export const reportRouter = express.Router();
 const db = new IncidentService();
 const emailService = new EmailService();
 const directoryService = new DirectoryService();
+
+reportRouter.get("/", async (req: Request, res: Response) => {
+  const { page, perPage, search, status, urgency, location } = req.query;
+
+  const pageNum = parseInt(page as string) || 1;
+  const perPageNum = parseInt(perPage as string) || 10;
+
+  const matchingRoles = (req.user.roles = req.user.roles || []);
+
+  const countQuery = function (q: Knex.QueryBuilder) {
+    if (!isNil(search)) q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+    if (!isNil(status)) q.where("status_code", status);
+    if (!isNil(urgency)) q.where("urgency_code", urgency);
+    if (!isNil(location)) q.where("location_code", location);
+    return q;
+  };
+
+  const listQuery = function (q: Knex.QueryBuilder) {
+    if (!isNil(search)) q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+    if (!isNil(status)) q.where("status_code", status);
+    if (!isNil(urgency)) q.where("urgency_code", urgency);
+    if (!isNil(location)) q.where("location_code", location);
+    q.limit(perPageNum);
+    q.offset((pageNum - 1) * perPageNum);
+    return q;
+  };
+
+  const list = await db.getAll(req.user.email, listQuery);
+  const count = await db.getCount(req.user.email, countQuery);
+
+  const locations = await knex("locations");
+  const types = await knex("incident_types");
+  const statuses = await knex("incident_statuses");
+  const access = await knex("incident_users_view").where({ user_email: req.user.email });
+
+  for (const item of list) {
+    item.location = locations.find((l: any) => l.code === item.location_code);
+    item.type = types.find((t: any) => t.id === item.incident_type_id);
+    item.status = statuses.find((s: any) => s.code === item.status_code);
+    item.access = access.filter((a: any) => a.incident_id === item.id) ?? [];
+  }
+
+  return res.json({ data: list, totalCount: count?.count });
+});
 
 reportRouter.get("/my-reports", async (req: Request, res: Response) => {
   const list = await db.getByReportingEmail(req.user.email);
@@ -42,16 +82,24 @@ reportRouter.get("/my-supervisor-reports", async (req: Request, res: Response) =
 reportRouter.get("/role/:role", async (req: Request, res: Response) => {
   const { role } = req.params;
 
-  const match = req.user.roles.find((r: UserRole) => r.name == role);
-  if (!match) return res.json({ data: [] });
+  const userRoles = (req.user.roles = req.user.roles || []);
+  const matchingRoles = userRoles.filter((r: UserRole) => r.name == role);
+  const matchingDepartments = matchingRoles.map((r: UserRole) => r.department_code);
 
-  const list = await db.getAll();
+  const query = function (query: Knex.QueryBuilder) {
+    query.whereIn("department_code", matchingDepartments);
+
+    query.whereNot({ status_code: IncidentStatuses.CLOSED.code });
+    return query;
+  };
+
+  const list = await db.getAll(req.user.email, query);
   res.json({ data: list });
 });
 
-reportRouter.get("/:id", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const data = await db.getById(id);
+reportRouter.get("/:slug", async (req: Request, res: Response) => {
+  const { slug } = req.params;
+  const data = await db.getBySlug(slug, req.user.email);
 
   if (!data) return res.status(404).send();
 
@@ -165,6 +213,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       urgency_code: urgency,
       location_code,
       location_detail,
+      slug: generateSlug(),
     } as Incident;
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");
@@ -174,56 +223,6 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     if (eventType == "hazard") {
       steps = ["Hazard Identified", "Assessment of Hazard", "Control the Hazard", "Employee Notification"];
-
-      let hazard_id = undefined;
-
-      const hazard = {
-        hazard_type_id: 1,
-        location_code: incident.location_code,
-        department_code: incident.department_code,
-        scope_code: Scopes.DEFAULT.code,
-        status_code: HazardStatuses.OPEN.code,
-        sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-        description: `Hazard: ${description}`,
-        location_detail: incident.location_detail,
-        reopen_count: 0,
-        created_at: InsertableDate(DateTime.utc().toISO()),
-        reported_at: incident.reported_at,
-        urgency_code: "Low",
-      } as Hazard;
-
-      const insertedHazards = await trx("hazards").insert(hazard).returning("*");
-      hazard_id = insertedHazards[0].id;
-
-      const link = {
-        hazard_id: hazard_id,
-        incident_id: parseInt(insertedIncidentId),
-        priority_order: 1,
-        incident_hazard_type_code: IncidentHazardTypes.CONTRIBUTING_FACTOR.code,
-      } as IncidentHazard;
-
-      await trx("incident_hazards").insert(link);
-
-      const action = {
-        incident_id: parseInt(insertedIncidentId),
-        hazard_id,
-        created_at: InsertableDate(DateTime.utc().toISO()),
-        description: `Hazard: ${description}`,
-        action_type_code: ActionTypes.USER_GENERATED.code,
-        sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-        status_code: ActionStatuses.OPEN.code,
-        actor_user_email: req.user.email,
-        actor_user_id: req.user.id,
-      } as Action;
-
-      await trx("actions").insert(action);
-      /* 
-      if (actor_user_email) {
-        await emailService.sendTaskAssignmentNotification(
-          { fullName: actor_display_name, email: actor_user_email },
-          action
-        );
-      } */
     } else {
       steps = ["Incident Reported", "Investigation", "Control Plan", "Controls Implemented", "Employee Notification"];
     }
@@ -353,6 +352,45 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
   return res.json({ data: {} });
 });
 
+reportRouter.get("/:slug/linked-users", async (req: Request, res: Response) => {
+  const { slug } = req.params;
+
+  const incident = await db.getBySlug(slug, req.user.email);
+
+  if (incident) {
+    const list = await knex("incident_users").where({ incident_id: incident.id });
+    return res.json({ data: list });
+  }
+
+  res.json({ data: [] });
+});
+
+reportRouter.post("/:slug/linked-users", async (req: Request, res: Response) => {
+  const { slug } = req.params;
+
+  const incident = await db.getBySlug(slug, req.user.email);
+
+  if (incident) {
+    await knex("incident_users").insert(req.body);
+    return res.json({ data: {} });
+  }
+
+  res.json({ data: [] });
+});
+
+reportRouter.delete("/:slug/linked-users/:id", async (req: Request, res: Response) => {
+  const { slug, id } = req.params;
+
+  const incident = await db.getBySlug(slug, req.user.email);
+
+  if (incident) {
+    const list = await knex("incident_users").where({ id }).delete();
+    return res.json({ data: list });
+  }
+
+  res.json({ data: [] });
+});
+
 reportRouter.post("/:id/send-notification", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { recipients } = req.body;
@@ -390,177 +428,12 @@ reportRouter.post("/:id/send-employee-notification", async (req: Request, res: R
   return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
 });
 
-reportRouter.post("/:id/action", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const {
-    description,
-    notes,
-    actor_user_email,
-    actor_user_id,
-    actor_display_name,
-    actor_role_type_id,
-    due_date,
-    create_hazard,
-    create_action,
-    hazard_type_id,
-    urgency_code,
-  } = req.body;
-
-  // create hazards here too!
-  const incident = await knex("incidents")
-    .innerJoin("incident_types", "incidents.incident_type_id", "incident_types.id")
-    .where({ "incidents.id": id })
-    .select("incidents.*", "incident_types.description as incident_type_description")
-    .first();
-  //const defaultIncidentType = await knex("incident_types").where({ name: eventType }).select("id").first();
-
-  let hazard_id = undefined;
-
-  if (create_hazard) {
-    const hazard = {
-      hazard_type_id: hazard_type_id,
-      location_code: incident.location_code,
-      department_code: incident.department_code,
-      scope_code: Scopes.DEFAULT.code,
-      status_code: HazardStatuses.OPEN.code,
-      sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-      description: `${incident.incident_type_description} ${description}`,
-      location_detail: incident.location_detail,
-      reopen_count: 0,
-      created_at: InsertableDate(DateTime.utc().toISO()),
-      reported_at: incident.reported_at,
-      urgency_code: urgency_code,
-    } as Hazard;
-
-    const insertedHazards = await knex("hazards").insert(hazard).returning("*");
-    hazard_id = insertedHazards[0].id;
-
-    const link = {
-      hazard_id: hazard_id,
-      incident_id: parseInt(id),
-      priority_order: 1,
-      incident_hazard_type_code: IncidentHazardTypes.CONTRIBUTING_FACTOR.code,
-    } as IncidentHazard;
-
-    await knex("incident_hazards").insert(link);
-  }
-
-  if (create_action) {
-    const action = {
-      incident_id: parseInt(id),
-      hazard_id,
-      created_at: InsertableDate(DateTime.utc().toISO()),
-      description: `${incident.incident_type_description.replace(/\(.*\)/g, "")} ${description}`,
-      notes,
-      action_type_code: ActionTypes.USER_GENERATED.code,
-      sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-      status_code: ActionStatuses.OPEN.code,
-      actor_user_email,
-      actor_user_id,
-      actor_role_type_id,
-      due_date: InsertableDate(due_date),
-    } as Action;
-
-    await knex("actions").insert(action);
-
-    if (actor_user_email) {
-      await emailService.sendTaskAssignmentNotification(
-        { fullName: actor_display_name, email: actor_user_email },
-        action
-      );
-    }
-  }
-
-  return res.json({ data: {}, messages: [{ variant: "success", text: "Task Saved" }] });
-});
-
-reportRouter.put("/:id/action/:action_id", async (req: Request, res: Response) => {
-  const { action_id } = req.params;
-  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code, control } = req.body;
-  let { actor_user_id } = req.body;
-
-  const action = await knex("actions").where({ id: action_id }).first();
-  if (!action) return res.status(404).send();
-
-  if (!isEmpty(actor_user_email)) {
-    const actorUser = await knex("users").where({ email: actor_user_email }).first();
-    if (actorUser) actor_user_id = actorUser.id;
-  }
-
-  await knex("actions")
-    .where({ id: action_id })
-    .update({
-      notes,
-      actor_user_email,
-      actor_user_id,
-      actor_role_type_id,
-      due_date: InsertableDate(due_date),
-      status_code,
-      control,
-    });
-
-  await updateActionHazards(action, status_code, urgency_code, control);
-  await updateIncidentStatus(action, req.user);
-
-  return res.json({ data: {} });
-});
-
-reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
-  const { action_id } = req.params;
-
-  await knex("actions").where({ id: action_id }).delete();
-
-  return res.json({ data: {} });
-});
-
-reportRouter.delete("/:id/action/:action_id", async (req: Request, res: Response) => {
-  const { action_id } = req.params;
-
-  await knex("actions").where({ id: action_id }).delete();
-
-  return res.json({ data: {} });
-});
-
-reportRouter.put("/:id/action/:action_id/:operation", async (req: Request, res: Response) => {
-  const { action_id, operation } = req.params;
-  const { control, notes } = req.body;
-
-  const action = await knex("actions").where({ id: action_id }).first();
-  if (!action) return res.status(404).send();
-
-  console.log(operation, control);
-
-  if (operation == "complete") {
-    await knex("actions")
-      .where({ id: action_id })
-      .update({
-        complete_date: InsertableDate(DateTime.utc().toISO()),
-        complete_name: req.user.display_name,
-        complete_user_id: req.user.id,
-        status_code: ActionStatuses.COMPLETE.code,
-        control,
-        notes,
-      });
-
-    await updateActionHazards(action, ActionStatuses.COMPLETE.code, action.urgency_code, control);
-    await updateIncidentStatus(action, req.user);
-  } else if (operation == "revert") {
-    await knex("actions").where({ id: action_id }).update({
-      complete_date: null,
-      complete_name: null,
-      complete_user_id: null,
-      status_code: ActionStatuses.READY.code,
-      control: null,
-    });
-
-    await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code, null);
-    await updateIncidentStatus(action, req.user);
-  }
-
-  return res.json({ data: {} });
-});
-
-async function updateActionHazards(action: Action, status_code: string, urgency_code: string, control?: string | null) {
+export async function updateActionHazards(
+  action: Action,
+  status_code: string,
+  urgency_code: string,
+  control?: string | null
+) {
   let hazardStatus = HazardStatuses.OPEN.code;
 
   if (status_code == ActionStatuses.READY.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;

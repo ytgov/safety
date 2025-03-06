@@ -1,10 +1,10 @@
 <template>
-  <v-breadcrumbs :items="[{ title: 'Home', to: '/' }, { title: 'Hazard Library' }]" />
+  <v-breadcrumbs :items="[{ title: 'Home', to: '/' }, { title: 'Reports' }]" />
 
   <div>
     <div class="float-right"></div>
 
-    <h1 class="text-h4 mb-2">Hazard Library</h1>
+    <h1 class="text-h4 mb-2">Reports</h1>
     <div class="my-3" style="clear: both"></div>
   </div>
 
@@ -15,7 +15,7 @@
           <v-text-field v-model="search" label="Search" outlined dense clearable prepend-inner-icon="mdi-magnify" />
         </v-col>
         <v-col cols="12" md="3">
-          <HazardStatusSelect v-model="status" label="Status" clearable />
+          <IncidentStatusSelect v-model="status" label="Status" clearable />
         </v-col>
         <v-col cols="12" md="3">
           <HazardUrgencySelect v-model="urgency" label="Urgency" clearable />
@@ -29,11 +29,11 @@
         v-model:items-per-page="perPage"
         :page="page"
         :headers="headers"
-        :items="hazards"
+        :items="reports"
         :loading="isLoading"
         :items-length="totalCount"
-        @click:row="openDialog"
-        @update:page="updatePage">
+        @update:page="updatePage"
+        @click:row="openReport">
         <template #item.created_at="{ item }">
           {{ formatDate(item.created_at) }}
         </template>
@@ -48,36 +48,24 @@
           <v-chip v-else-if="item.status.name == 'In Progress'" color="info" small>{{ item.status.name }}</v-chip>
           <v-chip v-else color="error" small>{{ item.status.name }}</v-chip>
         </template>
-        <template #item.due_date="{ item }">
-          <v-chip :color="dueDateColor(item.due_date)" small>{{ item.due_date }}</v-chip>
-        </template>
       </v-data-table-server>
     </v-card-text>
   </v-card>
-
-  <HazardDetailDialog v-model="dialog" />
-  <ActionCreate v-model="showActionAdd" @doClose="closeDialog"></ActionCreate>
-
-  <ActionEdit v-model="showActionEdit" :action="actionToEdit" :hazard-id="hazardId" @doClose="closeDialog"></ActionEdit>
 </template>
 
 <script setup>
 import { ref, watch } from "vue";
+import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 
-import HazardDetailDialog from "./HazardDetailDialog.vue";
-import HazardStatusSelect from "@/components/hazard/HazardStatusSelect.vue";
+import IncidentStatusSelect from "@/components/incident/IncidentStatusSelect.vue";
 import HazardUrgencySelect from "@/components/hazard/HazardUrgencySelect.vue";
 import LocationSelect from "@/components/common/LocationSelect.vue";
-import ActionCreate from "@/components/action/ActionCreate.vue";
-import ActionEdit from "@/components/action/ActionDialog.vue";
 
-import { useHazardStore } from "@/store/HazardStore";
+import { useReportStore } from "@/store/ReportStore";
 
-const dialog = ref(false);
-const showActionAdd = ref(false);
-const showActionEdit = ref(false);
+const router = useRouter();
 
 const page = ref(1);
 const perPage = ref(10);
@@ -87,11 +75,7 @@ const status = ref(null);
 const urgency = ref(null);
 const location = ref(null);
 
-const actionToEdit = ref(null);
-const hazardId = ref(null);
-
 const headers = [
-  { title: "Due", value: "due_date" },
   { title: "Description", value: "description" },
   { title: "Status", value: "status" },
   { title: "Urgency", value: "urgency_code" },
@@ -100,9 +84,9 @@ const headers = [
   { title: "Assignee", value: "assigned_to" },
 ];
 
-const hazardStore = useHazardStore();
-const { loadHazards, select } = hazardStore;
-const { hazards, totalCount, isLoading, categories } = storeToRefs(hazardStore);
+const reportStore = useReportStore();
+const { loadReports } = reportStore;
+const { reports, totalCount, isLoading } = storeToRefs(reportStore);
 
 reload();
 
@@ -111,7 +95,7 @@ watch([search, status, urgency, location, page, perPage], () => {
 });
 
 async function reload() {
-  await loadHazards({
+  await loadReports({
     page: page.value,
     perPage: perPage.value,
     search: search.value,
@@ -130,35 +114,7 @@ function formatDate(input) {
   return DateTime.fromISO(input).toFormat("yyyy-MM-dd");
 }
 
-function closeDialog() {
-  reload();
-  showActionAdd.value = false;
-  showActionEdit.value = false;
-}
-
-function dueDateColor(dueDate) {
-  const now = DateTime.now();
-  const date = DateTime.fromISO(dueDate);
-  if (date < now) {
-    return "error";
-  } else if (date.diff(now, "days").days < 2) {
-    return "warning";
-  } else if (date.diff(now, "days").days < 7) {
-    return "info";
-  } else {
-    return "success";
-  }
-}
-
-function openDialog(_event, { item }) {
-  const actions = item.actions;
-  if (actions.length === 0) {
-    select(item);
-    dialog.value = true;
-  } else {
-    actionToEdit.value = actions[0];
-    hazardId.value = item.id;
-    showActionEdit.value = true;
-  }
+function openReport(event, { item }) {
+  router.push(`/reports/${item.slug}`);
 }
 </script>

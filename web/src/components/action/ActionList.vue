@@ -9,22 +9,14 @@
             style="background-color: #ffffff"
             class="pt-3 pb-3"
             @click="showEditClick(action)">
-            <template #append>
-              <v-btn
-                v-if="action.complete_date"
-                fab
-                class="my-0"
-                color="success"
-                size="x-small"
-                icon="mdi-check"></v-btn>
-              <v-btn
-                v-else-if="action.status_code == 'Ready'"
-                fab
-                class="my-0"
-                color="grey"
-                size="x-small"
-                icon="mdi-circle-outline"></v-btn>
-              <v-btn v-else fab class="my-0" color="warning" size="x-small" icon="mdi-alert-circle-outline"></v-btn>
+            <template #prepend>
+              <v-avatar size="small" class="mx-n2">
+                <v-icon v-if="action.complete_date" color="success" size="26">mdi-check-circle</v-icon>
+                <v-icon v-else-if="action.status_code == 'Open'" color="warning" size="26"
+                  >mdi-alert-circle-outline</v-icon
+                >
+                <v-icon v-else color="info" size="26">mdi-circle-outline</v-icon>
+              </v-avatar>
             </template>
           </v-list-item>
           <v-divider v-if="idx < selectedReport.actions.length - 1" />

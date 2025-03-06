@@ -144,31 +144,6 @@
               multiple />
           </v-card-text>
         </v-window-item>
-        <v-window-item :value="6">
-          <v-card-text>
-            <h3>Review</h3>
-            <p class="mb-5">
-              In this investigation, you have identified several items. Please determine whether they required action,
-              is a hazard or both.
-            </p>
-            <table style="width: 100%; text-align: center">
-              <tr>
-                <th style="text-align: left">Item</th>
-                <th>Action</th>
-                <th>Hazard</th>
-              </tr>
-              <tr v-for="item of itemsToCreate" :key="item.description">
-                <td style="text-align: left">{{ item.description }}</td>
-                <td>
-                  <v-checkbox v-model="item.create_action" class="my-0 mx-auto" density="compact" hide-details style="width: 24px !important" />
-                </td>
-                <td>
-                  <v-checkbox v-model="item.create_hazard" class="my-0 mx-auto" density="compact" hide-details style="width: 24px !important" />
-                </td>
-              </tr>
-            </table>
-          </v-card-text>
-        </v-window-item>
       </v-window>
 
       <v-card-text class="d-flex">
@@ -189,12 +164,16 @@ import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { isNil } from "lodash";
+import { useActionStore } from "@/store/ActionStore";
 
 const props = defineProps(["incidentId", "incident_type_description"]);
 const emits = defineEmits(["complete", "close"]);
 
 const reportStore = useReportStore();
-const { saveAction, saveInvestigation } = reportStore;
+const { saveInvestigation } = reportStore;
+
+const actionStore = useActionStore();
+const { saveAction } = actionStore;
 
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
@@ -214,7 +193,6 @@ const steps = ref([
   { name: "Immediate Cause" },
   { name: "Contributing Factors" },
   { name: "Root Cause" },
-  { name: "Review" },
 ]);
 
 const collections_other = ref("");
@@ -392,14 +370,6 @@ const hasAllRootCauses = computed(() => {
 });
 
 const itemsToCreate = ref([]);
-const hasItemsToCreate = computed(() => {
-  if (itemsToCreate.value.length == 0) return false;
-
-  const hasAction = itemsToCreate.value.filter((i) => i.create_action).length > 0;
-  const hasHazard = itemsToCreate.value.filter((i) => i.create_hazard).length > 0;
-
-  return hasAction || hasHazard;
-});
 
 const isPrev = computed(() => {
   return step.value > 0;
@@ -411,7 +381,6 @@ const isNext = computed(() => {
   if (step.value == 3) return hasAllRequiredCauses.value;
   if (step.value == 4) return hasAllRequiredFactors.value;
   if (step.value == 5) return hasAllRootCauses.value;
-  if (step.value == 6) return hasItemsToCreate.value;
 
   return step.value < steps.value.length - 1;
 });
@@ -434,47 +403,42 @@ function close() {
 }
 
 watch(step, (stepValue) => {
-  if (stepValue != 6) return;
+  if (stepValue != 5) return;
 
   const items = [];
   const urgency_code = "Low";
   const hazard_type_id = 1;
-  const create_hazard = false;
-  const create_action = false;
 
   items.push({
+    incident_id: props.incidentId,
     description: `Acting/Practice: ${acts.value.title}`,
     actor_user_id: user.id,
     actor_user_email: user.email,
     actor_display_name: user.display_name,
     urgency_code,
     hazard_type_id,
-    create_hazard,
-    create_action,
   });
 
   for (let item of factors.value) {
     items.push({
+      incident_id: props.incidentId,
       description: `Contributing Factor: ${item.title}`,
       actor_user_id: user.id,
       actor_user_email: user.email,
       actor_display_name: user.display_name,
       urgency_code,
       hazard_type_id,
-      create_hazard,
-      create_action,
     });
   }
   for (let item of causes.value) {
     items.push({
+      incident_id: props.incidentId,
       description: `Root Cause: ${item.title}`,
       actor_user_id: user.id,
       actor_user_email: user.email,
       actor_display_name: user.display_name,
       urgency_code,
       hazard_type_id,
-      create_hazard,
-      create_action,
     });
   }
 
@@ -482,7 +446,7 @@ watch(step, (stepValue) => {
 });
 
 async function save() {
-  showOverlay();
+  showOverlay("Saving Investigation");
 
   const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
   const eventInfo = eventOptions.filter((o) => events.value.includes(o.value));

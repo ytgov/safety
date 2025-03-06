@@ -64,7 +64,7 @@
   <v-overlay v-model="showApplicationOverlay" class="align-center justify-center">
     <div class="text-center">
       <v-progress-circular indeterminate size="64" class="mb-5" color="#f3b228" width="6"></v-progress-circular>
-      <h2>Loading {{ applicationName }}</h2>
+      <h2>{{ overlayMessage }}</h2>
     </div>
   </v-overlay>
 </template>
@@ -80,7 +80,7 @@ import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 
 const interfaceStore = useInterfaceStore();
-const { showApplicationOverlay, isOffline } = storeToRefs(interfaceStore);
+const { showApplicationOverlay, isOffline, overlayMessage } = storeToRefs(interfaceStore);
 const { showOverlay, hideOverlay } = interfaceStore;
 
 const userStore = useUserStore();
@@ -97,7 +97,8 @@ onMounted(async () => {
 });
 
 async function logoutClick() {
-  await logout({ returnTo: "https://safety.gov.yk.ca" });
+  console.log("returnTo", window.location.origin);
+  await logout({ logoutParams: { returnTo: window.location.origin }, returnTo: window.location.origin });
 }
 
 async function loginClick() {
