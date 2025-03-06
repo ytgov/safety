@@ -23,7 +23,7 @@ export async function up(knex: knex.Knex) {
       FROM "incidents"
       UNION
       SELECT "id", "supervisor_email", 'supervisor'
-      FROM "incidents") AS "t"
+      FROM "incidents") "t"
       ORDER BY 1,2,3`);
 }
 
