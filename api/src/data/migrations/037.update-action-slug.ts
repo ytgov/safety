@@ -1,5 +1,5 @@
 import * as knex from "knex";
-import { generateSlug } from "src/utils/generateSlug";
+import { generateSlug } from "../../utils/generateSlug";
 
 export async function up(knex: knex.Knex) {
   await knex.schema.alterTable("actions", function (table) {
