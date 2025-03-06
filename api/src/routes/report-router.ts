@@ -18,7 +18,7 @@ import {
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
 import { DateTime } from "luxon";
-import { generateSlug } from "src/utils/generateSlug";
+import { generateSlug } from "../utils/generateSlug";
 
 export const reportRouter = express.Router();
 const db = new IncidentService();
