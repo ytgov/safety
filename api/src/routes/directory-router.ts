@@ -29,7 +29,7 @@ directoryRouter.post("/search-action-directory", async (req: Request, res: Respo
 
   for (const part of parts) {
     allUsersQuery.whereRaw(
-      `(LOWER(email) LIKE '${part}%' OR LOWER(first_name) LIKE '${part}%' OR LOWER(last_name) LIKE '${part}%')`
+      `(LOWER("email") LIKE '${part}%' OR LOWER("first_name") LIKE '${part}%' OR LOWER("last_name") LIKE '${part}%')`
     );
   }
 
