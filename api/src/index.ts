@@ -40,7 +40,7 @@ app.use(
       "frame-ancestors": ["'self'"],
       "img-src": ["'self'", "data:"],
       "object-src": ["'none'"],
-      "script-src": ["'self'", "'unsafe-eval'", "https://storage.googleapis.com"],
+      "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'", "https://storage.googleapis.com"],
       "script-src-attr": ["'none'"],
       "style-src": ["'self'", "https:", "'unsafe-inline'"],
       "worker-src": ["'self'", "blob:"],
