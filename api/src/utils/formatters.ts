@@ -57,8 +57,6 @@ export function InsertableDate(input: string | null) {
     if (isD.isValid) date = isD.toJSDate();
 
     if (DB_CLIENT == "oracledb") {
-      console.log("CONVERTING FOR ORACLE", input);
-
       return knex.raw(
         `TO_TIMESTAMP('${DateTime.fromJSDate(date).toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`
       );
