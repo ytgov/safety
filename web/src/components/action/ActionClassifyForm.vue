@@ -27,7 +27,7 @@
           <h3>{{ currentStep.title }}</h3>
 
           <div class="d-flex">
-            <v-checkbox v-model="categories" value="Chemical" hide-details density="compact" label="Chemical" />
+            <v-checkbox v-model="action.categories" value="Chemical" hide-details density="compact" label="Chemical" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
@@ -38,7 +38,7 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox v-model="categories" value="Biological" hide-details density="compact" label="Biological" />
+            <v-checkbox v-model="action.categories" value="Biological" hide-details density="compact" label="Biological" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
@@ -48,7 +48,7 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox v-model="categories" value="Ergonomic" hide-details density="compact" label="Ergonomic" />
+            <v-checkbox v-model="action.categories" value="Ergonomic" hide-details density="compact" label="Ergonomic" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
@@ -59,7 +59,7 @@
 
           <div class="d-flex">
             <v-checkbox
-              v-model="categories"
+              v-model="action.categories"
               value="Physical Conditions"
               hide-details
               density="compact"
@@ -75,7 +75,7 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox v-model="categories" value="Safety" hide-details density="compact" label="Safety" />
+            <v-checkbox v-model="action.categories" value="Safety" hide-details density="compact" label="Safety" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" style="opacity: 1" v-bind="props"
@@ -232,7 +232,7 @@ const isPrev = computed(() => {
   return currentStep.value.step > 0;
 });
 const isNext = computed(() => {
-  if (setupStep.value == 1) return categories.value.length > 0;
+  if (setupStep.value == 1) return props.action.categories.length > 0;
   if (setupStep.value == 2) return !isNil(riskPriority.value);
   return currentStep.value.step < setupStepOptions.value.length - 1;
 });
@@ -241,7 +241,6 @@ const isDone = computed(() => {
   return setupStep.value == setupStepOptions.value.length - 1;
 });
 
-const categories = ref([]);
 const riskPriority = ref(null);
 const maxDays = computed(() => {
   let daysToComplete = 30;
@@ -261,7 +260,6 @@ const today = computed(() => {
 });
 
 function closeClick() {
-  categories.value = [];
   riskPriority.value = null;
   setupStep.value = 0;
 

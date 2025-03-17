@@ -9,6 +9,13 @@
       <v-col>
         <ActionUserSelector ref="directorySelectorField" label="Assigned to" @selected="handleReassign" />
       </v-col>
+      <v-col cols="12">
+        <v-label>Hazard Categories</v-label>
+
+        <div class="pt-1 mb-n2">
+          <v-chip v-for="category in props.action.categories" :key="category" class="mr-2 mb-2">{{ category }}</v-chip>
+        </div>
+      </v-col>
 
       <v-col cols="12">
         <v-label>Hierarchy of Controls</v-label>
