@@ -48,6 +48,7 @@ export const useHazardStore = defineStore("hazards", {
       status,
       urgency,
       location,
+      category,
     }: {
       page: number | null;
       perPage: number | null;
@@ -55,6 +56,7 @@ export const useHazardStore = defineStore("hazards", {
       status: string | null;
       urgency: string | null;
       location: string | null;
+      category: string | null;
     }) {
       this.isLoading = true;
       const api = useApiStore();
@@ -65,6 +67,7 @@ export const useHazardStore = defineStore("hazards", {
       if (!isNil(status)) queryUrl += `status=${status}&`;
       if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
       if (!isNil(location)) queryUrl += `location=${location}&`;
+      if (!isNil(category)) queryUrl += `category=${category}&`;
 
       return api.secureCall("get", queryUrl).then((resp) => {
         this.hazards = resp.data;
@@ -123,6 +126,7 @@ export interface Hazard {
   notes?: string;
   incident_type_description: string;
   status_name: string;
+  categories?: string[] | string;
 
   files?: any[];
   steps?: any[];

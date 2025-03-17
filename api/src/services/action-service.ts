@@ -1,10 +1,15 @@
 import { Action, Incident } from "../data/models";
 import { db } from "../data";
 import { Knex } from "knex";
+import { isArray } from "lodash";
 
 export class ActionService {
   async getAll(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<Action[]> {
-    return db<Action>("actions").modify(where).orderBy("actions.created_at", "desc");
+    return db<Action>("actions")
+      .modify(where)
+      .leftJoin("incidents", "actions.incident_id", "incidents.id")
+      .select("actions.*", "incidents.slug as incident_slug")
+      .orderBy("actions.created_at", "desc");
   }
   async getCount(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<{ count: number }> {
     return db<Action>("actions").modify(where).count("* as count").first();
@@ -20,6 +25,10 @@ export class ActionService {
     const item = await db("actions")
       .where("actions.id", parseInt(`${id}`))
       .first();
+
+    item.categories = item.categories ?? [];
+    if (!isArray(item.categories)) item.categories = item.categories.split(",");
+
     return item;
   }
 

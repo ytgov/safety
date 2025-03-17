@@ -127,6 +127,6 @@ function formatDate(input) {
 }
 
 function openItem(event, { item }) {
-  router.push(`/actions/${item.slug}`);
+  router.push(`/reports/${item.incident_slug}?action=${item.slug}`);
 }
 </script>

@@ -121,6 +121,8 @@
             "
             @selected="handleSupervisorSelect"></DirectorySelector>
 
+          <ReportUserList v-model="report.additional_people" />
+
           <v-label>Attach supporting images</v-label>
           <v-file-input
             v-model="report.files"
@@ -150,6 +152,7 @@ import { useInterfaceStore } from "@/store/InterfaceStore";
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import DirectorySelector from "@/components/DirectorySelector.vue";
 import { requiredRule } from "@/utils/validation";
+import ReportUserList from "@/components/report/ReportUserList.vue";
 
 const reportStore = useReportStore();
 const { initialize, addReport } = reportStore;
@@ -162,7 +165,7 @@ const isValid = ref(false);
 
 await initialize();
 
-const report = ref({ eventType: null, date: new Date(), urgency: "Medium" });
+const report = ref({ eventType: null, date: new Date(), urgency: "Medium", additional_people: [] });
 
 const canSave = computed(() => {
   if (report.value.on_behalf == "Yes") {

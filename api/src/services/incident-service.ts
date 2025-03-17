@@ -1,6 +1,7 @@
 import { Incident } from "../data/models";
 import { db } from "../data";
 import { Knex } from "knex";
+import { isArray } from "lodash";
 
 export class IncidentService {
   async getAll(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<Incident[]> {
@@ -93,6 +94,9 @@ export class IncidentService {
       } else if (action.actor_user_email) {
         action.actor_display_name = action.actor_user_email;
       }
+
+      action.categories = action.categories ?? [];
+      if (!isArray(action.categories)) action.categories = action.categories.split(",");
     }
 
     return item;

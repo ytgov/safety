@@ -80,7 +80,7 @@ async function doDirectorySearch(val: string) {
     val = val ?? "";
     isLoading.value = true;
 
-    searchActionDirectory({ terms: val, showRoles: val.length < 4 })
+    searchActionDirectory({ terms: val, showRoles: false })
       .then((res) => {
         items.value = res;
       })

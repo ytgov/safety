@@ -1,7 +1,7 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
 import { ACTION_URL } from "@/urls";
-import { isEmpty, isNil } from "lodash";
+import { isArray, isEmpty, isNil } from "lodash";
 
 export const useActionStore = defineStore("actions", {
   state: () => ({
@@ -176,10 +176,12 @@ export interface Action {
   complete_user_id?: number;
   control: string;
   hazard_review: number;
+  categories?: string[] | string;
 
   type?: ActionType;
   status?: ActionStatus;
   actor_display_name?: string;
+  incident_slug?: string;
 }
 
 export interface ActionType {
