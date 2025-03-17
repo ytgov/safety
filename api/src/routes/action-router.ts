@@ -51,17 +51,17 @@ actionRouter.get("/", async (req: Request, res: Response) => {
   };
 
   const listQuery = function (q: Knex.QueryBuilder) {
-    if (!isNil(search)) q.whereRaw(`LOWER("description") like '%${search.toString().toLowerCase()}%'`);
+    if (!isNil(search)) q.whereRaw(`LOWER(actions.description) like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) {
       if (status == "Dashboard") {
-        q.whereIn("status_code", [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
+        q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
       } else {
-        q.where("status_code", status);
+        q.where(`actions.status_code`, status);
       }
     }
     if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`));
-    if (isAdmin && status == "Dashboard") q.where("actor_user_email", req.user.email);
-    else if (!isAdmin) q.where("actor_user_email", req.user.email);
+    if (isAdmin && status == "Dashboard") q.where(`actions.actor_user_email`, req.user.email);
+    else if (!isAdmin) q.where(`actions.actor_user_email`, req.user.email);
 
     q.limit(perPageNum);
     q.offset((pageNum - 1) * perPageNum);
@@ -89,7 +89,7 @@ actionRouter.get("/:slug", async (req: Request, res: Response) => {
 
   const listQuery = function (q: Knex.QueryBuilder) {
     if (!isAdmin) q.where("actor_user_email", req.user.email);
-    q.where("slug", slug);
+    q.where("actions.slug", slug);
     return q;
   };
 
@@ -102,6 +102,7 @@ actionRouter.get("/:slug", async (req: Request, res: Response) => {
 
     item.type = types.find((t: any) => t.id === item.action_type_code);
     item.status = statuses.find((s: any) => s.code === item.status_code);
+    item.categories = ((item.categories as string) ?? "").split(",");
     return res.json({ data: item });
   }
 
@@ -161,7 +162,8 @@ actionRouter.post("/", async (req: Request, res: Response) => {
 
 actionRouter.put("/:slug", async (req: Request, res: Response) => {
   const { slug } = req.params;
-  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code, control } = req.body;
+  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code, control, categories } =
+    req.body;
   let { actor_user_id } = req.body;
 
   const action = await knex("actions").where({ slug }).first();
@@ -171,6 +173,8 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
     const actorUser = await knex("users").where({ email: actor_user_email }).first();
     if (actorUser) actor_user_id = actorUser.id;
   }
+
+  let newCategories = categories ?? [];
 
   await knex("actions")
     .where({ slug })
@@ -182,6 +186,7 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
       due_date: InsertableDate(due_date),
       status_code,
       control,
+      categories: newCategories.join(","),
     });
 
   await updateActionHazards(action, status_code, urgency_code, control);
@@ -246,6 +251,7 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
         created_at: InsertableDate(DateTime.utc().toISO()),
         reported_at: incident.reported_at,
         urgency_code: "Low",
+        categories: action.categories,
       } as Hazard;
 
       const insertedHazards = await knex("hazards").insert(hazard).returning("*");
