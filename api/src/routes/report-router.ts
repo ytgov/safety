@@ -225,8 +225,11 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     if (peopleArray.length > 0) {
       for (const email of peopleArray) {
+        const user_email = (email ?? "").trim();
+        if (user_email == "") continue;
+        
         await trx("incident_users").insert({
-          user_email: email,
+          user_email,
           incident_id: insertedIncidentId,
           reason: "supervisor",
         });
