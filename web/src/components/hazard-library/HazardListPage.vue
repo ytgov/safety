@@ -11,17 +11,20 @@
   <v-card class="default mb-5">
     <v-card-text class="pt-5">
       <v-row>
-        <v-col cols="12" md="3">
-          <v-text-field v-model="search" label="Search" outlined dense clearable prepend-inner-icon="mdi-magnify" />
+        <v-col cols="12" md="6">
+          <v-text-field v-model="search" label="Search" outlined dense hide-details clearable prepend-inner-icon="mdi-magnify" />
         </v-col>
         <v-col cols="12" md="3">
-          <HazardStatusSelect v-model="status" label="Status" clearable />
+          <HazardStatusSelect v-model="status" label="Status" clearable hide-details/>
         </v-col>
         <v-col cols="12" md="3">
-          <HazardUrgencySelect v-model="urgency" label="Urgency" clearable />
+          <HazardUrgencySelect v-model="urgency" label="Urgency" clearable hide-details />
         </v-col>
-        <v-col cols="12" md="3">
-          <LocationSelect v-model="location" label="Location" clearable />
+        <v-col cols="12" md="6">
+          <LocationSelect v-model="location" label="Location" clearable hide-details />
+        </v-col>
+        <v-col cols="12" md="6">
+          <HazardCategorySelect v-model="category" label="Category" clearable />
         </v-col>
       </v-row>
 
@@ -74,6 +77,7 @@ import ActionCreate from "@/components/action/ActionCreate.vue";
 import ActionEdit from "@/components/action/ActionDialog.vue";
 
 import { useHazardStore } from "@/store/HazardStore";
+import HazardCategorySelect from "../common/HazardCategorySelect.vue";
 
 const dialog = ref(false);
 const showActionAdd = ref(false);
@@ -86,6 +90,7 @@ const search = ref(null);
 const status = ref(null);
 const urgency = ref(null);
 const location = ref(null);
+const category = ref(null);
 
 const actionToEdit = ref(null);
 const hazardId = ref(null);
@@ -106,7 +111,7 @@ const { hazards, totalCount, isLoading, categories } = storeToRefs(hazardStore);
 
 reload();
 
-watch([search, status, urgency, location, page, perPage], () => {
+watch([search, status, urgency, location, category, page, perPage], () => {
   reload();
 });
 
@@ -118,6 +123,7 @@ async function reload() {
     status: status.value,
     urgency: urgency.value,
     location: location.value,
+    category: category.value,
   });
 }
 

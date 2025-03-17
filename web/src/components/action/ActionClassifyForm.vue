@@ -38,7 +38,12 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox v-model="action.categories" value="Biological" hide-details density="compact" label="Biological" />
+            <v-checkbox
+              v-model="action.categories"
+              value="Biological"
+              hide-details
+              density="compact"
+              label="Biological" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
@@ -48,7 +53,12 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox v-model="action.categories" value="Ergonomic" hide-details density="compact" label="Ergonomic" />
+            <v-checkbox
+              v-model="action.categories"
+              value="Ergonomic"
+              hide-details
+              density="compact"
+              label="Ergonomic" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>

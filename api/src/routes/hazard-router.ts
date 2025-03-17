@@ -8,7 +8,7 @@ import { DateTime } from "luxon";
 export const hazardRouter = express.Router();
 
 hazardRouter.get("/", async (req: Request, res: Response) => {
-  const { page, perPage, search, status, urgency, location } = req.query;
+  const { page, perPage, search, status, urgency, location, category } = req.query;
   const listQuery = knex("hazards");
   const countQuery = knex("hazards");
 
@@ -32,6 +32,10 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
     listQuery.where("location_code", location);
     countQuery.where("location_code", location);
   }
+  if (!isNil(category)) {
+    listQuery.whereILike("categories", `%${category}%`);
+    countQuery.whereILike("categories", `%${category}%`);
+  }
 
   const count = await countQuery.count("* as count").first();
   const list = await listQuery
@@ -50,6 +54,7 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
     hazard.type = types.find((t: any) => t.id === hazard.hazard_type_id);
     hazard.actions = actions.filter((a) => a.hazard_id === hazard.id);
     hazard.status = statuses.find((s: any) => s.code === hazard.status_code);
+    hazard.categories = ((hazard.categories as string) ?? "").split(",");
 
     let dueDate = DateTime.now().plus({ days: 30 });
 
@@ -72,6 +77,7 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
       }
 
       if (!isEmpty(action.actor_display_name)) hazard.assigned_to = action.actor_display_name;
+      action.categories = ((action.categories as string) ?? "").split(",");
     }
   }
 

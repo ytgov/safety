@@ -177,6 +177,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     on_behalf,
     on_behalf_email,
     urgency,
+    additional_people,
   } = req.body;
 
   const reporting_person_email = on_behalf == "Yes" ? on_behalf_email : req.user.email;
@@ -218,6 +219,19 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");
     let insertedIncidentId = insertedIncidents[0].id;
+
+    let peopleArray = additional_people ?? [];
+    peopleArray = isArray(peopleArray) ? peopleArray : peopleArray.split(",");
+
+    if (peopleArray.length > 0) {
+      for (const email of peopleArray) {
+        await trx("incident_users").insert({
+          user_email: email,
+          incident_id: insertedIncidentId,
+          reason: "supervisor",
+        });
+      }
+    }
 
     let steps = new Array<string>();
 
