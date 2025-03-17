@@ -58,6 +58,6 @@ function makeSubtitle(input: Action) {
 }
 
 function openActionClick(input: Action) {
-  router.push(`/actions/${input.slug}`);
+  router.push(`/reports/${input.incident_slug}?action=${input.slug}`);
 }
 </script>

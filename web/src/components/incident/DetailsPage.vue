@@ -177,7 +177,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useRoute } from "vue-router";
@@ -199,8 +199,18 @@ const reportStore = useReportStore();
 const { initialize, loadReport, updateReport, openAttachment } = reportStore;
 const { selectedReport } = storeToRefs(reportStore);
 
-const router = useRoute();
-const reportId = router.params.id;
+const route = useRoute();
+const reportId = route.params.id;
+
+const actionId = computed(() => {
+  return route.query?.action;
+});
+
+const selectedAction = computed(() => {
+  if (actionId.value && selectedReport.value) {
+    return selectedReport.value.actions.filter((a) => a.slug == actionId.value)[0];
+  }
+});
 
 await initialize();
 await loadReport(reportId);
@@ -221,6 +231,12 @@ const isSupervisor = computed(() => {
 
 const isAction = computed(() => {
   return selectedReport.value.access.filter((a) => a.reason == "action").length > 0;
+});
+
+onMounted(() => {
+  if (selectedAction.value) {
+    doShowActionEdit(selectedAction.value);
+  }
 });
 
 setTimeout(() => {
