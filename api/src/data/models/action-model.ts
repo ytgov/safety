@@ -23,6 +23,7 @@ export interface Action {
   complete_name?: string;
   complete_user_id?: number;
   hazard_review: number;
+  categories?: string | string[];
 
   type?: ActionType;
   status?: ActionStatus;

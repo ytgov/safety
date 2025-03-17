@@ -15,4 +15,5 @@ export interface Hazard {
   reopen_count: number;
   urgency_code: string;
   notes?: string;
+  categories?: string | string[];
 }
