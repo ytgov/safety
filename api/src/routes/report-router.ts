@@ -150,6 +150,7 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
     await trx("incident_attachments").where({ incident_id: id }).delete();
     await trx("incident_steps").where({ incident_id: id }).delete();
     await trx("investigations").where({ incident_id: id }).delete();
+    await trx("incident_users").where({ incident_id: id }).delete();
     await trx("incidents").where({ id }).delete();
 
     trx.commit();
