@@ -5,6 +5,7 @@
     v-if="linkedUsers.length > 0"
     density="compact"
     class="py-0"
+    :class="{ 'mb-5': !editable }"
     style="border: 1px #999 solid; border-radius: 4px">
     <v-list-item
       v-for="(user, idx) in linkedUsers"
@@ -13,7 +14,13 @@
       :title="user.user_email"
       class="py-3">
       <template #append>
-        <v-btn color="error" class="my-0" size="x-small" variant="text" @click="removeLinkedUserClick(user)">
+        <v-btn
+          v-if="editable"
+          color="error"
+          class="my-0"
+          size="x-small"
+          variant="text"
+          @click="removeLinkedUserClick(user)">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </template>
@@ -21,6 +28,7 @@
   </v-list>
 
   <DirectorySelector
+    v-if="editable"
     ref="directorySelector"
     label="Add a linked user"
     @selected="addLinkedUserClick"

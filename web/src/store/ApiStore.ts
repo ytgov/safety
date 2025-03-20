@@ -41,7 +41,7 @@ export const useApiStore = defineStore("api", () => {
 
   const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-  async function secureCall(method: string, url: string, data?: any) {
+  async function secureCall(method: string, url: string, data?: any, ignoreError: boolean = false) {
     let response;
 
     if (auth0.isLoading.value != false) {
@@ -70,7 +70,7 @@ export const useApiStore = defineStore("api", () => {
           return res.data;
         })
         .catch((err) => {
-          doApiErrorMessage(err);
+          if (!ignoreError) doApiErrorMessage(err);
           return { error: err };
         });
     });

@@ -153,7 +153,8 @@ actionRouter.post("/", async (req: Request, res: Response) => {
   if (actor_user_email) {
     await emailService.sendTaskAssignmentNotification(
       { fullName: actor_display_name, email: actor_user_email },
-      action
+      action,
+      incident
     );
   }
 
@@ -169,9 +170,19 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
   const action = await knex("actions").where({ slug }).first();
   if (!action) return res.status(404).send();
 
-  if (!isEmpty(actor_user_email)) {
+  const incident = await knex("incidents").where({ id: action.incident_id }).first();
+
+  if (incident && !isEmpty(actor_user_email)) {
     const actorUser = await knex("users").where({ email: actor_user_email }).first();
     if (actorUser) actor_user_id = actorUser.id;
+
+    if (action.actor_user_email != actor_user_email) {
+      await emailService.sendTaskAssignmentNotification(
+        { fullName: actorUser?.display_name ?? actor_user_email, email: actor_user_email },
+        action,
+        incident
+      );
+    }
   }
 
   let newCategories = categories ?? [];

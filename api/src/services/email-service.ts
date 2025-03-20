@@ -112,7 +112,11 @@ export class EmailService {
     await this.sendEmail(recipient.fullName, recipient.email, "An Incident was Reported", content);
   }
 
-  async sendTaskAssignmentNotification(recipient: { fullName: string; email: string }, action: Action): Promise<any> {
+  async sendTaskAssignmentNotification(
+    recipient: { fullName: string; email: string },
+    action: Action,
+    incident: Incident
+  ): Promise<any> {
     let templatePath = path.join(__dirname, TASK_ASSIGNED_TEMPLATE);
     let content = fs.readFileSync(templatePath).toString();
 
@@ -120,7 +124,10 @@ export class EmailService {
       /``TASK_DETAILS``/g,
       `${action.description}, due on ${FormatDate(action.due_date ?? new Date())}`
     );
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/task/${action.id}`);
+    content = content.replace(
+      /``INCIDENT_URL``/g,
+      `${FRONTEND_OVERRIDE}/reports/${incident.slug}?action=${action.slug}`
+    );
 
     console.log("-- TASK ASSIGNED NOTIFICATION", recipient.email);
 
