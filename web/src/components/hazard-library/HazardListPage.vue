@@ -12,10 +12,17 @@
     <v-card-text class="pt-5">
       <v-row>
         <v-col cols="12" md="6">
-          <v-text-field v-model="search" label="Search" outlined dense hide-details clearable prepend-inner-icon="mdi-magnify" />
+          <v-text-field
+            v-model="search"
+            label="Search"
+            outlined
+            dense
+            hide-details
+            clearable
+            prepend-inner-icon="mdi-magnify" />
         </v-col>
         <v-col cols="12" md="3">
-          <HazardStatusSelect v-model="status" label="Status" clearable hide-details/>
+          <HazardStatusSelect v-model="status" label="Status" clearable hide-details />
         </v-col>
         <v-col cols="12" md="3">
           <HazardUrgencySelect v-model="urgency" label="Urgency" clearable hide-details />
@@ -61,7 +68,11 @@
   <HazardDetailDialog v-model="dialog" />
   <ActionCreate v-model="showActionAdd" @doClose="closeDialog"></ActionCreate>
 
-  <ActionEdit v-model="showActionEdit" :action="actionToEdit" :hazard-id="hazardId" @doClose="closeDialog"></ActionEdit>
+  <ActionViewDialog
+    v-model="showActionEdit"
+    :action="actionToEdit"
+    :hazard-id="hazardId"
+    @doClose="closeDialog"></ActionViewDialog>
 </template>
 
 <script setup>
@@ -74,7 +85,7 @@ import HazardStatusSelect from "@/components/hazard/HazardStatusSelect.vue";
 import HazardUrgencySelect from "@/components/hazard/HazardUrgencySelect.vue";
 import LocationSelect from "@/components/common/LocationSelect.vue";
 import ActionCreate from "@/components/action/ActionCreate.vue";
-import ActionEdit from "@/components/action/ActionDialog.vue";
+import ActionViewDialog from "@/components/action/ActionViewDialog.vue";
 
 import { useHazardStore } from "@/store/HazardStore";
 import HazardCategorySelect from "../common/HazardCategorySelect.vue";
