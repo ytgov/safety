@@ -43,6 +43,19 @@
         </v-card-text>
       </v-card>
     </v-col>
+    <v-col cols="12" md="4" v-if="user">
+      <v-card elevation="3" color="#F2760C66" to="/administration/locations">
+        <v-card-text style="text-align: right">
+          <v-icon
+            class="float-left"
+            style="font-size: 90px; opacity: 25%; position: absolute; left: 10px; margin-top: -12px"
+            >mdi-import</v-icon
+          >
+          <div style="font-size: 52px; line-height: 52px">&nbsp;</div>
+          <div>Injest Data</div>
+        </v-card-text>
+      </v-card>
+    </v-col>
   </v-row>
 </template>
 

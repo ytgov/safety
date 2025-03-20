@@ -96,7 +96,7 @@ export class IncidentService {
       }
 
       action.categories = action.categories ?? [];
-      if (!isArray(action.categories)) action.categories = action.categories.split(",");
+      if (!isArray(action.categories)) action.categories = action.categories.split(",").filter((c) => c);
     }
 
     return item;

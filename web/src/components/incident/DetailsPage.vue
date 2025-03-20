@@ -82,7 +82,7 @@
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
-              <IncidentUserList :incident_id="selectedReport.id" />
+              <IncidentUserList :incident_id="selectedReport.id" :editable="isSupervisor || isSystemAdmin" />
 
               <v-label class="mb-1" style="white-space: inherit">General location</v-label>
               <v-text-field v-model="selectedReport.location_name" readonly append-inner-icon="mdi-lock" />
@@ -108,7 +108,7 @@
             </v-card-text>
           </v-card>
 
-          <v-card class="default mb-5">
+          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
@@ -157,7 +157,11 @@
 
                 <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-4">
                   <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
-                  <v-textarea v-model="selectedReport.investigation_notes" :readonly="!canEdit" hide-details />
+                  <v-textarea
+                    v-model="selectedReport.investigation_notes"
+                    :readonly="!canEdit"
+                    :append-inner-icon="canEdit ? '' : 'mdi-lock'"
+                    hide-details />
                 </div>
               </v-col>
 
@@ -168,7 +172,7 @@
           </v-card>
 
           <InvestigationCard
-            v-if="selectedReport.investigation"
+            v-if="selectedReport.investigation && (isSupervisor || isSystemAdmin)"
             :investigation="selectedReport.investigation"></InvestigationCard>
         </v-col>
       </v-row>
@@ -267,7 +271,7 @@ const stepperValue = computed(() => {
 });
 
 const canEdit = computed(() => {
-  return isReporter.value || isSupervisor.value || isSystemAdmin.value;
+  return isSupervisor.value || isSystemAdmin.value;
 });
 
 const canUseActions = computed(() => {
@@ -286,7 +290,7 @@ function formatDate(input) {
 }
 
 function doShowActionEdit(action) {
-  if (isReporter.value || isSupervisor.value || isSystemAdmin.value) {
+  if (isSupervisor.value || isSystemAdmin.value) {
     actionToEdit.value = action;
     showActionEdit.value = true;
     return;

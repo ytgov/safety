@@ -3,7 +3,7 @@
     <v-row>
       <v-col>
         <v-label>Due date</v-label>
-        <v-text-field hide-details :value="formatDate(props.action.due_date)" />
+        <v-text-field hide-details :value="formatDate(action.due_date)" />
       </v-col>
 
       <v-col>
@@ -183,7 +183,10 @@ async function revertClick() {
 
 function formatDate(input) {
   if (!input) return "";
-  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd");
+
+  if (DateTime.fromISO(input.toString()).isValid) return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd");
+
+  return input;
 }
 
 function actionUserSelected(actor) {

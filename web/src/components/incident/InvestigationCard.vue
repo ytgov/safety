@@ -52,7 +52,7 @@
             <ul class="ml-4">
               <li>
                 <strong>{{ investigation.investigation_data.acts.subtitle }}:&nbsp;</strong
-                >{{ investigation.investigation_data.acts.title }}{{ investigation.investigation_data.acts.subtitle }}
+                >{{ investigation.investigation_data.acts.title }}
               </li>
             </ul>
           </v-sheet>

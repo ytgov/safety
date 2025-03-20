@@ -54,11 +54,11 @@ export const useActionStore = defineStore("actions", {
       this.selectedAction = item;
     },
 
-    async loadAction(slug: string) {
+    async loadAction(slug: string, ignoreError = false) {
       this.isLoading = true;
       const api = useApiStore();
 
-      return api.secureCall("get", `${ACTION_URL}/${slug}`).then((resp) => {
+      return api.secureCall("get", `${ACTION_URL}/${slug}`, null, ignoreError).then((resp) => {
         this.selectedAction = resp.data;
         this.isLoading = false;
         return resp.data;
@@ -74,7 +74,7 @@ export const useActionStore = defineStore("actions", {
         return api
           .secureCall("put", `${ACTION_URL}/${action.slug}`, action)
           .then((resp) => {
-            this.loadAction(action.slug);
+            this.loadAction(action.slug, true);
           })
           .catch(() => {
             console.log(`Error in save action`);
@@ -83,7 +83,7 @@ export const useActionStore = defineStore("actions", {
         return api
           .secureCall("post", `${ACTION_URL}`, action)
           .then((resp) => {
-            //this.loadAction(action.slug);
+            //this.loadAction(action.slug, true);
           })
           .catch(() => {
             console.log(`Error in create action`);

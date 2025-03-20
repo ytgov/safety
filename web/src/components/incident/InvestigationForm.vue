@@ -369,8 +369,6 @@ const hasAllRootCauses = computed(() => {
   return causes.value.length > 0;
 });
 
-const itemsToCreate = ref([]);
-
 const isPrev = computed(() => {
   return step.value > 0;
 });
@@ -402,8 +400,27 @@ function close() {
   step.value = 0;
 }
 
-watch(step, (stepValue) => {
-  if (stepValue != 5) return;
+async function save() {
+  showOverlay("Saving Investigation");
+
+  const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
+  const eventInfo = eventOptions.filter((o) => events.value.includes(o.value));
+
+  const investigation = {
+    incident_id: props.incidentId,
+    investigation_data: {
+      collections_other: collections_other.value,
+      collections: collectionInfo,
+      events: eventInfo,
+      incidents_other: incidents_other.value,
+      incidents: incidents.value,
+      acts: acts.value,
+      factors: factors.value,
+      causes: causes.value,
+    },
+  };
+
+  await saveInvestigation(investigation);
 
   const items = [];
   const urgency_code = "Low";
@@ -442,32 +459,7 @@ watch(step, (stepValue) => {
     });
   }
 
-  itemsToCreate.value = items;
-});
-
-async function save() {
-  showOverlay("Saving Investigation");
-
-  const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
-  const eventInfo = eventOptions.filter((o) => events.value.includes(o.value));
-
-  const investigation = {
-    incident_id: props.incidentId,
-    investigation_data: {
-      collections_other: collections_other.value,
-      collections: collectionInfo,
-      events: eventInfo,
-      incidents_other: incidents_other.value,
-      incidents: incidents.value,
-      acts: acts.value,
-      factors: factors.value,
-      causes: causes.value,
-    },
-  };
-
-  await saveInvestigation(investigation);
-
-  for (let item of itemsToCreate.value) {
+  for (let item of items) {
     await saveAction(item);
   }
 
