@@ -71,6 +71,6 @@ function openReportClick(input: Incident) {
 }
 
 async function loadReports() {
-  myReports.value = await loadReportsForRole("Safety Authority");
+  myReports.value = await loadReportsForRole(["Safety Authority", "Safety Practitioner"]);
 }
 </script>

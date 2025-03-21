@@ -202,7 +202,7 @@ export const useReportStore = defineStore("reports", {
         });
     },
 
-    async loadReportsForRole(roleName: string) {
+    async loadReportsForRole(roleName: string[]) {
       const api = useApiStore();
       return api
         .secureCall("get", `${REPORTS_URL}/role/${roleName}`)
