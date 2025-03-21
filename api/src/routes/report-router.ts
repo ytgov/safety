@@ -84,8 +84,6 @@ reportRouter.get("/role/:role", async (req: Request, res: Response) => {
   const { role } = req.params;
   const roleArray = (role ?? "").split(",");
 
-  console.log("ROLES", roleArray);
-
   const userRoles = (req.user.roles = req.user.roles || []);
   const matchingRoles = userRoles.filter((r: UserRole) => roleArray.includes(r.name ?? ""));
   const matchingDepartments = matchingRoles.map((r: UserRole) => r.department_code);
