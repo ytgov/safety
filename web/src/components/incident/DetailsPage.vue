@@ -230,7 +230,8 @@ const isReporter = computed(() => {
 });
 
 const isSupervisor = computed(() => {
-  return selectedReport.value.access.filter((a) => a.reason == "supervisor").length > 0;
+  const relevantReasons = ["supervisor", "Safety Practitioner", "Safety Authority"];
+  return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
 });
 
 const isAction = computed(() => {
