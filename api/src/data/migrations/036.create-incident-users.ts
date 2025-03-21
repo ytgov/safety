@@ -16,6 +16,9 @@ export async function up(knex: knex.Knex) {
       SELECT "incident_id",  "user_email", "reason"
       FROM "incident_users"
       UNION
+      SELECT "id", 'System Admin', 'System Admin'
+      FROM "incidents"
+      UNION
       SELECT "incident_id", "actor_user_email", 'action'
       FROM "actions"
       UNION
