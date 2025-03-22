@@ -33,10 +33,8 @@
 
   <v-row v-if="!isOffline && isAuthenticated">
     <!-- the first tow card show whether they have items or not, others are conditional -->
-    <v-col cols="12" md="6"> <ReportListCard /> </v-col>
-    <v-col cols="12" md="6"> <ActionCard /> </v-col>
-    <SupervisorCard />
-    <SafetyAuthorityListCard />
+    <v-col cols="12" md="6"> <ReportListCard /><SupervisorCard /> </v-col>
+    <v-col cols="12" md="6"> <ActionCard /> <SafetyAuthorityListCard /> </v-col>
   </v-row>
 </template>
 
