@@ -1,38 +1,34 @@
 <template>
-  <v-col v-if="myReports && myReports.length > 0" cols="12" md="6">
-    <v-card class="default">
-      <v-card-text>
-        <h4 class="text-h5">
-          Reports Requiring Attention <small>({{ managedDepartments.join(", ") }})</small>
-        </h4>
-        <p class="mb-3">Urgent or delayed reports from my department</p>
+  <v-card v-if="myReports && myReports.length > 0" class="default mb-5">
+    <v-card-text>
+      <h4 class="text-h5">
+        Reports Requiring Attention <small>({{ managedDepartments.join(", ") }})</small>
+      </h4>
+      <p class="mb-3">Urgent or delayed reports from my department</p>
 
-        <v-list bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
-          <div v-for="(report, idx) of myReports">
-            <v-list-item
-              :title="makeTitle(report)"
-              :subtitle="makeSubtitle(report)"
-              class="pt-1 pb-2"
-              @click="openReportClick(report)">
-              <template #prepend>
-                <v-avatar size="small" class="mx-n2">
-                  <v-icon v-if="report.urgency_code == 'Critical'" color="#D90000" size="26">mdi-alpha-c-circle</v-icon>
-                  <v-icon v-else-if="report.urgency_code == 'High'" color="#FF8000" size="26"
-                    >mdi-alpha-h-circle</v-icon
-                  >
-                  <v-icon v-else-if="report.urgency_code == 'Medium'" color="#f3b228" size="26"
-                    >mdi-alpha-m-circle</v-icon
-                  >
-                  <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
-                </v-avatar>
-              </template>
-            </v-list-item>
-            <v-divider v-if="idx < myReports.length - 1" />
-          </div>
-        </v-list>
-      </v-card-text>
-    </v-card>
-  </v-col>
+      <v-list bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
+        <div v-for="(report, idx) of myReports">
+          <v-list-item
+            :title="makeTitle(report)"
+            :subtitle="makeSubtitle(report)"
+            class="pt-1 pb-2"
+            @click="openReportClick(report)">
+            <template #prepend>
+              <v-avatar size="small" class="mx-n2">
+                <v-icon v-if="report.urgency_code == 'Critical'" color="#D90000" size="26">mdi-alpha-c-circle</v-icon>
+                <v-icon v-else-if="report.urgency_code == 'High'" color="#FF8000" size="26">mdi-alpha-h-circle</v-icon>
+                <v-icon v-else-if="report.urgency_code == 'Medium'" color="#f3b228" size="26"
+                  >mdi-alpha-m-circle</v-icon
+                >
+                <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
+              </v-avatar>
+            </template>
+          </v-list-item>
+          <v-divider v-if="idx < myReports.length - 1" />
+        </div>
+      </v-list>
+    </v-card-text>
+  </v-card>
 </template>
 
 <script lang="ts" setup>
@@ -71,6 +67,6 @@ function openReportClick(input: Incident) {
 }
 
 async function loadReports() {
-  myReports.value = await loadReportsForRole("Safety Authority");
+  myReports.value = await loadReportsForRole(["Safety Authority", "Safety Practitioner"]);
 }
 </script>

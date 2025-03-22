@@ -1,5 +1,5 @@
 <template>
-  <v-card class="default">
+  <v-card class="default mb-5">
     <v-card-text>
       <v-btn to="/actions" class="my-0 float-right text-subtitle-2" color="primary" size="small" variant="text"
         >All Actions</v-btn

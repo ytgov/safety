@@ -108,7 +108,7 @@
             </v-card-text>
           </v-card>
 
-          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin">
+          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin || isAction">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
@@ -230,7 +230,8 @@ const isReporter = computed(() => {
 });
 
 const isSupervisor = computed(() => {
-  return selectedReport.value.access.filter((a) => a.reason == "supervisor").length > 0;
+  const relevantReasons = ["supervisor", "Safety Practitioner", "Safety Authority"];
+  return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
 });
 
 const isAction = computed(() => {

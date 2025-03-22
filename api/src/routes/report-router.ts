@@ -31,7 +31,8 @@ reportRouter.get("/", async (req: Request, res: Response) => {
   const pageNum = parseInt(page as string) || 1;
   const perPageNum = parseInt(perPage as string) || 10;
 
-  const matchingRoles = (req.user.roles = req.user.roles || []);
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
 
   const countQuery = function (q: Knex.QueryBuilder) {
     if (!isNil(search)) q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
@@ -51,8 +52,8 @@ reportRouter.get("/", async (req: Request, res: Response) => {
     return q;
   };
 
-  const list = await db.getAll(req.user.email, listQuery);
-  const count = await db.getCount(req.user.email, countQuery);
+  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery);
+  const count = await db.getCount(userIsAdmin ? "System Admin" : req.user.email, countQuery);
 
   const locations = await knex("locations");
   const types = await knex("incident_types");
@@ -81,9 +82,10 @@ reportRouter.get("/my-supervisor-reports", async (req: Request, res: Response) =
 
 reportRouter.get("/role/:role", async (req: Request, res: Response) => {
   const { role } = req.params;
+  const roleArray = (role ?? "").split(",");
 
   const userRoles = (req.user.roles = req.user.roles || []);
-  const matchingRoles = userRoles.filter((r: UserRole) => r.name == role);
+  const matchingRoles = userRoles.filter((r: UserRole) => roleArray.includes(r.name ?? ""));
   const matchingDepartments = matchingRoles.map((r: UserRole) => r.department_code);
 
   const query = function (query: Knex.QueryBuilder) {
@@ -228,7 +230,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       for (const email of peopleArray) {
         const user_email = (email ?? "").trim();
         if (user_email == "") continue;
-        
+
         await trx("incident_users").insert({
           user_email,
           incident_id: insertedIncidentId,
