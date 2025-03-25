@@ -19,7 +19,7 @@
     </h1>
     <div class="my-3" style="clear: both"></div>
 
-    <div class="mb-5" style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px">
+    <div v-if="!isActionOnly" class="mb-5" style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px">
       <v-stepper-vertical v-if="smAndDown" hide-actions>
         <v-stepper-vertical-item
           v-for="(step, idx) of selectedReport.steps"
@@ -55,7 +55,7 @@
     <section class="mb-5">
       <v-row>
         <v-col cols="12" md="5">
-          <v-card class="default mb-5">
+          <v-card v-if="!isActionOnly" class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">{{ selectedReport.incident_type_description }} Information</h4>
@@ -126,7 +126,7 @@
           </v-card>
         </v-col>
 
-        <v-col>
+        <v-col v-if="!isActionOnly">
           <v-card class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <h4 class="text-h6">What Happened?</h4>
@@ -185,7 +185,7 @@ import { computed, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useRoute } from "vue-router";
-import { isNil } from "lodash";
+import { isNil, uniq } from "lodash";
 
 import { useDisplay } from "vuetify";
 const { smAndDown } = useDisplay();
@@ -236,6 +236,11 @@ const isSupervisor = computed(() => {
 
 const isAction = computed(() => {
   return selectedReport.value.access.filter((a) => a.reason == "action").length > 0;
+});
+
+const isActionOnly = computed(() => {
+  const reasons = uniq(selectedReport.value.access.map((a) => a.reason));
+  return reasons.length == 1 && reasons[0] == "action";
 });
 
 onMounted(() => {

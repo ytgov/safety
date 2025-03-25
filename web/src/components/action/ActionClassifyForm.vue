@@ -1,28 +1,7 @@
 <template>
   <div class="px-2">
     <v-window v-model="setupStep" style="max-height: 550px; overflow-y: auto">
-      <v-window-item :value="0" @vue:mounted="loadCurrentStepUser">
-        <v-card-text>
-          <h3>{{ currentStep.title }}</h3>
-
-          <v-row>
-            <v-col>
-              <p class="mb-2">This task is currently assigned to {{ action.actor_display_name }}.</p>
-              <p class="mb-4">
-                If you would you like to reassign it before the categorization steps, use the box below then close this
-                dialog.
-              </p>
-
-              <ActionUserSelector
-                ref="directorySelectorField"
-                label="Current assigned to"
-                @selected="handleUserSelect" />
-            </v-col>
-          </v-row>
-        </v-card-text>
-      </v-window-item>
-
-      <v-window-item :value="1">
+      <v-window-item :value="0">
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
@@ -99,7 +78,7 @@
         </v-card-text>
       </v-window-item>
 
-      <v-window-item :value="2">
+      <v-window-item :value="1">
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
@@ -166,7 +145,7 @@
         </v-card-text>
       </v-window-item>
 
-      <v-window-item :value="3">
+      <v-window-item :value="2">
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
@@ -180,6 +159,12 @@
           </p>
 
           <DateSelector v-model="action.due_date" ref="dater" label="Due date" :max="maxDueDate" :min="today" />
+
+          <v-label class="mt-5">Hierarchy of controls</v-label>
+          <v-select v-model="action.control" :items="controlOptions" :item-props="true" />
+
+          <v-label>Task description</v-label>
+          <v-text-field v-model="action.title" hide-details />
         </v-card-text>
       </v-window-item>
     </v-window>
@@ -198,9 +183,8 @@
 <script setup>
 import { ref, computed, defineProps, watch } from "vue";
 import { DateTime } from "luxon";
-import { isNil } from "lodash";
+import { isEmpty, isNil } from "lodash";
 
-import ActionUserSelector from "./ActionUserSelector.vue";
 import DateSelector from "../DateSelector.vue";
 import { useActionStore } from "@/store/ActionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
@@ -208,7 +192,6 @@ import { useInterfaceStore } from "@/store/InterfaceStore";
 const props = defineProps(["action", "hazardId"]);
 const emit = defineEmits(["doClose"]);
 
-const directorySelectorField = ref(null);
 const dater = ref(null);
 
 const actionStore = useActionStore();
@@ -217,18 +200,37 @@ const { saveAction } = actionStore;
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
 
+const controlOptions = ref([
+  { title: "Eliminate", value: "Eliminate", subtitle: "Remove hazard or redesign process so hazard does not exist" },
+  {
+    title: "Substitute",
+    value: "Substitute",
+    subtitle: "Substitute hazard with something of a lesser risk (replace ladder with scissor lift)",
+  },
+  { title: "Engineering", value: "Engineering", subtitle: "Control hazard through isolation (machine guarding)" },
+  {
+    title: "Administration",
+    value: "Administration",
+    subtitle: "Control hazard by influencing people (saftety procedures, signs, training)",
+  },
+  {
+    title: "Personal Protective Equipment",
+    value: "Personal Protective Equipment",
+    subtitle: "Control hazard by use of PPE (respirator, hard hat, hearing protection)",
+  },
+]);
+
 const setupStep = ref(0);
 const setupStepOptions = ref([
-  { title: "Task Assignment", step: 0 },
-  { title: "Hazard Categories", step: 1 },
-  { title: "Risk Priority", step: 2 },
-  { title: "Summary", step: 3 },
+  { title: "Hazard Categories", step: 0 },
+  { title: "Risk Priority", step: 1 },
+  { title: "Summary", step: 2 },
 ]);
 
 watch(
   () => setupStep.value,
   (val) => {
-    if (val == 3 && dater.value) {
+    if (val == 2 && dater.value) {
       dater.value.setManual(maxDueDate.value);
     }
   }
@@ -242,8 +244,10 @@ const isPrev = computed(() => {
   return currentStep.value.step > 0;
 });
 const isNext = computed(() => {
-  if (setupStep.value == 1) return props.action.categories.length > 0;
-  if (setupStep.value == 2) return !isNil(riskPriority.value);
+  if (setupStep.value == 0) return props.action.categories.length > 0;
+  if (setupStep.value == 1) return !isNil(riskPriority.value);
+  if (setupStep.value == 2) return isNil(props.action.control) || isEmpty(props.action.title);
+
   return currentStep.value.step < setupStepOptions.value.length - 1;
 });
 
@@ -290,44 +294,6 @@ async function saveClick() {
 function formatDate(input) {
   if (!input) return "";
   return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd");
-}
-
-function actionUserSelected(actor) {
-  if (actor.actor_role_type_id) {
-    props.action.actor_role_type_id = actor.actor_role_type_id;
-    props.action.actor_display_name = actor.long_name;
-    props.action.actor_user_id = null;
-    props.action.actor_user_email = null;
-  } else if (actor.user_id) {
-    props.action.actor_role_type_id = null;
-    props.action.actor_user_id = actor.user_id;
-    props.action.actor_user_email = actor.email;
-  } else if (actor.email) {
-    props.action.actor_role_type_id = null;
-    props.action.actor_user_id = null;
-    props.action.actor_user_email = actor.email;
-  }
-}
-
-async function handleUserSelect(value) {
-  if (value) {
-    actionUserSelected(value);
-
-    showOverlay("Reassigning Action");
-    await saveAction(props.action).then(() => {
-      hideOverlay();
-      closeClick();
-    });
-  } else props.action.actor_user_email = null;
-}
-
-async function loadCurrentStepUser() {
-  if (directorySelectorField.value) {
-    await directorySelectorField.value.setModel(props.action.actor_user_email, {
-      long_name: props.action.actor_display_name,
-      actor_role_type_id: props.action.actor_role_type_id,
-    });
-  }
 }
 
 function selectPriority(riskLevel) {

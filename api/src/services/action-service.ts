@@ -8,6 +8,9 @@ export class ActionService {
     return db<Action>("actions")
       .modify(where)
       .leftJoin("incidents", "actions.incident_id", "incidents.id")
+      .whereRaw(`"actions"."incident_id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [
+        email,
+      ])
       .select("actions.*", "incidents.slug as incident_slug")
       .orderBy("actions.created_at", "desc");
   }
@@ -23,6 +26,9 @@ export class ActionService {
 
   async getById(id: number | string, email: string): Promise<Action | undefined> {
     const item = await db("actions")
+      .whereRaw(`"actions"."incident_id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [
+        email,
+      ])
       .where("actions.id", parseInt(`${id}`))
       .first();
 

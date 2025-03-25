@@ -24,6 +24,7 @@ export interface Action {
   complete_user_id?: number;
   hazard_review: number;
   categories?: string | string[];
+  title?: string | null;
 
   type?: ActionType;
   status?: ActionStatus;
