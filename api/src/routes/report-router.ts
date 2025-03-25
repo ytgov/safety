@@ -101,7 +101,11 @@ reportRouter.get("/role/:role", async (req: Request, res: Response) => {
 
 reportRouter.get("/:slug", async (req: Request, res: Response) => {
   const { slug } = req.params;
-  const data = await db.getBySlug(slug, req.user.email);
+
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const data = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
 
   if (!data) return res.status(404).send();
 
@@ -111,6 +115,12 @@ reportRouter.get("/:slug", async (req: Request, res: Response) => {
 reportRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { description, investigation_notes, additional_description, urgency_code } = req.body;
+
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const data = await db.getById(id, userIsAdmin ? "System Admin" : req.user.email);
+  if (!data) return res.status(404).send();
 
   await knex("incidents")
     .where({ id })

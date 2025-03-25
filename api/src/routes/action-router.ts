@@ -14,6 +14,7 @@ import {
   IncidentHazardTypes,
   Scopes,
   SensitivityLevels,
+  UserRole,
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
 import { generateSlug } from "../utils/generateSlug";
@@ -85,15 +86,15 @@ actionRouter.get("/", async (req: Request, res: Response) => {
 actionRouter.get("/:slug", async (req: Request, res: Response) => {
   const { slug } = req.params;
 
-  const isAdmin = req.user.roles.filter((r: any) => r.name == "System Admin").length > 0;
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
 
   const listQuery = function (q: Knex.QueryBuilder) {
-    if (!isAdmin) q.where("actor_user_email", req.user.email);
     q.where("actions.slug", slug);
     return q;
   };
 
-  const list = await db.getAll(req.user.email, listQuery);
+  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery);
 
   if (list && list[0]) {
     const item = list[0];
@@ -163,8 +164,17 @@ actionRouter.post("/", async (req: Request, res: Response) => {
 
 actionRouter.put("/:slug", async (req: Request, res: Response) => {
   const { slug } = req.params;
-  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code, control, categories } =
-    req.body;
+  const {
+    notes,
+    actor_user_email,
+    actor_role_type_id,
+    due_date,
+    status_code,
+    urgency_code,
+    control,
+    categories,
+    title,
+  } = req.body;
   let { actor_user_id } = req.body;
 
   const action = await knex("actions").where({ slug }).first();
@@ -198,6 +208,7 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
       status_code,
       control,
       categories: newCategories.join(","),
+      title,
     });
 
   await updateActionHazards(action, status_code, urgency_code, control);
