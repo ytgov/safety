@@ -60,29 +60,28 @@
       <v-spacer />
 
       <ActionAssignmentDialog :action="action" @do-close="closeClick" />
-
-      <div v-if="isSystemAdmin">
-        <div v-if="props.action.hazard_review == 0" class="ml-8">
-          <v-label>Is this a Hazard?</v-label><br />
-          <v-btn
-            class="my-0 ml-2"
-            color="success"
-            size="x-small"
-            title="Yes, create a Hazard"
-            @click="hazardClick"
-            icon="mdi-check"></v-btn>
-          <v-btn
-            class="my-0 float-right mr-4"
-            color="warning"
-            size="x-small"
-            title="Don't create a Hazard"
-            icon="mdi-close"
-            @click="notHazardClick"></v-btn>
-        </div>
-
-        <v-spacer />
-        <v-btn color="warning" @click="deleteClick"><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn>
+    </div>
+    <div v-if="isSystemAdmin" class="d-flex mt-5">
+      <div v-if="props.action.hazard_review == 0" class="ml-8">
+        <v-label>Is this a Hazard?</v-label><br />
+        <v-btn
+          class="my-0 ml-2"
+          color="success"
+          size="x-small"
+          title="Yes, create a Hazard"
+          @click="hazardClick"
+          icon="mdi-check"></v-btn>
+        <v-btn
+          class="my-0 float-right mr-4"
+          color="warning"
+          size="x-small"
+          title="Don't create a Hazard"
+          icon="mdi-close"
+          @click="notHazardClick"></v-btn>
       </div>
+
+      <v-spacer />
+      <v-btn color="warning" @click="deleteClick" class="mt-3"><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn>
     </div>
   </div>
 </template>
