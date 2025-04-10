@@ -117,11 +117,20 @@
             <v-card-text class="pt-2">
               <ActionList @showAction="doShowActionEdit"></ActionList>
 
+              <v-btn v-if="canAddTask" class="mb-0" size="small" color="info" @click="addTaskClick">Add Task</v-btn>
               <ActionDialog
                 v-model="showActionEdit"
                 :action="actionToEdit"
                 :hazard-id="actionToEdit?.hazard_id"
                 @doClose="actionReload"></ActionDialog>
+
+              <HazardAssessmentForm
+                v-model="showHazardDialog"
+                :incident-id="selectedReport.id"
+                :incident_type_description="selectedReport.incident_type_description"
+                :hazard-report="selectedReport"
+                @complete="actionReload"
+                @close="showHazardDialog = false" />
             </v-card-text>
           </v-card>
         </v-col>
@@ -194,6 +203,7 @@ import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
 import ActionDialog from "@/components/action/ActionDialog.vue";
 import InvestigationCard from "./InvestigationCard.vue";
+import HazardAssessmentForm from "./HazardAssessmentForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
@@ -201,7 +211,7 @@ import IncidentUserList from "./IncidentUserList.vue";
 
 const reportStore = useReportStore();
 const { initialize, loadReport, updateReport, openAttachment } = reportStore;
-const { selectedReport } = storeToRefs(reportStore);
+const { selectedReport, currentStep } = storeToRefs(reportStore);
 
 const route = useRoute();
 const reportId = route.params.id;
@@ -220,6 +230,7 @@ await initialize();
 await loadReport(reportId);
 
 const showActionEdit = ref(false);
+const showHazardDialog = ref(false);
 const actionToEdit = ref(null);
 
 const userStore = useUserStore();
@@ -241,6 +252,16 @@ const isAction = computed(() => {
 const isActionOnly = computed(() => {
   const reasons = uniq(selectedReport.value.access.map((a) => a.reason));
   return reasons.length == 1 && reasons[0] == "action";
+});
+
+const canAddTask = computed(() => {
+  if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
+  if (!(isSupervisor.value || isSystemAdmin.value)) return false;
+  if (selectedReport.value.incident_type_description != "Hazard") return false;
+
+  console.log(currentStep.value.step_title);
+
+  return currentStep.value.step_title == "Control the Hazard";
 });
 
 onMounted(() => {
@@ -317,6 +338,10 @@ async function saveClick() {
 
 function openAttachmentClick(attachment) {
   openAttachment(attachment);
+}
+
+function addTaskClick() {
+  showHazardDialog.value = true;
 }
 </script>
 
