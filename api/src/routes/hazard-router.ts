@@ -21,8 +21,10 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
       countQuery.whereRaw(`LOWER("description") like '%${search.toString().toLowerCase()}%'`);
     }
   if (!isNil(status)) {
-    listQuery.where("status_code", status);
-    countQuery.where("status_code", status);
+    const statusList = `${status}`.split(",");
+
+    listQuery.whereIn("status_code", statusList);
+    countQuery.whereIn("status_code", statusList);
   }
   if (!isNil(urgency)) {
     listQuery.where("urgency_code", urgency);
