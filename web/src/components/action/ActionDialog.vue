@@ -28,10 +28,9 @@
               density="compact"
               class="mr-5"
               prepend-icon=""
-              prepend-inner-icon="mdi-camera"
+              prepend-inner-icon="mdi-paperclip"
               chips
-              multiple
-              accept="image/*" />
+              multiple />
             <v-btn color="primary" style="height: 40px" :disabled="upload.length == 0" @click="uploadClick"
               >Upload</v-btn
             >

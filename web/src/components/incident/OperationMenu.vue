@@ -67,6 +67,7 @@
 
   <InvestigationForm
     v-model="showInvestigationDialog"
+    :incident="selectedReport"
     :incident-id="selectedReport.id"
     :incident_type_description="selectedReport.incident_type_description"
     @complete="completeInvestigation"

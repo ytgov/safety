@@ -1,7 +1,7 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 
 import { useApiStore } from "@/store/ApiStore";
-import { PROFILE_URL } from "@/urls";
+import { PROFILE_URL, USERS_URL } from "@/urls";
 import { User } from "@/modules/administration/modules/users/store";
 import { sortBy } from "lodash";
 
@@ -44,6 +44,23 @@ export const useUserStore = defineStore("user", {
         .secureCall("get", PROFILE_URL)
         .then((resp) => {
           this.user = resp.data;
+        })
+        .catch((resp) => {
+          console.log("ERROR LOADING CURRENT USER", resp);
+        })
+        .finally(() => {
+          this.isLoading = false;
+        });
+    },
+
+    async getHelpers(incidentId: number) {
+      this.isLoading = true;
+      let api = useApiStore();
+
+      return await api
+        .secureCall("get", `${USERS_URL}/helpers/${incidentId}`)
+        .then((resp) => {
+          return resp.data;
         })
         .catch((resp) => {
           console.log("ERROR LOADING CURRENT USER", resp);

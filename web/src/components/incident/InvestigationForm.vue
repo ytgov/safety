@@ -4,6 +4,7 @@
       <v-toolbar color="info">
         <v-toolbar-title class="d-flex"> Investigation </v-toolbar-title>
         <v-spacer />
+        <v-btn icon="mdi-help-circle-outline" @click="helpClick"></v-btn>
         <v-btn icon="mdi-close" @click="close"></v-btn>
       </v-toolbar>
       <v-window v-model="step" style="max-height: 550px; overflow-y: scroll">
@@ -155,6 +156,8 @@
         <v-btn v-else :disabled="!isNext" color="success" @click="save">Save</v-btn>
       </v-card-text>
     </v-card>
+
+    <GetHelpDialog v-model="showHelp" :incident="incident" @do-close="showHelp = false" />
   </v-dialog>
 </template>
 
@@ -165,8 +168,9 @@ import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { isNil } from "lodash";
 import { useActionStore } from "@/store/ActionStore";
+import GetHelpDialog from "@/components/incident/GetHelpDialog.vue";
 
-const props = defineProps(["incidentId", "incident_type_description"]);
+const props = defineProps(["incidentId", "incident_type_description", "incident"]);
 const emits = defineEmits(["complete", "close"]);
 
 const reportStore = useReportStore();
@@ -180,6 +184,11 @@ const { showOverlay, hideOverlay } = interfaceStore;
 
 const userStore = useUserStore();
 const { user } = userStore;
+
+const showHelp = ref(false);
+const helpClick = () => {
+  showHelp.value = true;
+};
 
 const step = ref(0);
 const stepName = computed(() => {
@@ -210,14 +219,22 @@ const hasAllRequiredCollections = computed(() => {
 });
 
 const events = ref([]);
-const eventOptions = [
-  { title: "Injury - First aid", value: "first_aid", required: true },
-  { title: "Injury - Medical aid", value: "medical_aid", required: true },
-  { title: "Damage", value: "damage", required: true },
-  { title: "Service Loss", value: "service_loss", required: true },
-  { title: "Environmental impact", value: "environmental", required: true },
-  { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
-];
+const eventOptions = computed(() => {
+  const baseOptions = [
+    { title: "Injury - First aid", value: "first_aid", required: true },
+    { title: "Injury - Medical aid", value: "medical_aid", required: true },
+    { title: "Damage", value: "damage", required: true },
+    { title: "Service Loss", value: "service_loss", required: true },
+    { title: "Environmental impact", value: "environmental", required: true },
+    { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
+  ];
+
+  if (props.incident_type_description.startsWith("No Loss Incident"))
+    baseOptions.unshift({ title: "Unknown Outcome", value: "unknown" });
+
+  return baseOptions;
+});
+
 const hasAllRequiredEvents = computed(() => {
   return events.value.length > 0;
 });

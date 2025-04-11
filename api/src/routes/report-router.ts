@@ -114,7 +114,7 @@ reportRouter.get("/:slug", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, investigation_notes, additional_description, urgency_code } = req.body;
+  const { description, investigation_notes, additional_description, urgency_code, incident_type_id } = req.body;
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
@@ -124,7 +124,7 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
 
   await knex("incidents")
     .where({ id })
-    .update({ description, investigation_notes, additional_description, urgency_code });
+    .update({ description, investigation_notes, additional_description, urgency_code, incident_type_id });
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
@@ -402,6 +402,11 @@ reportRouter.post("/:slug/linked-users", async (req: Request, res: Response) => 
 
   if (incident) {
     await knex("incident_users").insert(req.body);
+
+    const recipient = req.body.user_email;
+    const directorySubmitter = await directoryService.searchByEmail(recipient);
+    const employeeName = directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : recipient;
+    await emailService.sendIncidentInviteNotification({ fullName: employeeName, email: recipient }, incident);
     return res.json({ data: {} });
   }
 

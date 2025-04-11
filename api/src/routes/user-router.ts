@@ -1,12 +1,13 @@
 import express, { Request, Response } from "express";
 import { param } from "express-validator";
 
-import { RoleService, UserService } from "../services";
+import { IncidentService, RoleService, UserService } from "../services";
 import { ReturnValidationErrors } from "../middleware";
 import { User } from "../data/models";
 
 export const userRouter = express.Router();
 const db = new UserService();
+const incidentDb = new IncidentService();
 const roleService = new RoleService();
 
 userRouter.get("/me", async (req: Request, res: Response) => {
@@ -21,6 +22,39 @@ userRouter.get("/", async (req: Request, res: Response) => {
   }
 
   return res.json({ data: list });
+});
+
+userRouter.get("/helpers/:incidentId", async (req: Request, res: Response) => {
+  const { incidentId } = req.params;
+  let list = await db.getAll();
+
+  const incident = await incidentDb.getById(incidentId, req.user.email);
+  if (!incident) return res.status(404).send("Incident not found");
+
+  const matches = [];
+
+  for (let l of list.filter((l) => l.is_active)) {
+    l.roles = await roleService.getRolesForUser(l.id);
+
+    const t = l.roles.find((r) => r.department_code == incident.department_code && r.name == "Safety Practitioner");
+
+    if (t) matches.push(l);
+  }
+
+  if (matches.length == 0) {
+    const admins = list.filter((l) => l.is_active && l.roles?.find((r) => r.name == "System Admin"));
+    return res.json({
+      data: admins.map((a) => {
+        return { email: a.email, display_name: a.display_name };
+      }),
+    });
+  }
+
+  return res.json({
+    data: matches.map((a) => {
+      return { email: a.email, display_name: a.display_name };
+    }),
+  });
 });
 
 userRouter.post("/", async (req: Request, res: Response) => {

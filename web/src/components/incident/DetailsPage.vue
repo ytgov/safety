@@ -118,6 +118,7 @@
               <ActionList @showAction="doShowActionEdit"></ActionList>
 
               <v-btn v-if="canAddTask" class="mb-0" size="small" color="info" @click="addTaskClick">Add Task</v-btn>
+
               <ActionDialog
                 v-model="showActionEdit"
                 :action="actionToEdit"
@@ -143,6 +144,11 @@
 
             <v-row class="pa-5 pt-2 pb-6">
               <v-col cols="12" md="12">
+                <div v-if="isSystemAdmin">
+                  <v-label>Override incident type</v-label>
+                  <v-select v-model="selectedReport.incident_type_id" :items="incidentTypeOptions" />
+                </div>
+
                 <v-label class="mb-1" style="white-space: inherit">Urgency</v-label>
                 <v-btn-toggle
                   v-model="selectedReport.urgency_code"
@@ -190,7 +196,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useRoute } from "vue-router";
@@ -225,6 +231,12 @@ const selectedAction = computed(() => {
     return selectedReport.value.actions.filter((a) => a.slug == actionId.value)[0];
   }
 });
+
+const incidentTypeOptions = [
+  { title: "Incident", value: 1 },
+  { title: "No Loss Incident (near miss)", value: 3 },
+  { title: "Hazard", value: 2 },
+];
 
 await initialize();
 await loadReport(reportId);
@@ -333,7 +345,9 @@ function doShowActionEdit(action) {
 }
 
 async function saveClick() {
-  await updateReport().then(() => {});
+  await updateReport().then(() => {
+    loadReport(reportId);
+  });
 }
 
 function openAttachmentClick(attachment) {

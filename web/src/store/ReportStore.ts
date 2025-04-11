@@ -184,6 +184,7 @@ export const useReportStore = defineStore("reports", {
         description: this.selectedReport.description,
         additional_description: this.selectedReport.additional_description,
         urgency_code: this.selectedReport.urgency_code,
+        incident_type_id: this.selectedReport.incident_type_id,
       };
 
       const api = useApiStore();
@@ -345,6 +346,7 @@ export interface Incident {
   additional_description?: string;
   location_detail?: string;
   slug: string;
+  incident_type_id: number;
 
   incident_type_description: string;
   status_name: string;
