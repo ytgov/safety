@@ -271,8 +271,6 @@ const canAddTask = computed(() => {
   if (!(isSupervisor.value || isSystemAdmin.value)) return false;
   if (selectedReport.value.incident_type_description != "Hazard") return false;
 
-  console.log(currentStep.value.step_title);
-
   return currentStep.value.step_title == "Control the Hazard";
 });
 
