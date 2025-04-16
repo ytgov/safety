@@ -146,10 +146,15 @@ async function revertClick(step) {
   await revertStep(step);
 }
 async function deleteClick(step) {
-  confirm.value.show("Delete Incident", "Are you sure you want to delete this incident?", async () => {
-    await deleteIncident();
-    router.push("/");
-  });
+  confirm.value.show(
+    "Delete Incident",
+    "Are you sure you want to delete this incident?",
+    async () => {
+      await deleteIncident();
+      router.push("/");
+    },
+    () => {}
+  );
 }
 
 async function completeInvestigation() {
