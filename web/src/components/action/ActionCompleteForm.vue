@@ -10,11 +10,11 @@
         <v-text-field hide-details :model-value="formatDate(action.due_date)" readonly append-inner-icon="mdi-lock" />
       </v-col>
       <v-col>
-        <v-label>Hierarchy of Controls</v-label>
+        <v-label>Hierarchy of controls</v-label>
         <v-text-field :model-value="props.action.control" readonly hide-details append-inner-icon="mdi-lock" />
       </v-col>
       <v-col cols="12">
-        <v-label>Hazard Categories</v-label>
+        <v-label>Hazard categories</v-label>
         <div class="pt-1 mb-n2">
           <v-select
             :model-value="action.categories"
