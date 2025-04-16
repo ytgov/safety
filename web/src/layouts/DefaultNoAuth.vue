@@ -32,6 +32,14 @@
               </template>
               <v-list-item-title style="font-size: 0.9rem !important">Hazard Library</v-list-item-title>
             </v-list-item>
+
+            <v-list-item to="/inspections">
+              <template v-slot:prepend>
+                <v-icon>mdi-clipboard-search-outline</v-icon>
+              </template>
+              <v-list-item-title style="font-size: 0.9rem !important">Inspections</v-list-item-title>
+            </v-list-item>
+
             <v-list-item to="/administration" v-if="isSystemAdmin">
               <template v-slot:prepend>
                 <v-icon>mdi-account-cog</v-icon>

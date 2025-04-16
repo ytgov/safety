@@ -46,12 +46,17 @@ export default {
     if (this.modelValue) {
       this.output = this.modelValue;
     }
+    console.log("readonly", this.readonly);
     if (this.readonly && this.readonly == true) this.isReadonly = true;
   },
   watch: {
     output(to, from) {
       this.$emit("input", this.output);
       this.$emit("update:modelValue", this.output);
+    },
+    readonly(to, from) {
+      if (to && to == true) this.isReadonly = true;
+      else this.isReadonly = false;
     },
   },
 };

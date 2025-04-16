@@ -120,8 +120,10 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     actor_display_name,
     actor_role_type_id,
     due_date,
-    hazard_type_id,
-    urgency_code,
+    status_code,
+    control,
+    categories,
+    title,
   } = req.body;
 
   const incident = await knex("incidents")
@@ -131,6 +133,7 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     .first();
 
   let hazard_id = undefined;
+  let newCategories = categories ?? [];
 
   const action = {
     incident_id,
@@ -140,13 +143,16 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     notes,
     action_type_code: ActionTypes.USER_GENERATED.code,
     sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
-    status_code: ActionStatuses.OPEN.code,
+    status_code: status_code ?? ActionStatuses.OPEN.code,
     actor_user_email,
     actor_user_id,
     actor_role_type_id,
     due_date: InsertableDate(due_date),
     slug: generateSlug(),
     hazard_review: 0,
+    control,
+    categories: newCategories.join(","),
+    title,
   } as Action;
 
   await knex("actions").insert(action);
@@ -217,7 +223,7 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
   return res.json({ data: {} });
 });
 
-actionRouter.delete(":slug", async (req: Request, res: Response) => {
+actionRouter.delete("/:slug", async (req: Request, res: Response) => {
   const { slug } = req.params;
   await knex("actions").where({ slug }).delete();
   return res.json({ data: {} });

@@ -3,14 +3,14 @@ import { db } from "../data";
 import { Knex } from "knex";
 import { isArray } from "lodash";
 
-export class IncidentService {
+export class InspectionService {
   async getAll(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<Incident[]> {
     return db<Incident>("incidents")
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
-      .whereNot("incident_types.name", "inspection")
+      .where("incident_types.name", "inspection")
       .modify(where)
       .select(
         "incidents.*",
@@ -27,7 +27,7 @@ export class IncidentService {
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
-      .whereNot("incident_types.name", "inspection")
+      .where("incident_types.name", "inspection")
       .modify(where)
       .count("* as count")
       .first();
@@ -47,7 +47,7 @@ export class IncidentService {
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .innerJoin("locations", "incidents.location_code", "locations.code")
       .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
-      .whereNot("incident_types.name", "inspection")
+      .where("incident_types.name", "inspection")
       .select<Incident>(
         "incidents.*",
         "incident_types.name as incident_type_name",
@@ -64,14 +64,8 @@ export class IncidentService {
       .where({ incident_id: item.id })
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
 
-    item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
     item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
-    item.investigation = await db("investigations").where({ incident_id: item.id }).first();
     item.access = await db("incident_users_view").where({ incident_id: item.id, user_email: email });
-
-    if (item.investigation) {
-      item.investigation.investigation_data = JSON.parse(item.investigation.investigation_data);
-    }
 
     item.hazards = await db("incident_hazards")
       .where({ incident_id: item.id })
@@ -109,26 +103,7 @@ export class IncidentService {
     return db<Incident>("incidents")
       .where("incident_users_view.user_email", email)
       .where("incident_users_view.reason", "reporter")
-      .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])
-      .whereNot("incident_types.name", "inspection")
-      .innerJoin("incident_users_view", "incidents.id", "incident_users_view.incident_id")
-      .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
-      .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
-      .innerJoin("departments", "departments.code", "incidents.department_code")
-      .select(
-        "incidents.*",
-        "incident_types.name as incident_type_name",
-        "incident_types.description as incident_type_description",
-        "incident_statuses.name as status_name",
-        "departments.name as department_name"
-      );
-  }
-
-  async getBySupervisorEmail(email: string): Promise<Incident[]> {
-    return db<Incident>("incidents")
-      .where("incident_users_view.user_email", email)
-      .where("incident_users_view.reason", "supervisor")
-      .whereNot("incident_types.name", "inspection")
+      .where("incident_types.name", "inspection")
       .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])
       .innerJoin("incident_users_view", "incidents.id", "incident_users_view.incident_id")
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")

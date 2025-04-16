@@ -17,6 +17,15 @@
         </template>
       </v-list-item>
       <v-list-item
+        v-if="isHazardAssessment"
+        title="Begin Hazard Assessment"
+        :subtitle="currentStep.step_title"
+        @click="showHazardDialog = true">
+        <template #prepend>
+          <v-icon color="green">mdi-eye-check-outline</v-icon>
+        </template>
+      </v-list-item>
+      <v-list-item
         v-if="isNotification"
         title="Send Notifications"
         :subtitle="currentStep.step_title"
@@ -25,7 +34,7 @@
           <v-icon color="green">mdi-email</v-icon>
         </template>
       </v-list-item>
-<!-- 
+      <!-- 
       <v-list-item
         title="Complete Next Step"
         :subtitle="currentStep.step_title"
@@ -58,10 +67,19 @@
 
   <InvestigationForm
     v-model="showInvestigationDialog"
+    :incident="selectedReport"
     :incident-id="selectedReport.id"
     :incident_type_description="selectedReport.incident_type_description"
     @complete="completeInvestigation"
     @close="showInvestigationDialog = false" />
+
+  <HazardAssessmentForm
+    v-model="showHazardDialog"
+    :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description"
+    :hazard-report="selectedReport"
+    @complete="completeInvestigation"
+    @close="showHazardDialog = false" />
 
   <NotificationForm
     v-model="showNotificationDialog"
@@ -74,13 +92,16 @@
 <script setup>
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
+import { isNil } from "lodash";
+import { router } from "@/routes";
+
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
+
 import ConfirmDialog from "@/components/ConfirmDialog";
-import { router } from "@/routes";
 import InvestigationForm from "./InvestigationForm.vue";
 import NotificationForm from "./NotificationForm.vue";
-import { isNil } from "lodash";
+import HazardAssessmentForm from "./HazardAssessmentForm.vue";
 
 const reportStore = useReportStore();
 const { completeStep, revertStep, deleteIncident } = reportStore;
@@ -91,6 +112,7 @@ const { isSystemAdmin } = userStore;
 const confirm = ref(null);
 
 const showInvestigationDialog = ref(false);
+const showHazardDialog = ref(false);
 const showNotificationDialog = ref(false);
 
 const previousStep = computed(() => {
@@ -106,6 +128,10 @@ const previousStep = computed(() => {
 const isInvestigation = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   return currentStep.value.step_title === "Investigation";
+});
+const isHazardAssessment = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+  return currentStep.value.step_title === "Assessment of Hazard";
 });
 
 const isNotification = computed(() => {

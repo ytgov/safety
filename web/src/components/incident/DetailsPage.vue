@@ -117,11 +117,21 @@
             <v-card-text class="pt-2">
               <ActionList @showAction="doShowActionEdit"></ActionList>
 
+              <v-btn v-if="canAddTask" class="mb-0" size="small" color="info" @click="addTaskClick">Add Task</v-btn>
+
               <ActionDialog
                 v-model="showActionEdit"
                 :action="actionToEdit"
                 :hazard-id="actionToEdit?.hazard_id"
                 @doClose="actionReload"></ActionDialog>
+
+              <HazardAssessmentForm
+                v-model="showHazardDialog"
+                :incident-id="selectedReport.id"
+                :incident_type_description="selectedReport.incident_type_description"
+                :hazard-report="selectedReport"
+                @complete="actionReload"
+                @close="showHazardDialog = false" />
             </v-card-text>
           </v-card>
         </v-col>
@@ -134,6 +144,11 @@
 
             <v-row class="pa-5 pt-2 pb-6">
               <v-col cols="12" md="12">
+                <div v-if="isSystemAdmin">
+                  <v-label>Override incident type</v-label>
+                  <v-select v-model="selectedReport.incident_type_id" :items="incidentTypeOptions" />
+                </div>
+
                 <v-label class="mb-1" style="white-space: inherit">Urgency</v-label>
                 <v-btn-toggle
                   v-model="selectedReport.urgency_code"
@@ -181,7 +196,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 import { useRoute } from "vue-router";
@@ -194,6 +209,7 @@ import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
 import ActionDialog from "@/components/action/ActionDialog.vue";
 import InvestigationCard from "./InvestigationCard.vue";
+import HazardAssessmentForm from "./HazardAssessmentForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
@@ -201,7 +217,7 @@ import IncidentUserList from "./IncidentUserList.vue";
 
 const reportStore = useReportStore();
 const { initialize, loadReport, updateReport, openAttachment } = reportStore;
-const { selectedReport } = storeToRefs(reportStore);
+const { selectedReport, currentStep } = storeToRefs(reportStore);
 
 const route = useRoute();
 const reportId = route.params.id;
@@ -216,10 +232,17 @@ const selectedAction = computed(() => {
   }
 });
 
+const incidentTypeOptions = [
+  { title: "Incident", value: 1 },
+  { title: "No Loss Incident (near miss)", value: 3 },
+  { title: "Hazard", value: 2 },
+];
+
 await initialize();
 await loadReport(reportId);
 
 const showActionEdit = ref(false);
+const showHazardDialog = ref(false);
 const actionToEdit = ref(null);
 
 const userStore = useUserStore();
@@ -241,6 +264,14 @@ const isAction = computed(() => {
 const isActionOnly = computed(() => {
   const reasons = uniq(selectedReport.value.access.map((a) => a.reason));
   return reasons.length == 1 && reasons[0] == "action";
+});
+
+const canAddTask = computed(() => {
+  if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
+  if (!(isSupervisor.value || isSystemAdmin.value)) return false;
+  if (selectedReport.value.incident_type_description != "Hazard") return false;
+
+  return currentStep.value.step_title == "Control the Hazard";
 });
 
 onMounted(() => {
@@ -312,11 +343,17 @@ function doShowActionEdit(action) {
 }
 
 async function saveClick() {
-  await updateReport().then(() => {});
+  await updateReport().then(() => {
+    loadReport(reportId);
+  });
 }
 
 function openAttachmentClick(attachment) {
   openAttachment(attachment);
+}
+
+function addTaskClick() {
+  showHazardDialog.value = true;
 }
 </script>
 
