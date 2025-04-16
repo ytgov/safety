@@ -161,7 +161,8 @@
           <v-label>Title</v-label>
           <v-text-field v-model="action.description" />
 
-          <DateSelector v-model="action.due_date" ref="dater" label="Due date" :max="maxDueDate" :min="today" />
+          <v-label>Due date</v-label>
+          <DateSelector v-model="action.due_date" ref="dater" :max="maxDueDate" :min="today" />
 
           <v-label class="mt-5">Hierarchy of controls</v-label>
           <v-select v-model="action.control" :items="controlOptions" :item-props="true" />
