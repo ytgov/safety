@@ -336,6 +336,7 @@ export interface Incident {
   urgency: string;
   urgency_code: string;
   location_code: string;
+  department_code?: string;
   specificLocation: string;
   description: string;
   supervisor_email: string;

@@ -58,8 +58,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/components/incident/DetailsPage.vue"),
       },
       {
-        path: "reports/:id/supervisor",
-        component: () => import("@/components/incident/SupervisorDetailsPage.vue"),
+        path: "inspections",
+        component: () => import("@/components/inspection/InspectionListPage.vue"),
+      },
+      {
+        path: "inspections/:id",
+        component: () => import("@/components/inspection/InspectionDetailsPage.vue"),
       },
       {
         path: "task/:id",
@@ -75,7 +79,6 @@ const routes: RouteRecordRaw[] = [
         path: "hazard-library",
         component: () => import("@/components/hazard-library/HazardListPage.vue"),
       },
-
 
       {
         path: "sign-in",

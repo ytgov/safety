@@ -16,6 +16,7 @@ import {
   attachmentRouter,
   offlineReportRouter,
   hazardRouter,
+  inspectionRouter,
 } from "./routes";
 import { checkJwt, loadUser } from "./middleware/authz.middleware";
 import migrator from "./data/migrator";
@@ -70,6 +71,7 @@ app.use("/api/location", locationRouter);
 app.use("/api/attachment", attachmentRouter);
 
 app.use("/api/reports", checkJwt, loadUser, reportRouter);
+app.use("/api/inspections", checkJwt, loadUser, inspectionRouter);
 app.use("/api/offline-reports", offlineReportRouter);
 app.use("/api/user", checkJwt, loadUser, userRouter);
 app.use("/api/role", checkJwt, loadUser, roleRouter);

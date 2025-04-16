@@ -11,7 +11,7 @@ export class ActionService {
       .whereRaw(`"actions"."incident_id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [
         email,
       ])
-      .select("actions.*", "incidents.slug as incident_slug")
+      .select("actions.*", "incidents.slug as incident_slug", "incidents.incident_type_id")
       .orderBy("actions.created_at", "desc");
   }
   async getCount(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<{ count: number }> {

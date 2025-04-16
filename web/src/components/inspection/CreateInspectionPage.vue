@@ -16,7 +16,10 @@
           <v-row>
             <v-col cols="12" sm="4">
               <v-label class="mb-1" style="white-space: inherit">Date and time of inspection</v-label>
-              <DateTimeSelector v-model="report.date" hide-details></DateTimeSelector>
+              <DateTimeSelector
+                v-model="report.date"
+                hide-details
+                :readonly="!isNil(selectedReport)"></DateTimeSelector>
             </v-col>
 
             <v-col cols="12" sm="4">
@@ -27,6 +30,7 @@
                 item-title="name"
                 item-value="code"
                 hide-details
+                :readonly="!isNil(selectedReport)"
                 :rules="[requiredRule]" />
             </v-col>
 
@@ -37,13 +41,23 @@
                 v-model="report.department_code"
                 :items="departments"
                 item-title="name"
-                hide-details
                 item-value="code"
+                :readonly="!isNil(selectedReport)"
                 :rules="[requiredRule]" />
             </v-col>
           </v-row>
 
-          <div class="d-flex">
+          <v-label>Attachments</v-label>
+          <v-file-input
+            v-model="report.files"
+            prepend-icon=""
+            prepend-inner-icon="mdi-paperclip"
+            chips
+            :readonly="!isNil(selectedReport)"
+            :clearable="isNil(selectedReport)"
+            multiple></v-file-input>
+
+          <div v-if="!selectedReport || !selectedReport.slug" class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Start Inspection</v-btn>
           </div>
         </v-col>
@@ -82,35 +96,26 @@
           </v-card-text>
         </v-card>
       </v-col>
-      <v-col>
-        <v-btn class="mb-0" color="info" @click="addTaskClick">Add Hazard</v-btn>
+      <v-col v-if="selectedReport && selectedReport.slug" cols="6">
+        <div class="d-flex">
+          <v-btn class="mb-0" color="info" @click="addTaskClick">Add Hazard</v-btn>
+          <v-spacer />
+
+          <v-btn class="mb-0" color="warning" to="/inspections">Complete Inspection</v-btn>
+        </div>
+        <InspectionActionList class="mt-5" @showAction="doShowActionEdit"></InspectionActionList>
+
+        <ActionDialog v-model="showActionEdit" :action="actionToEdit" @doClose="actionReload"></ActionDialog>
 
         <HazardAssessmentForm
           v-model="showHazardDialog"
           :incident-id="selectedReport.id"
-          :incident_type_description="selectedReport.incident_type_description"
+          incident_type_description="Inspection: "
           :hazard-report="selectedReport"
           @complete="actionReload"
           @close="showHazardDialog = false" />
       </v-col>
     </v-row>
-
-    <section>
-      <v-card class="default">
-        <v-card-item class="py-4 px-6 mb-2 bg-sun">
-          <h4 class="text-h6">Submit Inspection</h4>
-        </v-card-item>
-        <v-card-text class="pt-5">
-          <v-label>Attachments</v-label>
-          <v-file-input
-            v-model="report.files"
-            prepend-icon=""
-            prepend-inner-icon="mdi-paperclip"
-            chips
-            multiple></v-file-input>
-        </v-card-text>
-      </v-card>
-    </section>
   </v-form>
 </template>
 
@@ -118,20 +123,22 @@
 import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { isNil } from "lodash";
-import { router } from "@/routes";
-import { useReportStore } from "@/store/ReportStore";
+import { DateTime } from "luxon";
+
+import { useInspectionStore } from "@/store/InspectionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { useDepartmentStore } from "@/store/DepartmentStore";
 import { useHazardStore } from "@/store/HazardStore";
 
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import { requiredRule } from "@/utils/validation";
-import { DateTime } from "luxon";
-import HazardAssessmentForm from "../incident/HazardAssessmentForm.vue";
+import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue";
+import InspectionActionList from "@/components/action/InspectionActionList.vue";
+import ActionDialog from "../action/ActionDialog.vue";
 
-const reportStore = useReportStore();
-const { initialize, addReport } = reportStore;
-const { locations } = storeToRefs(reportStore);
+const inspectionStore = useInspectionStore();
+const { initialize, addInspection, loadReport } = inspectionStore;
+const { locations, selectedReport } = storeToRefs(inspectionStore);
 
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
@@ -146,8 +153,9 @@ const { hazards } = storeToRefs(hazardStore);
 
 const isValid = ref(false);
 
+const showActionEdit = ref(false);
+const actionToEdit = ref(null);
 const showHazardDialog = ref(false);
-const selectedReport = ref({ id: 123, incident_type_description: "Test" });
 
 await initialize();
 await initDepartments();
@@ -171,24 +179,24 @@ watch(
 );
 
 const canSave = computed(() => {
-  if (report.value.on_behalf == "Yes") {
-    if (isNil(report.value.on_behalf_email)) return false;
-  }
+  if (
+    isNil(report.value) ||
+    isNil(report.value.date) ||
+    isNil(report.value.location_code) ||
+    isNil(report.value.department_code)
+  )
+    return false;
 
-  return report.value.eventType && isValid.value && report.value.supervisor_email && report.value.on_behalf;
+  return true;
 });
-
-function addHazard() {
-  hazards.value.push({});
-}
 
 async function saveReport() {
   report.value.createDate = new Date();
   showOverlay();
 
-  await addReport(report.value).then(() => {
+  await addInspection(report.value).then(async (resp) => {
+    await loadReport(resp.data.slug);
     hideOverlay();
-    router.push("/report-an-incident/complete");
   });
 }
 
@@ -207,7 +215,14 @@ function addTaskClick() {
   showHazardDialog.value = true;
 }
 
-function actionReload() {
-  console.log("LOREAOD");
+async function actionReload() {
+  if (selectedReport.value && selectedReport.value.slug) await loadReport(selectedReport.value.slug);
+
+  showActionEdit.value = false;
+}
+
+function doShowActionEdit(action) {
+  actionToEdit.value = action;
+  showActionEdit.value = true;
 }
 </script>

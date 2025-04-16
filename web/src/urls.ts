@@ -7,6 +7,7 @@ export const PROFILE_URL = `${config.apiBaseUrl}/api/user/me`;
 
 export const USERS_URL = `${config.apiBaseUrl}/api/user`;
 export const REPORTS_URL = `${config.apiBaseUrl}/api/reports`;
+export const INSPECTIONS_URL = `${config.apiBaseUrl}/api/inspections`;
 export const OFFLINEREPORTS_URL = `${config.apiBaseUrl}/api/offline-reports`;
 export const DIRECTORY_URL = `${config.apiBaseUrl}/api/directory`;
 

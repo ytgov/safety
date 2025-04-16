@@ -58,6 +58,10 @@ function makeSubtitle(input: Action) {
 }
 
 function openActionClick(input: Action) {
+  if (input.incident_type_id == 6) {
+    router.push(`/inspections/${input.incident_slug}?action=${input.slug}`);
+    return;
+  }
   router.push(`/reports/${input.incident_slug}?action=${input.slug}`);
 }
 </script>
