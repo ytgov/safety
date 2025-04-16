@@ -10,6 +10,7 @@ export async function seed(knex: knex.Knex) {
     { name: "noloss", description: "No Loss Incident (near miss)" },
     { name: "refusal", description: "Work Refusal" },
     { name: "dontknow", description: "Uncategoried" },
+    { name: "inspection", description: "Inspection" },
   ] as Array<IncidentType>;
 
   for (const item of toInsert) {
