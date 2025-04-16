@@ -57,6 +57,11 @@
             :clearable="isNil(selectedReport)"
             multiple></v-file-input>
 
+          <p>
+            If you have attachments associated with this Inspection, they need to be uploaded before you click "Start
+            Inspection".
+          </p>
+
           <div v-if="!selectedReport || !selectedReport.slug" class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Start Inspection</v-btn>
           </div>
@@ -148,7 +153,7 @@ const { initialize: initDepartments } = departmentStore;
 const { departments } = storeToRefs(departmentStore);
 
 const hazardStore = useHazardStore();
-const { loadHazards } = hazardStore;
+const { loadHazards, clear } = hazardStore;
 const { hazards } = storeToRefs(hazardStore);
 
 const isValid = ref(false);
@@ -159,6 +164,7 @@ const showHazardDialog = ref(false);
 
 await initialize();
 await initDepartments();
+await clear();
 
 async function reload() {
   await loadHazards({

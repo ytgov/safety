@@ -41,6 +41,13 @@ export const useHazardStore = defineStore("hazards", {
       ];
     },
 
+    clear() {
+      this.hazards = [];
+      this.totalCount = 0;
+      this.selectedHazard = null;
+      this.attachments = [];
+    },
+
     async loadHazards({
       page,
       perPage,
