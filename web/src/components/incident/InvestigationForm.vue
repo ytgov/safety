@@ -421,7 +421,7 @@ async function save() {
   showOverlay("Saving Investigation");
 
   const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
-  const eventInfo = eventOptions.filter((o) => events.value.includes(o.value));
+  const eventInfo = eventOptions.value.filter((o) => events.value.includes(o.value));
 
   const investigation = {
     incident_id: props.incidentId,
