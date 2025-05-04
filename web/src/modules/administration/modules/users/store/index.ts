@@ -5,8 +5,6 @@ import { useApiStore } from "@/store/ApiStore";
 import { DIRECTORY_URL, ROLE_URL, USERS_URL } from "@/urls";
 import { clone } from "lodash";
 
-let m = useNotificationStore();
-
 interface AdminState {
   users: Array<User>;
   selectedUser: User | undefined;
@@ -48,6 +46,7 @@ export const useUserAdminStore = defineStore("userAdmin", {
     async saveUser() {
       this.isLoading = true;
       let api = useApiStore();
+      let m = useNotificationStore();
 
       if (!this.selectedUser) return;
 
@@ -75,6 +74,7 @@ export const useUserAdminStore = defineStore("userAdmin", {
     },
     async addUser(user: any) {
       let api = useApiStore();
+      let m = useNotificationStore();
 
       return api.secureCall("post", USERS_URL, { user }).then(async (resp) => {
         if (resp && resp.data && resp.data.error) {

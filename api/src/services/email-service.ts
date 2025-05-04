@@ -16,6 +16,7 @@ const TASK_ASSIGNED_TEMPLATE = "../templates/email/task-assigned-notification.ht
 
 const INCIDENT_EMPLOYEE_COMPLETE_TEMPLATE = "../templates/email/incident-complete-employee.html";
 const INCIDENT_INVITE_TEMPLATE = "../templates/email/incident-invite.html";
+const INCIDENT_REVIEW_TEMPLATE = "../templates/email/incident-review.html";
 
 export class EmailService {
   transport: Transporter;
@@ -89,11 +90,25 @@ export class EmailService {
     let templatePath = path.join(__dirname, INCIDENT_INVITE_TEMPLATE);
     let content = fs.readFileSync(templatePath).toString();
 
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}/supervisor`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
 
     console.log("-- EMAIL INVITE INCIDENT NOTIFICATION", recipient.email);
 
     await this.sendEmail(recipient.fullName, recipient.email, "You Have Been Invited To A Report", content);
+  }
+
+  async sendIncidentReviewNotification(
+    recipient: { fullName: string; email: string },
+    incident: Incident
+  ): Promise<any> {
+    let templatePath = path.join(__dirname, INCIDENT_REVIEW_TEMPLATE);
+    let content = fs.readFileSync(templatePath).toString();
+
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
+
+    console.log("-- EMAIL INVITE REVIEW NOTIFICATION", recipient.email);
+
+    await this.sendEmail(recipient.fullName, recipient.email, "You Have Been Asked To Review A Report", content);
   }
 
   async sendIncidentSupervisorNotification(
@@ -105,7 +120,7 @@ export class EmailService {
     let content = fs.readFileSync(templatePath).toString();
 
     content = content.replace(/``REPORTING_NAME``/g, employeeName ?? "");
-    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}/supervisor`);
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
 
     console.log("-- EMAIL SUPERVISOR INCIDENT NOTIFICATION", recipient.email);
 

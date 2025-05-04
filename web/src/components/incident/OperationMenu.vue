@@ -34,6 +34,16 @@
           <v-icon color="green">mdi-email</v-icon>
         </template>
       </v-list-item>
+      <v-list-item
+        v-if="isNotification && currentStep.order == 5"
+        title="Request Committee Review"
+        :subtitle="currentStep.step_title"
+        @click="showCommitteeDialog = true">
+        <template #prepend>
+          <v-icon color="warning">mdi-account-group</v-icon>
+        </template>
+      </v-list-item>
+
       <!-- 
       <v-list-item
         title="Complete Next Step"
@@ -44,6 +54,16 @@
           <v-icon color="green">mdi-check-bold</v-icon>
         </template>
       </v-list-item> -->
+
+      <v-list-item
+        v-if="isReview"
+        title="Complete Committee Review"
+        :subtitle="currentStep.step_title"
+        @click="completeClick(currentStep)">
+        <template #prepend>
+          <v-icon color="green">mdi-check-bold</v-icon>
+        </template>
+      </v-list-item>
 
       <v-list-item
         title="Revert Previous Step"
@@ -87,6 +107,14 @@
     :incident_type_description="selectedReport.incident_type_description"
     @complete="completeNotification"
     @close="showNotificationDialog = false" />
+
+  <CommitteeForm
+    v-model="showCommitteeDialog"
+    :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description"
+    :department="selectedReport.department_code"
+    @complete="sendToCommittee"
+    @close="showCommitteeDialog = false" />
 </template>
 
 <script setup>
@@ -101,6 +129,7 @@ import { useUserStore } from "@/store/UserStore";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import InvestigationForm from "./InvestigationForm.vue";
 import NotificationForm from "./NotificationForm.vue";
+import CommitteeForm from "./CommitteeForm.vue";
 import HazardAssessmentForm from "./HazardAssessmentForm.vue";
 
 const reportStore = useReportStore();
@@ -114,6 +143,7 @@ const confirm = ref(null);
 const showInvestigationDialog = ref(false);
 const showHazardDialog = ref(false);
 const showNotificationDialog = ref(false);
+const showCommitteeDialog = ref(false);
 
 const previousStep = computed(() => {
   if (selectedReport.value) {
@@ -133,10 +163,13 @@ const isHazardAssessment = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   return currentStep.value.step_title === "Assessment of Hazard";
 });
-
 const isNotification = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   return currentStep.value.step_title.includes("Notification");
+});
+const isReview = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+  return currentStep.value.step_title.includes("Committee Review");
 });
 
 async function completeClick(step) {
@@ -162,6 +195,10 @@ async function completeInvestigation() {
 }
 
 async function completeNotification() {
+  await completeStep(currentStep.value);
+}
+
+async function sendToCommittee() {
   await completeStep(currentStep.value);
 }
 </script>

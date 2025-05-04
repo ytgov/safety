@@ -56,6 +56,20 @@
         </v-card-text>
       </v-card>
     </v-col>
+
+    <v-col cols="12" md="4" v-if="user">
+      <v-card elevation="3" color="#F2760C66" to="/administration/committees">
+        <v-card-text style="text-align: right">
+          <v-icon
+            class="float-left"
+            style="font-size: 90px; opacity: 25%; position: absolute; left: 10px; margin-top: -12px"
+            >mdi-account-multiple</v-icon
+          >
+          <div style="font-size: 52px; line-height: 52px">{{ committeeCount }}</div>
+          <div>Committees</div>
+        </v-card-text>
+      </v-card>
+    </v-col>
   </v-row>
 </template>
 
@@ -64,6 +78,7 @@ import { mapActions, mapState } from "pinia";
 
 import { useUserAdminStore } from "@/modules/administration/modules/users/store";
 import { useLocationAdminStore } from "@/modules/administration/modules/locations/store";
+import { useCommitteeAdminStore } from "@/modules/administration/modules/committees/store";
 import { useUserStore } from "@/store/UserStore";
 
 export default {
@@ -74,15 +89,18 @@ export default {
   computed: {
     ...mapState(useUserAdminStore, ["userCount"]),
     ...mapState(useLocationAdminStore, ["locationCount"]),
+    ...mapState(useCommitteeAdminStore, ["committeeCount"]),
     ...mapState(useUserStore, ["user"]),
   },
   async mounted() {
     await this.getAllUsers();
     await this.getAllLocations();
+    await this.getAllCommittees();
   },
   methods: {
     ...mapActions(useUserAdminStore, ["getAllUsers"]),
     ...mapActions(useLocationAdminStore, ["getAllLocations"]),
+    ...mapActions(useCommitteeAdminStore, ["getAllCommittees"]),
   },
 };
 </script>

@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { isArray, isNil } from "lodash";
+import { isArray, isNil, orderBy } from "lodash";
 
 import { Knex } from "knex";
 import { db as knex } from "../data";
@@ -114,7 +114,14 @@ reportRouter.get("/:slug", async (req: Request, res: Response) => {
 
 reportRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, investigation_notes, additional_description, urgency_code, incident_type_id } = req.body;
+  const {
+    description,
+    investigation_notes,
+    additional_description,
+    urgency_code,
+    incident_type_id,
+    hs_recommendations,
+  } = req.body;
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
@@ -122,9 +129,14 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
   const data = await db.getById(id, userIsAdmin ? "System Admin" : req.user.email);
   if (!data) return res.status(404).send();
 
-  await knex("incidents")
-    .where({ id })
-    .update({ description, investigation_notes, additional_description, urgency_code, incident_type_id });
+  await knex("incidents").where({ id }).update({
+    description,
+    investigation_notes,
+    additional_description,
+    urgency_code,
+    incident_type_id,
+    hs_recommendations,
+  });
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
@@ -459,6 +471,57 @@ reportRouter.post("/:id/send-employee-notification", async (req: Request, res: R
     { fullName: employeeName, email: incident.reporting_person_email },
     incident
   );
+
+  return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
+});
+
+reportRouter.post("/:id/send-committee-request", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { committeeId } = req.body;
+
+  const incident = await knex("incidents").where({ id }).first();
+  if (!incident) return res.status(404).send();
+
+  const committee = await knex("committees").where({ id: committeeId }).first();
+  if (!committee) return res.status(404).send();
+
+  const committeeUsers = await knex("committee_users").where({ committee_id: committeeId });
+
+  const incidentSteps = await knex("incident_steps").where({ incident_id: id }).orderBy("order");
+
+  const notificationStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Employee Notification");
+  const requestStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Committee Review");
+
+  if (!isNil(requestStep)) return res.status(400).send("Step already exists");
+
+  const newStep = {
+    incident_id: id,
+    step_title: "Committee Review",
+    order: notificationStep.order,
+    activate_date: new Date(),
+  };
+
+  await knex("incident_steps")
+    .where({ id: notificationStep.id })
+    .update({ order: notificationStep.order + 1 });
+  await knex("incident_steps").insert(newStep);
+
+  for (const user of committeeUsers) {
+    const userRecord = await knex("users").where({ id: user.user_id }).first();
+
+    if (!userRecord) continue;
+
+    await knex("incident_users").insert({
+      user_email: userRecord.email,
+      incident_id: id,
+      reason: "supervisor",
+    });
+
+    await emailService.sendIncidentInviteNotification(
+      { fullName: userRecord.display_name, email: userRecord.email },
+      incident
+    );
+  }
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
 });

@@ -185,6 +185,7 @@ export const useReportStore = defineStore("reports", {
         additional_description: this.selectedReport.additional_description,
         urgency_code: this.selectedReport.urgency_code,
         incident_type_id: this.selectedReport.incident_type_id,
+        hs_recommendations: this.selectedReport.hs_recommendations
       };
 
       const api = useApiStore();
@@ -282,6 +283,16 @@ export const useReportStore = defineStore("reports", {
       return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-employee-notification`, {});
     },
 
+    sendCommitteeRequest(committeeId: number) {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+      return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId }).then(() => {
+        if (this.selectedReport) this.loadReport(this.selectedReport.slug);
+      });
+    },
+
     loadLinkedUsers() {
       let reportId = this.selectedReport?.slug;
 
@@ -348,6 +359,7 @@ export interface Incident {
   location_detail?: string;
   slug: string;
   incident_type_id: number;
+  hs_recommendations?: string;
 
   incident_type_description: string;
   status_name: string;

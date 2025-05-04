@@ -17,3 +17,4 @@ export const LOCATION_URL = `${config.apiBaseUrl}/api/location`;
 export const ATTACHMENT_URL = `${config.apiBaseUrl}/api/attachment`;
 export const HAZARD_URL = `${config.apiBaseUrl}/api/hazard`;
 export const ACTION_URL = `${config.apiBaseUrl}/api/action`;
+export const COMMITTEE_URL = `${config.apiBaseUrl}/api/committees`;
