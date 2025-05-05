@@ -22,6 +22,20 @@ const routes: RouteRecordRaw[] = [
       requireSystemAdmin: true,
     },
   },
+  {
+    path: "administration/committees",
+    component: () => import("@/modules/administration/modules/committees/views/CommitteeList.vue"),
+    meta: {
+      requireSystemAdmin: true,
+    },
+  },
+  {
+    path: "administration/committees/:id",
+    component: () => import("@/modules/administration/modules/committees/views/CommitteeEdit.vue"),
+    meta: {
+      requireSystemAdmin: true,
+    },
+  },
 ];
 
 export default routes;

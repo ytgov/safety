@@ -178,6 +178,19 @@
                     :append-inner-icon="canEdit ? '' : 'mdi-lock'"
                     hide-details />
                 </div>
+
+                <div
+                  v-if="currentStep.step_title == 'Committee Review' || selectedReport.hs_recommendations"
+                  class="mt-4">
+                  <v-label class="mb-1" style="white-space: inherit"
+                    >Health and Safety Committee Recommendations</v-label
+                  >
+                  <v-textarea
+                    v-model="selectedReport.hs_recommendations"
+                    :readonly="!(canEdit && currentStep.step_title == 'Committee Review')"
+                    :append-inner-icon="canEdit ? '' : 'mdi-lock'"
+                    hide-details />
+                </div>
               </v-col>
 
               <v-col v-if="canEdit" cols="12" md="12">

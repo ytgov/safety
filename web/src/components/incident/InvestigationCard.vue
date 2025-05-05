@@ -55,6 +55,10 @@
                 >{{ investigation.investigation_data.acts.title }}
               </li>
             </ul>
+
+            <p v-if="investigation.investigation_data.acts_other" class="mt-1">
+              {{ investigation.investigation_data.acts_other }}
+            </p>
           </v-sheet>
 
           <v-sheet border rounded class="pa-3 mb-4">
@@ -65,6 +69,10 @@
                 {{ collection }}
               </li>
             </ul>
+
+            <p v-if="investigation.investigation_data.factors_other" class="mt-1">
+              {{ investigation.investigation_data.factors_other }}
+            </p>
           </v-sheet>
 
           <v-sheet border rounded class="pa-3 mb-4">
@@ -75,6 +83,10 @@
                 {{ collection }}
               </li>
             </ul>
+
+            <p v-if="investigation.investigation_data.causes_other" class="mt-1">
+              {{ investigation.investigation_data.causes_other }}
+            </p>
           </v-sheet>
         </v-col>
       </v-row>

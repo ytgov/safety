@@ -111,6 +111,8 @@
                 <strong>{{ item.props.subtitle }}:&nbsp;</strong> {{ item.title }}
               </template>
             </v-select>
+
+            <v-textarea v-model="acts_other" class="mt-2" label="Briefly explain" rows="2" />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="4">
@@ -127,6 +129,8 @@
               chips
               clearable
               multiple />
+
+            <v-textarea v-model="factors_other" class="mt-2" label="Briefly explain" rows="2" />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="5">
@@ -143,6 +147,7 @@
               chips
               clearable
               multiple />
+            <v-textarea v-model="causes_other" class="mt-2" label="Briefly explain" rows="2" />
           </v-card-text>
         </v-window-item>
       </v-window>
@@ -264,6 +269,7 @@ const hasAllRequiredIncidents = computed(() => {
   return !isNil(incidents.value);
 });
 
+const acts_other = ref("");
 const acts = ref(null);
 const actsAndConditions = ref([
   { title: "Operating without authority", subtitle: "Act or Practice", value: "operating_without_authority" },
@@ -310,6 +316,7 @@ const hasAllRequiredCauses = computed(() => {
   return !isNil(acts.value);
 });
 
+const factors_other = ref("");
 const factors = ref([]);
 const factorOptions = [
   { title: "Congestion", value: "congestion" },
@@ -361,6 +368,7 @@ const hasAllRequiredFactors = computed(() => {
   return factors.value.length > 0;
 });
 
+const causes_other = ref("");
 const causes = ref([]);
 const rootCauseOptions = [
   { title: "Leadership training and understanding", value: "leadership_training_understanding" },
@@ -432,8 +440,11 @@ async function save() {
       incidents_other: incidents_other.value,
       incidents: incidents.value,
       acts: acts.value,
+      acts_other: acts_other.value,
       factors: factors.value,
+      factors_other: factors_other.value,
       causes: causes.value,
+      causes_other: causes_other.value,
     },
   };
 

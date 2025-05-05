@@ -256,7 +256,6 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
       complete_name: null,
       complete_user_id: null,
       status_code: ActionStatuses.READY.code,
-      control: null,
     });
 
     await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code, null);
