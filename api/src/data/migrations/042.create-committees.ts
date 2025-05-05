@@ -11,8 +11,8 @@ export async function up(knex: knex.Knex) {
 
   await knex.schema.createTable("committee_users", function (table) {
     table.increments("id").primary().notNullable();
-    table.integer("committee_id", 256).notNullable();
-    table.integer("user_id", 8).nullable();
+    table.integer("committee_id").notNullable();
+    table.integer("user_id").nullable();
 
     table.foreign("committee_id").references("committees.id");
     table.foreign("user_id").references("users.id");
