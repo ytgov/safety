@@ -180,7 +180,7 @@ function actionReload() {
 
 function formatDate(input) {
   if (!input) return "";
-  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:ma");
+  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:mma");
 }
 
 function doShowActionEdit(action) {
