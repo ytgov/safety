@@ -46,7 +46,7 @@
             :complete="!isNil(step.complete_date)"
             :title="step.step_title"
             :color="step.complete_date ? 'success' : ''"
-            :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
+            :subtitle="makeStepSubtitle(step)">
           </v-stepper-item>
         </v-stepper-header>
       </v-stepper>
@@ -292,6 +292,25 @@ onMounted(() => {
     doShowActionEdit(selectedAction.value);
   }
 });
+
+function makeStepSubtitle(step) {
+  let subtitle = "";
+  if (step.complete_date) {
+    subtitle = `${formatDate(step.complete_date)} by `;
+
+    if (step.order == 1) {
+      if (isSupervisor.value || isReporter.value || isSystemAdmin.value) {
+        subtitle += `${step.complete_name}`;
+      } else {
+        subtitle += `Employee`;
+      }
+    } else {
+      subtitle += `${step.complete_name} `;
+    }
+    return subtitle;
+  }
+  return "";
+}
 
 setTimeout(() => {
   let list = document.getElementsByClassName("v-stepper-item");
