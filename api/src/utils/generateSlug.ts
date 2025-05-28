@@ -12,7 +12,7 @@ export function generateSlug() {
 
 export async function generateIdentifier(db: Knex) {
   const yearMax = await db("incidents")
-    .whereILike("identifier", `${DateTime.utc().year}-%`)
+    .whereLike("identifier", `${DateTime.utc().year}-%`)
     .max("identifier as maxVal")
     .first();
 
