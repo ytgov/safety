@@ -176,7 +176,8 @@
                     v-model="selectedReport.investigation_notes"
                     :readonly="!canEdit"
                     :append-inner-icon="canEdit ? '' : 'mdi-lock'"
-                    hide-details />
+                    :hint="canEdit ? 'Please do not include names or personal identifiers' : ''"
+                    :persistent-hint="canEdit" />
                 </div>
 
                 <div
@@ -189,7 +190,8 @@
                     v-model="selectedReport.hs_recommendations"
                     :readonly="!(canEdit && currentStep.step_title == 'Committee Review')"
                     :append-inner-icon="canEdit ? '' : 'mdi-lock'"
-                    hide-details />
+                    hint="Please do not include names or personal identifiers"
+                    persistent-hint />
                 </div>
               </v-col>
 
