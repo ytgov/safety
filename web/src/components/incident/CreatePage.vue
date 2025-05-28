@@ -98,7 +98,12 @@
               conditions (work area, temperature, noise, chemical, other person, etc.) that may have
               contributed</v-label
             >
-            <v-textarea v-model="report.description" :rules="[requiredRule]" />
+            <v-textarea
+              v-model="report.description"
+              class="mb-3"
+              :rules="[requiredRule]"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-col>
         </v-row>
 
@@ -109,11 +114,8 @@
             <v-radio label="Yes" value="Yes"></v-radio>
           </v-radio-group>
 
-          <DirectorySelector
-            v-if="report.on_behalf == 'Yes'"
-            class=""
-            label="Search and select the person you are submitting this for"
-            @selected="handleBehalfSelect"></DirectorySelector>
+          <v-label v-if="report.on_behalf == 'Yes'">Enter their name</v-label>
+          <v-text-field v-if="report.on_behalf == 'Yes'" v-model="report.on_behalf_email" />
 
           <DirectorySelector
             :label="
@@ -144,7 +146,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
-import { isNil } from "lodash";
+import { isEmpty } from "lodash";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
@@ -169,7 +171,7 @@ const report = ref({ eventType: null, date: new Date(), urgency: "Medium", addit
 
 const canSave = computed(() => {
   if (report.value.on_behalf == "Yes") {
-    if (isNil(report.value.on_behalf_email)) return false;
+    if (isEmpty(report.value.on_behalf_email)) return false;
   }
 
   return report.value.eventType && isValid.value && report.value.supervisor_email && report.value.on_behalf;
@@ -177,7 +179,7 @@ const canSave = computed(() => {
 
 async function saveReport() {
   report.value.createDate = new Date();
-  showOverlay();
+  showOverlay("Saving Report");
 
   await addReport(report.value).then(() => {
     hideOverlay();
@@ -189,10 +191,5 @@ async function saveReport() {
 function handleSupervisorSelect(value) {
   if (value) report.value.supervisor_email = value.email;
   else report.value.supervisor_email = null;
-}
-
-function handleBehalfSelect(value) {
-  if (value) report.value.on_behalf_email = value.email;
-  else report.value.on_behalf_email = null;
 }
 </script>

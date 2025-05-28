@@ -8,6 +8,16 @@
 
     <h1 class="text-h4 mb-2">
       {{ selectedReport.incident_type_description }} Details
+
+      <v-chip
+        class="ml-3"
+        size="large"
+        style="margin-top: -8px"
+        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_sun'"
+        variant="flat">
+        <strong>Id:</strong> &nbsp; {{ selectedReport.identifier }}
+      </v-chip>
+
       <v-chip
         class="ml-3"
         size="large"
@@ -67,8 +77,7 @@
                 :value="selectedReport.department_name"
                 append-inner-icon="mdi-lock"
                 readonly></v-text-field>
-
-              <div v-if="stepperValue < 3">
+              <div v-if="stepperValue < 3 && stepperValue != -1">
                 <v-label>Reported by</v-label>
                 <v-text-field
                   :value="selectedReport.reporting_person_email"
@@ -176,7 +185,8 @@
                     v-model="selectedReport.investigation_notes"
                     :readonly="!canEdit"
                     :append-inner-icon="canEdit ? '' : 'mdi-lock'"
-                    hide-details />
+                    :hint="canEdit ? 'Please do not include names or personal identifiers' : ''"
+                    :persistent-hint="canEdit" />
                 </div>
 
                 <div
@@ -187,13 +197,16 @@
                   >
                   <v-textarea
                     v-model="selectedReport.hs_recommendations"
-                    :readonly="!(canEdit && currentStep.step_title == 'Committee Review')"
-                    :append-inner-icon="canEdit ? '' : 'mdi-lock'"
-                    hide-details />
+                    :readonly="!((canEdit || isCommittee) && currentStep.step_title == 'Committee Review')"
+                    :append-inner-icon="
+                      (canEdit || isCommittee) && currentStep.step_title == 'Committee Review' ? '' : 'mdi-lock'
+                    "
+                    hint="Please do not include names or personal identifiers"
+                    persistent-hint />
                 </div>
               </v-col>
 
-              <v-col v-if="canEdit" cols="12" md="12">
+              <v-col v-if="canEdit || (isCommittee && currentStep.step_title == 'Committee Review')" cols="12" md="12">
                 <v-btn color="primary" class="my-0" @click="saveClick">Save</v-btn>
               </v-col>
             </v-row>
@@ -265,6 +278,11 @@ const isReporter = computed(() => {
   return selectedReport.value.access.filter((a) => a.reason == "reporter").length > 0;
 });
 
+const isCommittee = computed(() => {
+  const relevantReasons = ["committee"];
+  return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
+});
+
 const isSupervisor = computed(() => {
   const relevantReasons = ["supervisor", "Safety Practitioner", "Safety Authority"];
   return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
@@ -328,7 +346,7 @@ setTimeout(() => {
 
 const stepperValue = computed(() => {
   if (selectedReport.value) {
-    for (let i = 1; i < selectedReport.value.steps.length; i++) {
+    for (let i = 1; i < selectedReport.value.steps.length + 1; i++) {
       const step = selectedReport.value.steps[i - 1];
 
       if (step.complete_date) continue;
@@ -336,7 +354,7 @@ const stepperValue = computed(() => {
       return i;
     }
   }
-  return 0;
+  return -1;
 });
 
 const canEdit = computed(() => {
@@ -344,7 +362,11 @@ const canEdit = computed(() => {
 });
 
 const canUseActions = computed(() => {
-  return isSupervisor.value || isSystemAdmin.value;
+  return (
+    isSupervisor.value ||
+    isSystemAdmin.value ||
+    (isCommittee.value && currentStep.value.step_title == "Committee Review")
+  );
 });
 
 function actionReload() {

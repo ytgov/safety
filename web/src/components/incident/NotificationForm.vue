@@ -10,15 +10,26 @@
       <v-card-text>
         <h3>Notifications</h3>
         <p class="mb-5">
-          Depending on circumstances of the {{ incident_type_description }}, you may decide to notify other people or
-          committees so they have the opportunity to review this information before notifying the employee this their
-          submission has been completed.
+          Depending on circumstances of the {{ incident_type_description }}, you may decide to notify the linked users
+          so they have the opportunity to review this information before notifying the employee that their submission
+          has been completed.
         </p>
-        <p class="mb-5">You may do that by entering email addresses into the box below and hitting "Send".</p>
+        <p class="mb-5">
+          You may do that by selecting the people blow and hitting "Notify Above". Alternatively, you may elect to just
+          "Notify Employee and Complete Step".
+        </p>
 
-        <v-textarea v-model="notificationEmails" label="Email addresses" rows="3" />
+        <v-checkbox
+          v-for="user in linkedUsers"
+          :key="user.id"
+          v-model="notificationEmails"
+          :label="`${user.user_email} (${makeTitleCase(user.reason)})`"
+          :value="user.user_email"
+          hide-details
+          density="compact"
+          class="my-0 py-0" />
 
-        <div class="d-flex">
+        <div class="d-flex mt-5">
           <v-btn :disabled="isEmpty(notificationEmails)" color="info" @click="notifyClick">Notify above</v-btn>
 
           <v-spacer />
@@ -32,10 +43,10 @@
 
 <script setup>
 import { ref } from "vue";
+import { storeToRefs } from "pinia";
 import { isEmpty } from "lodash";
 
 import { useReportStore } from "@/store/ReportStore";
-import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 
 const props = defineProps(["incidentId", "incident_type_description"]);
@@ -43,32 +54,38 @@ const emits = defineEmits(["complete", "close"]);
 
 const reportStore = useReportStore();
 const { sendNotification, sendEmployeeNotification } = reportStore;
+const { linkedUsers } = storeToRefs(reportStore);
 
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
 
-const userStore = useUserStore();
-const { user } = userStore;
-
-const notificationEmails = ref("");
+const notificationEmails = ref([]);
 
 function close() {
   emits("close");
 }
 
 async function notifyClick() {
-  showOverlay();
-  await sendNotification(notificationEmails.value);
+  showOverlay("Sending Notifications");
+  await sendNotification(notificationEmails.value.join(", "));
   hideOverlay();
 }
 
 async function save() {
-  showOverlay();
+  showOverlay("Sending Notification");
 
   await sendEmployeeNotification();
 
   emits("complete");
   close();
   hideOverlay();
+}
+
+function makeTitleCase(str) {
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 </script>

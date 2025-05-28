@@ -53,7 +53,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       last_name: "Submission",
       title: "",
       is_active: true,
-      auth_subject: "SUB_MISSING",
+      auth_subject: currentUserEmail,
     });
 
     currentUserId = createdUser[0].id;

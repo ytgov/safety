@@ -18,7 +18,7 @@ import {
 } from "../data/models";
 import { InsertableDate } from "../utils/formatters";
 import { DateTime } from "luxon";
-import { generateSlug } from "../utils/generateSlug";
+import { generateIdentifier, generateSlug } from "../utils/generateSlug";
 
 export const reportRouter = express.Router();
 const db = new IncidentService();
@@ -240,6 +240,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       location_code,
       location_detail,
       slug: generateSlug(),
+      identifier: await generateIdentifier(trx),
     } as Incident;
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");
@@ -356,6 +357,16 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
           complete_date: InsertableDate(DateTime.utc().toISO()),
           complete_user_id: req.user.id,
         });
+
+      // send email to supervisor if the CommitteeReview step is complete.
+      if (step.step_title == "Committee Review") {
+        const incident = await knex("incidents").where({ id }).first();
+
+        await emailService.sendIncidentReviewCompleteNotification(
+          { fullName: incident.supervisor_email, email: incident.supervisor_email },
+          incident
+        );
+      }
     } else if (operation == "revert") {
       await knex("incident_steps").where({ incident_id: id, id: step_id }).update({
         complete_name: null,
@@ -514,7 +525,7 @@ reportRouter.post("/:id/send-committee-request", async (req: Request, res: Respo
     await knex("incident_users").insert({
       user_email: userRecord.email,
       incident_id: id,
-      reason: "supervisor",
+      reason: "committee",
     });
 
     await emailService.sendIncidentInviteNotification(

@@ -44,8 +44,6 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
 
         let u = await db.getBySub(sub);
 
-        console.log("SUB", sub, u);
-
         if (u) {
           req.user = { ...req.auth, ...u };
         } else {
@@ -54,7 +52,7 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
           let e = await db.getByEmail(email);
           console.log("EMAIL", email, e);
 
-          if (e && e.auth_subject == "SUB_MISSING") {
+          if (e && e.auth_subject == email) {
             req.user = { ...req.auth, ...e };
 
             await db.update(email, {

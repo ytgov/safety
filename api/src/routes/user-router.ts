@@ -3,7 +3,7 @@ import { param } from "express-validator";
 
 import { IncidentService, RoleService, UserService } from "../services";
 import { ReturnValidationErrors } from "../middleware";
-import { User } from "../data/models";
+import { User, UserRole } from "../data/models";
 
 export const userRouter = express.Router();
 const db = new UserService();
@@ -28,7 +28,10 @@ userRouter.get("/helpers/:incidentId", async (req: Request, res: Response) => {
   const { incidentId } = req.params;
   let list = await db.getAll();
 
-  const incident = await incidentDb.getById(incidentId, req.user.email);
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const incident = await incidentDb.getById(incidentId, userIsAdmin ? "System Admin" : req.user.email);
   if (!incident) return res.status(404).send("Incident not found");
 
   const matches = [];

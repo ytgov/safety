@@ -27,6 +27,7 @@ export interface Incident {
   location_code?: string;
   location_detail?: string;
   slug: string;
+  identifier?: string;
 
   attachments?: any[];
   steps?: IncidentStep[];

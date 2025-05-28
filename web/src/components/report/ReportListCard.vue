@@ -14,11 +14,7 @@
         style="border: 1px #aaa solid"
         rounded>
         <div v-for="(report, idx) of myReports">
-          <v-list-item
-            :title="makeTitle(report)"
-            :subtitle="makeSubtitle(report)"
-            class="pt-1 pb-2"
-            @click="openReportClick(report)">
+          <v-list-item :subtitle="makeSubtitle(report)" class="pt-1 pb-2" @click="openReportClick(report)">
             <template #prepend>
               <v-avatar size="small" class="mx-n2">
                 <v-icon v-if="report.urgency_code == 'Critical'" color="#D90000" size="26">mdi-alpha-c-circle</v-icon>
@@ -28,6 +24,10 @@
                 >
                 <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
               </v-avatar>
+            </template>
+            <template #title>
+              <strong>{{ report.identifier }}</strong> : {{ report.incident_type_description }} on
+              {{ makeDate(report) }}
             </template>
           </v-list-item>
           <v-divider v-if="idx < myReports.length - 1" />
@@ -54,10 +54,8 @@ const { myReports } = storeToRefs(reportStore);
 
 const router = useRouter();
 
-function makeTitle(input: Incident) {
-  let title = input.incident_type_description;
-  title += ` on ${DateTime.fromISO(input.created_at.toString()).toFormat("yyyy-MM-dd")}`;
-  return title;
+function makeDate(input: Incident) {
+  return DateTime.fromISO(input.created_at.toString()).toFormat("yyyy-MM-dd");
 }
 
 function makeSubtitle(input: Incident) {

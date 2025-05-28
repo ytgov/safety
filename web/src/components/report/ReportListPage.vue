@@ -76,6 +76,7 @@ const urgency = ref(null);
 const location = ref(null);
 
 const headers = [
+  { title: "Id", value: "identifier" },
   { title: "Description", value: "description" },
   { title: "Status", value: "status" },
   { title: "Urgency", value: "urgency_code" },

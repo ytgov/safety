@@ -1,12 +1,12 @@
 import nodemailer, { Transporter, TransportOptions } from "nodemailer";
 import { MailOptions } from "nodemailer/lib/json-transport";
-import { MAIL_CONFIG, MAIL_FROM, APPLICATION_NAME } from "../config";
+import { MAIL_CONFIG, MAIL_FROM, APPLICATION_NAME, FRONTEND_URL } from "../config";
 import fs from "fs";
 import path from "path";
 import { Action, Incident } from "../data/models";
 import { FormatDate } from "../utils/formatters";
 
-const FRONTEND_OVERRIDE = "https://safety.gov.yk.ca";
+const FRONTEND_OVERRIDE = FRONTEND_URL;
 
 const BASE_TEMPLATE = "../templates/email/base.html";
 const INCIDENT_EMPLOYEE_TEMPLATE = "../templates/email/incident-notification-employee.html";
@@ -17,6 +17,7 @@ const TASK_ASSIGNED_TEMPLATE = "../templates/email/task-assigned-notification.ht
 const INCIDENT_EMPLOYEE_COMPLETE_TEMPLATE = "../templates/email/incident-complete-employee.html";
 const INCIDENT_INVITE_TEMPLATE = "../templates/email/incident-invite.html";
 const INCIDENT_REVIEW_TEMPLATE = "../templates/email/incident-review.html";
+const INCIDENT_REVIEW_COMPLETE_TEMPLATE = "../templates/email/incident-review-complete.html";
 
 export class EmailService {
   transport: Transporter;
@@ -109,6 +110,20 @@ export class EmailService {
     console.log("-- EMAIL INVITE REVIEW NOTIFICATION", recipient.email);
 
     await this.sendEmail(recipient.fullName, recipient.email, "You Have Been Asked To Review A Report", content);
+  }
+
+  async sendIncidentReviewCompleteNotification(
+    recipient: { fullName: string; email: string },
+    incident: Incident
+  ): Promise<any> {
+    let templatePath = path.join(__dirname, INCIDENT_REVIEW_COMPLETE_TEMPLATE);
+    let content = fs.readFileSync(templatePath).toString();
+
+    content = content.replace(/``INCIDENT_URL``/g, `${FRONTEND_OVERRIDE}/reports/${incident.slug}`);
+
+    console.log("-- EMAIL INVITE REVIEW COMPLETE NOTIFICATION", recipient.email);
+
+    await this.sendEmail(recipient.fullName, recipient.email, "Committee Review is Complete", content);
   }
 
   async sendIncidentSupervisorNotification(

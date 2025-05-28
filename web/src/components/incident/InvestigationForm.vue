@@ -37,15 +37,107 @@
             <h3>{{ incident_type_description == "Hazard" ? "Potential" : "" }} Event Type</h3>
             <p class="mb-5">Check all that apply.</p>
 
-            <v-checkbox
-              v-for="option in eventOptions.filter((o) => o.value != 'serious')"
-              v-model="events"
-              :value="option.value"
-              :label="option.title"
-              hide-details
-              return-object
-              density="compact">
-            </v-checkbox>
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="first_aid" hide-details density="compact">
+                <template v-slot:label> Injury - First aid </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                Assessed the extent to which a person is injured and provided
+                <ul class="mx-5 my-3">
+                  <li>
+                    treatment of minor injuries that would otherwise receive no medical treatment or that do not need
+                    medical treatment, and
+                  </li>
+                  <li>
+                    in cases in which a person will need medical treatment, treatment for the purpose of preserving life
+                    and minimizing the consequences of injury until medical treatment is obtained.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="medical_aid" hide-details density="compact">
+                <template v-slot:label> Injury - Medical aid </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    A worker experiences a work-related injury or illness that requires medical attention by a medical
+                    practitioner
+                  </li>
+                  <li>the injury leads to missed work beyond the date of injury</li>
+                  <li>the worker requires modified duties</li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="damage" hide-details density="compact">
+                <template v-slot:label> Damage </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    Accident or loss that occurred to a person or public/private property, includes financial loss. For
+                    example, vehicle damage.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="service_loss" hide-details density="compact">
+                <template v-slot:label> Service Loss </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    An event occurs that either does or has a strong probability of interrupting the ability of the
+                    organization to deliver its services or negatively affects a workplace. Events include, but are not
+                    limited to, direct threat to the safety of staff or public, staff shortages, loss of access to
+                    facilities or technologies, or damage to infrastructure critical to staff function.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="environmental" hide-details density="compact">
+                <template v-slot:label> Environmental impact </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>An impairment of the quality of the environment;</li>
+                  <li>damage to property or loss of enjoyment of the lawful use of property;</li>
+                  <li>
+                    damage to plant or animal life or to any component of the environment necessary to sustain plant or
+                    animal life;
+                  </li>
+                  <li>harm or material discomfort to any person;</li>
+                </ul>
+              </v-tooltip>
+            </div>
 
             <div class="d-flex">
               <v-checkbox v-model="events" value="serious" hide-details density="compact">
@@ -75,11 +167,32 @@
                 </ul>
               </v-tooltip>
             </div>
+
+            <v-checkbox
+              v-for="option in eventOptions.filter((o) => o.value != 'serious')"
+              v-model="events"
+              :value="option.value"
+              :label="option.title"
+              hide-details
+              return-object
+              density="compact">
+            </v-checkbox>
+
             <v-alert v-if="showWCBLink" type="warning" class="mt-5">
               Events of this type should also be reported to WSCB via the
               <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
               <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank" style="text-decoration: underline"
                 >https://www.wcb.yk.ca/web-0063/f-0036
+              </a>
+            </v-alert>
+
+            <v-alert v-if="showDamageLink" type="warning" class="mt-5">
+              Events involving 'Damage' should also be reported via the form at:<br />
+              <a
+                href="https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx"
+                target="_blank"
+                style="text-decoration: underline"
+                >https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx
               </a>
             </v-alert>
           </v-card-text>
@@ -92,7 +205,13 @@
 
             <v-select v-model="incidents" label="Incident type" :items="incidentOptions" return-object />
 
-            <v-textarea v-model="incidents_other" class="mt-3" label="Additional applicable information" rows="2" />
+            <v-textarea
+              v-model="incidents_other"
+              class="mt-3"
+              label="Additional applicable information"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="3">
@@ -112,7 +231,13 @@
               </template>
             </v-select>
 
-            <v-textarea v-model="acts_other" class="mt-2" label="Briefly explain" rows="2" />
+            <v-textarea
+              v-model="acts_other"
+              class="mt-2"
+              label="Briefly explain"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="4">
@@ -121,16 +246,58 @@
             <p class="mb-5">Select all that apply.</p>
 
             <v-select
-              v-model="factors"
-              label="Contributing factors"
-              :items="factorOptions"
+              v-model="factors1"
+              label="Environment"
+              :items="factorOptions.filter((f) => f.group === 'Environment')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors2"
+              label="People"
+              :items="factorOptions.filter((f) => f.group === 'People')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors3"
+              label="Material"
+              :items="factorOptions.filter((f) => f.group === 'Material')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors4"
+              label="System"
+              :items="factorOptions.filter((f) => f.group === 'System')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors5"
+              label="Work process"
+              :items="factorOptions.filter((f) => f.group === 'Work process')"
               item-text="title"
               return-object
               chips
               clearable
               multiple />
 
-            <v-textarea v-model="factors_other" class="mt-2" label="Briefly explain" rows="2" />
+            <v-textarea
+              v-model="factors_other"
+              class="mt-2"
+              label="Briefly explain"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="5">
@@ -147,7 +314,13 @@
               chips
               clearable
               multiple />
-            <v-textarea v-model="causes_other" class="mt-2" label="Briefly explain" rows="2" />
+            <v-textarea
+              v-model="causes_other"
+              class="mt-2"
+              label="Briefly explain"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
       </v-window>
@@ -226,12 +399,12 @@ const hasAllRequiredCollections = computed(() => {
 const events = ref([]);
 const eventOptions = computed(() => {
   const baseOptions = [
-    { title: "Injury - First aid", value: "first_aid", required: true },
-    { title: "Injury - Medical aid", value: "medical_aid", required: true },
-    { title: "Damage", value: "damage", required: true },
-    { title: "Service Loss", value: "service_loss", required: true },
-    { title: "Environmental impact", value: "environmental", required: true },
-    { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
+    // { title: "Injury - First aid", value: "first_aid", required: true },
+    //{ title: "Injury - Medical aid", value: "medical_aid", required: true },
+    //{ title: "Damage", value: "damage", required: true },
+    //{ title: "Service Loss", value: "service_loss", required: true },
+    //{ title: "Environmental impact", value: "environmental", required: true },
+    //{ title: "Serious Incident (as per WSCA)", value: "serious", required: true },
   ];
 
   if (props.incident_type_description.startsWith("No Loss Incident"))
@@ -246,6 +419,11 @@ const hasAllRequiredEvents = computed(() => {
 
 const showWCBLink = computed(() => {
   const linkItems = ["medical_aid", "serious"];
+  return events.value.filter((e) => linkItems.includes(e)).length > 0;
+});
+
+const showDamageLink = computed(() => {
+  const linkItems = ["damage"];
   return events.value.filter((e) => linkItems.includes(e)).length > 0;
 });
 
@@ -317,55 +495,74 @@ const hasAllRequiredCauses = computed(() => {
 });
 
 const factors_other = ref("");
-const factors = ref([]);
+const factors1 = ref([]);
+const factors2 = ref([]);
+const factors3 = ref([]);
+const factors4 = ref([]);
+const factors5 = ref([]);
 const factorOptions = [
-  { title: "Congestion", value: "congestion" },
-  { title: "Weather conditions", value: "weather_conditions" },
-  { title: "Temperature", value: "temperature" },
-  { title: "Lighting", value: "lighting" },
-  { title: "Ventilation", value: "ventilation" },
-  { title: "Vibration", value: "vibration" },
-  { title: "Inadequate capability", value: "inadequate_capability" },
-  { title: "Stress", value: "stress" },
-  { title: "Improper motivation", value: "improper_motivation" },
-  { title: "Improper use (misuse)", value: "improper_use" },
-  { title: "Inadequate leadership", value: "inadequate_leadership" },
-  { title: "Lack of supervision", value: "lack_of_supervision" },
-  { title: "Inadequate engineering", value: "inadequate_engineering" },
-  { title: "Inadequate purchasing", value: "inadequate_purchasing" },
-  { title: "Inadequate tools/equip/materials", value: "inadequate_tools_equip_materials" },
+  { title: "Workspace congestion", value: "congestion", group: "Environment" },
+  { title: "Weather conditions", value: "weather_conditions", group: "Environment" },
+  { title: "Temperature", value: "temperature", group: "Environment" },
+  { title: "Visibility/lighting", value: "lighting", group: "Environment" },
+  { title: "Ventilation", value: "ventilation", group: "Environment" },
+  { title: "Vibration", value: "vibration", group: "Environment" },
+  { title: "Noise", value: "noise", group: "Environment" },
+  { title: "Chemical/biological", value: "chemical", group: "Environment" },
+  { title: "Slippery, dusty or tripping hazard", value: "slippery", group: "Environment" },
+
+  { title: "Training/experience", value: "training", group: "People" },
+  { title: "Fatigue or mental/physical stress", value: "stress", group: "People" },
+  { title: "Improper use (misuse)", value: "improper_use", group: "People" },
+  { title: "Supervision/leadership", value: "supervision", group: "People" },
+  { title: "Failure to detect or correct known hazards", value: "detect", group: "People" },
+  { title: "Failure to follow procedure", value: "procedure", group: "People" },
   {
-    title: "Incorrect/defective/unavailable tool, material, equipment",
+    title: "Failure to Implement Recommendations from Health & Safety Committee",
+    value: "recommendations",
+    group: "People",
+  },
+  { title: "Improper Position/Posture (Ergonomics)", value: "improper_position", group: "People" },
+  { title: "Operating without authority", value: "operating_without_authority", group: "People" },
+  { title: "Not Wearing proper PPE", value: "not_wearing_proper_ppe", group: "People" },
+
+  { title: "Engineering/design/purchasing", value: "inadequate_purchasing", group: "Material" },
+  { title: "Defective tools/equip/materials", value: "defective_tools", group: "Material" },
+  {
+    title: "Incorrect/unavailable tool, material, equipment",
     value: "incorrect_defective_unavailable_tool_material_equipment",
+    group: "Material",
   },
-  { title: "Inadequate work standards", value: "inadequate_work_standards" },
-  { title: "Wear and tear", value: "wear_and_tear" },
-  { title: "Chemical", value: "chemical" },
-  { title: "Failure to detect or correct known hazards", value: "failure_to_detect_or_correct_known_hazards" },
+  { title: "Inadequate Personal Protective Equipment", value: "inadequate_ppe", group: "Material" },
+  { title: "Lack of ergonomic workstation design", value: "ergonomic", group: "Material" },
+  { title: "Unsafe design/ layout/ construction", value: "unsafe_design", group: "Material" },
+
+  { title: "Standards and specifications", value: "standards", group: "System" },
+  { title: "Wear and tear", value: "wear_and_tear", group: "System" },
   {
-    title: "Worker did not understand the Work/Task Instructions",
-    value: "worker_did_not_understand_work_task_instructions",
-  },
-  {
-    title: "Lack of Training/Information/Instruction delivered to worker",
+    title: "Lack of training/orientation delivered to worker",
     value: "lack_of_training_information_instruction",
+    group: "System",
   },
-  { title: "Failure to Implement Recommendations from JHSC", value: "failure_to_implement_recommendations_from_jhsc" },
-  { title: "Hazardous Method/Procedure Used", value: "hazardous_method_procedure_used" },
-  { title: "Slippery, Dusty or tripping hazard", value: "slippery_dusty_tripping_hazard" },
-  { title: "Improper Position/Posture (Ergonomics)", value: "improper_position_posture_ergonomics" },
+  { title: "Work practices, procedures, policies/written instructions", value: "work_practices", group: "System" },
+
+  { title: "Lack of ergonomic workstation design", value: "workstation_layout_is_faulty", group: "Work process" },
+  { title: "Unsafe design/layout/construction", value: "unsafe_design_layout_construction", group: "Work process" },
+  { title: "Operating without authority", value: "unauthorized_task_operation", group: "Work process" },
   {
-    title: "Inadequate safe work practices, procedures or policies",
-    value: "inadequate_safe_work_practices_procedures_policies",
+    title: "Hazardous Method/Procedure Used",
+    value: "hazardous_method_procedure_used",
+    group: "Work process",
   },
-  { title: "Unauthorized Task/Operation", value: "unauthorized_task_operation" },
-  { title: "Inadequate Personal Protective Equipment", value: "inadequate_personal_protective_equipment" },
-  { title: "Not Wearing proper PPE", value: "not_wearing_proper_ppe" },
-  { title: "Workstation Layout is Faulty", value: "workstation_layout_is_faulty" },
-  { title: "Unsafe design/layout/construction", value: "unsafe_design_layout_construction" },
 ];
 const hasAllRequiredFactors = computed(() => {
-  return factors.value.length > 0;
+  const factors = factors1.value
+    .concat(factors2.value)
+    .concat(factors3.value)
+    .concat(factors4.value)
+    .concat(factors5.value);
+
+  return factors.length > 0;
 });
 
 const causes_other = ref("");
@@ -418,7 +615,11 @@ function close() {
   incidents_other.value = "";
   incidents.value = null;
   acts.value = null;
-  factors.value = [];
+  factors1.value = [];
+  factors2.value = [];
+  factors3.value = [];
+  factors4.value = [];
+  factors5.value = [];
   causes.value = [];
 
   emits("close");
@@ -431,6 +632,12 @@ async function save() {
   const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
   const eventInfo = eventOptions.value.filter((o) => events.value.includes(o.value));
 
+  const factors = factors1.value
+    .concat(factors2.value)
+    .concat(factors3.value)
+    .concat(factors4.value)
+    .concat(factors5.value);
+
   const investigation = {
     incident_id: props.incidentId,
     investigation_data: {
@@ -441,7 +648,7 @@ async function save() {
       incidents: incidents.value,
       acts: acts.value,
       acts_other: acts_other.value,
-      factors: factors.value,
+      factors: factors,
       factors_other: factors_other.value,
       causes: causes.value,
       causes_other: causes_other.value,
@@ -463,8 +670,7 @@ async function save() {
     urgency_code,
     hazard_type_id,
   });
-
-  for (let item of factors.value) {
+  for (let item of factors) {
     items.push({
       incident_id: props.incidentId,
       description: `Contributing Factor: ${item.title}`,

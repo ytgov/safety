@@ -360,6 +360,7 @@ export interface Incident {
   slug: string;
   incident_type_id: number;
   hs_recommendations?: string;
+  identifier?: string;
 
   incident_type_description: string;
   status_name: string;
