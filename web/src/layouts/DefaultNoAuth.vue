@@ -42,7 +42,7 @@
 
             <v-list-item to="/inspection">
               <template v-slot:prepend>
-                <v-icon>mdi-clipboard-search-outline</v-icon>
+                <v-icon>mdi-clipboard-list-outline</v-icon>
               </template>
               <v-list-item-title style="font-size: 0.9rem !important">Start Inspection</v-list-item-title>
             </v-list-item>
