@@ -2,13 +2,13 @@
   <h1 class="text-h4">Safety Portal</h1>
 
   <v-row>
-    <v-col cols="12" sm="6">
-      <p class="text-h6 mb-8">
+    <v-col cols="12" md="6">
+      <p class="text-h6 mb-4">
         This portal is managed by PSC and used by all YG staff to submit and track Health, Safety and Wellbeing hazards,
         near misses and incidents.
       </p>
     </v-col>
-    <v-col cols="12" sm="6">
+    <v-col cols="12" md="6">
       <p class="text-subtitle-1">
         All employees can use this application to submit reports whether online or offline. To begin that process, click
         the button below.
