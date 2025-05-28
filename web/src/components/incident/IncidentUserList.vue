@@ -12,6 +12,7 @@
       :key="user.id"
       :style="{ borderBottom: idx < linkedUsers.length - 1 ? '1px #999 solid' : 'none' }"
       :title="user.user_email"
+      :subtitle="`Access: ${makeTitleCase(user.reason)}`"
       class="py-3">
       <template #append>
         <v-btn
@@ -76,5 +77,13 @@ function removeLinkedUserClick(user) {
     text: "Linked user removed",
     variant: "success",
   });
+}
+
+function makeTitleCase(str) {
+  return str
+    .toLowerCase()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 </script>
