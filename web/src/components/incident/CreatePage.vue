@@ -179,7 +179,7 @@ const canSave = computed(() => {
 
 async function saveReport() {
   report.value.createDate = new Date();
-  showOverlay();
+  showOverlay("Saving Report");
 
   await addReport(report.value).then(() => {
     hideOverlay();
