@@ -37,15 +37,107 @@
             <h3>{{ incident_type_description == "Hazard" ? "Potential" : "" }} Event Type</h3>
             <p class="mb-5">Check all that apply.</p>
 
-            <v-checkbox
-              v-for="option in eventOptions.filter((o) => o.value != 'serious')"
-              v-model="events"
-              :value="option.value"
-              :label="option.title"
-              hide-details
-              return-object
-              density="compact">
-            </v-checkbox>
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="first_aid" hide-details density="compact">
+                <template v-slot:label> Injury - First aid </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                Assessed the extent to which a person is injured and provided
+                <ul class="mx-5 my-3">
+                  <li>
+                    treatment of minor injuries that would otherwise receive no medical treatment or that do not need
+                    medical treatment, and
+                  </li>
+                  <li>
+                    in cases in which a person will need medical treatment, treatment for the purpose of preserving life
+                    and minimizing the consequences of injury until medical treatment is obtained.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="medical_aid" hide-details density="compact">
+                <template v-slot:label> Injury - Medical aid </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    A worker experiences a work-related injury or illness that requires medical attention by a medical
+                    practitioner
+                  </li>
+                  <li>the injury leads to missed work beyond the date of injury</li>
+                  <li>the worker requires modified duties</li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="damage" hide-details density="compact">
+                <template v-slot:label> Damage </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    Accident or loss that occurred to a person or public/private property, includes financial loss. For
+                    example, vehicle damage.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="service_loss" hide-details density="compact">
+                <template v-slot:label> Service Loss </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    An event occurs that either does or has a strong probability of interrupting the ability of the
+                    organization to deliver its services or negatively affects a workplace. Events include, but are not
+                    limited to, direct threat to the safety of staff or public, staff shortages, loss of access to
+                    facilities or technologies, or damage to infrastructure critical to staff function.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="environmental" hide-details density="compact">
+                <template v-slot:label> Environmental impact </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>An impairment of the quality of the environment;</li>
+                  <li>damage to property or loss of enjoyment of the lawful use of property;</li>
+                  <li>
+                    damage to plant or animal life or to any component of the environment necessary to sustain plant or
+                    animal life;
+                  </li>
+                  <li>harm or material discomfort to any person;</li>
+                </ul>
+              </v-tooltip>
+            </div>
 
             <div class="d-flex">
               <v-checkbox v-model="events" value="serious" hide-details density="compact">
@@ -75,11 +167,32 @@
                 </ul>
               </v-tooltip>
             </div>
+
+            <v-checkbox
+              v-for="option in eventOptions.filter((o) => o.value != 'serious')"
+              v-model="events"
+              :value="option.value"
+              :label="option.title"
+              hide-details
+              return-object
+              density="compact">
+            </v-checkbox>
+
             <v-alert v-if="showWCBLink" type="warning" class="mt-5">
               Events of this type should also be reported to WSCB via the
               <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
               <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank" style="text-decoration: underline"
                 >https://www.wcb.yk.ca/web-0063/f-0036
+              </a>
+            </v-alert>
+
+            <v-alert v-if="showDamageLink" type="warning" class="mt-5">
+              Events involving 'Damage' should also be reported via the form at:<br />
+              <a
+                href="https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx"
+                target="_blank"
+                style="text-decoration: underline"
+                >https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx
               </a>
             </v-alert>
           </v-card-text>
@@ -286,12 +399,12 @@ const hasAllRequiredCollections = computed(() => {
 const events = ref([]);
 const eventOptions = computed(() => {
   const baseOptions = [
-    { title: "Injury - First aid", value: "first_aid", required: true },
-    { title: "Injury - Medical aid", value: "medical_aid", required: true },
-    { title: "Damage", value: "damage", required: true },
-    { title: "Service Loss", value: "service_loss", required: true },
-    { title: "Environmental impact", value: "environmental", required: true },
-    { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
+    // { title: "Injury - First aid", value: "first_aid", required: true },
+    //{ title: "Injury - Medical aid", value: "medical_aid", required: true },
+    //{ title: "Damage", value: "damage", required: true },
+    //{ title: "Service Loss", value: "service_loss", required: true },
+    //{ title: "Environmental impact", value: "environmental", required: true },
+    //{ title: "Serious Incident (as per WSCA)", value: "serious", required: true },
   ];
 
   if (props.incident_type_description.startsWith("No Loss Incident"))
@@ -306,6 +419,11 @@ const hasAllRequiredEvents = computed(() => {
 
 const showWCBLink = computed(() => {
   const linkItems = ["medical_aid", "serious"];
+  return events.value.filter((e) => linkItems.includes(e)).length > 0;
+});
+
+const showDamageLink = computed(() => {
+  const linkItems = ["damage"];
   return events.value.filter((e) => linkItems.includes(e)).length > 0;
 });
 
