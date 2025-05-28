@@ -8,8 +8,18 @@
 
     <h1 class="text-h4 mb-2">
       {{ selectedReport.incident_type_description }} Details
+
       <v-chip
-        class="ml-3"
+        class="ml-3 pt-1"
+        size="large"
+        style="margin-top: -8px"
+        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_sun'"
+        variant="flat">
+        <strong>Id:</strong> &nbsp; {{ selectedReport.identifier }}
+      </v-chip>
+
+      <v-chip
+        class="ml-3 pt-1"
         size="large"
         style="margin-top: -8px"
         :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_zinc'"
