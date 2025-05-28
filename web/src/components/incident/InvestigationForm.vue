@@ -92,7 +92,13 @@
 
             <v-select v-model="incidents" label="Incident type" :items="incidentOptions" return-object />
 
-            <v-textarea v-model="incidents_other" class="mt-3" label="Additional applicable information" rows="2" />
+            <v-textarea
+              v-model="incidents_other"
+              class="mt-3"
+              label="Additional applicable information"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="3">
@@ -112,7 +118,13 @@
               </template>
             </v-select>
 
-            <v-textarea v-model="acts_other" class="mt-2" label="Briefly explain" rows="2" />
+            <v-textarea
+              v-model="acts_other"
+              class="mt-2"
+              label="Briefly explain"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="4">
@@ -121,16 +133,58 @@
             <p class="mb-5">Select all that apply.</p>
 
             <v-select
-              v-model="factors"
-              label="Contributing factors"
-              :items="factorOptions"
+              v-model="factors1"
+              label="Environment"
+              :items="factorOptions.filter((f) => f.group === 'Environment')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors2"
+              label="People"
+              :items="factorOptions.filter((f) => f.group === 'People')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors3"
+              label="Material"
+              :items="factorOptions.filter((f) => f.group === 'Material')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors4"
+              label="System"
+              :items="factorOptions.filter((f) => f.group === 'System')"
+              item-text="title"
+              return-object
+              chips
+              clearable
+              multiple />
+            <v-select
+              v-model="factors5"
+              label="Work process"
+              :items="factorOptions.filter((f) => f.group === 'Work process')"
               item-text="title"
               return-object
               chips
               clearable
               multiple />
 
-            <v-textarea v-model="factors_other" class="mt-2" label="Briefly explain" rows="2" />
+            <v-textarea
+              v-model="factors_other"
+              class="mt-2"
+              label="Briefly explain"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="5">
@@ -147,7 +201,13 @@
               chips
               clearable
               multiple />
-            <v-textarea v-model="causes_other" class="mt-2" label="Briefly explain" rows="2" />
+            <v-textarea
+              v-model="causes_other"
+              class="mt-2"
+              label="Briefly explain"
+              rows="2"
+              hint="Please do not include names or personal identifiers"
+              persistent-hint />
           </v-card-text>
         </v-window-item>
       </v-window>
@@ -317,55 +377,74 @@ const hasAllRequiredCauses = computed(() => {
 });
 
 const factors_other = ref("");
-const factors = ref([]);
+const factors1 = ref([]);
+const factors2 = ref([]);
+const factors3 = ref([]);
+const factors4 = ref([]);
+const factors5 = ref([]);
 const factorOptions = [
-  { title: "Congestion", value: "congestion" },
-  { title: "Weather conditions", value: "weather_conditions" },
-  { title: "Temperature", value: "temperature" },
-  { title: "Lighting", value: "lighting" },
-  { title: "Ventilation", value: "ventilation" },
-  { title: "Vibration", value: "vibration" },
-  { title: "Inadequate capability", value: "inadequate_capability" },
-  { title: "Stress", value: "stress" },
-  { title: "Improper motivation", value: "improper_motivation" },
-  { title: "Improper use (misuse)", value: "improper_use" },
-  { title: "Inadequate leadership", value: "inadequate_leadership" },
-  { title: "Lack of supervision", value: "lack_of_supervision" },
-  { title: "Inadequate engineering", value: "inadequate_engineering" },
-  { title: "Inadequate purchasing", value: "inadequate_purchasing" },
-  { title: "Inadequate tools/equip/materials", value: "inadequate_tools_equip_materials" },
+  { title: "Workspace congestion", value: "congestion", group: "Environment" },
+  { title: "Weather conditions", value: "weather_conditions", group: "Environment" },
+  { title: "Temperature", value: "temperature", group: "Environment" },
+  { title: "Visibility/lighting", value: "lighting", group: "Environment" },
+  { title: "Ventilation", value: "ventilation", group: "Environment" },
+  { title: "Vibration", value: "vibration", group: "Environment" },
+  { title: "Noise", value: "noise", group: "Environment" },
+  { title: "Chemical/biological", value: "chemical", group: "Environment" },
+  { title: "Slippery, dusty or tripping hazard", value: "slippery", group: "Environment" },
+
+  { title: "Training/experience", value: "training", group: "People" },
+  { title: "Fatigue or mental/physical stress", value: "stress", group: "People" },
+  { title: "Improper use (misuse)", value: "improper_use", group: "People" },
+  { title: "Supervision/leadership", value: "supervision", group: "People" },
+  { title: "Failure to detect or correct known hazards", value: "detect", group: "People" },
+  { title: "Failure to follow procedure", value: "procedure", group: "People" },
   {
-    title: "Incorrect/defective/unavailable tool, material, equipment",
+    title: "Failure to Implement Recommendations from Health & Safety Committee",
+    value: "recommendations",
+    group: "People",
+  },
+  { title: "Improper Position/Posture (Ergonomics)", value: "improper_position", group: "People" },
+  { title: "Operating without authority", value: "operating_without_authority", group: "People" },
+  { title: "Not Wearing proper PPE", value: "not_wearing_proper_ppe", group: "People" },
+
+  { title: "Engineering/design/purchasing", value: "inadequate_purchasing", group: "Material" },
+  { title: "Defective tools/equip/materials", value: "defective_tools", group: "Material" },
+  {
+    title: "Incorrect/unavailable tool, material, equipment",
     value: "incorrect_defective_unavailable_tool_material_equipment",
+    group: "Material",
   },
-  { title: "Inadequate work standards", value: "inadequate_work_standards" },
-  { title: "Wear and tear", value: "wear_and_tear" },
-  { title: "Chemical", value: "chemical" },
-  { title: "Failure to detect or correct known hazards", value: "failure_to_detect_or_correct_known_hazards" },
+  { title: "Inadequate Personal Protective Equipment", value: "inadequate_ppe", group: "Material" },
+  { title: "Lack of ergonomic workstation design", value: "ergonomic", group: "Material" },
+  { title: "Unsafe design/ layout/ construction", value: "unsafe_design", group: "Material" },
+
+  { title: "Standards and specifications", value: "standards", group: "System" },
+  { title: "Wear and tear", value: "wear_and_tear", group: "System" },
   {
-    title: "Worker did not understand the Work/Task Instructions",
-    value: "worker_did_not_understand_work_task_instructions",
-  },
-  {
-    title: "Lack of Training/Information/Instruction delivered to worker",
+    title: "Lack of training/orientation delivered to worker",
     value: "lack_of_training_information_instruction",
+    group: "System",
   },
-  { title: "Failure to Implement Recommendations from JHSC", value: "failure_to_implement_recommendations_from_jhsc" },
-  { title: "Hazardous Method/Procedure Used", value: "hazardous_method_procedure_used" },
-  { title: "Slippery, Dusty or tripping hazard", value: "slippery_dusty_tripping_hazard" },
-  { title: "Improper Position/Posture (Ergonomics)", value: "improper_position_posture_ergonomics" },
+  { title: "Work practices, procedures, policies/written instructions", value: "work_practices", group: "System" },
+
+  { title: "Lack of ergonomic workstation design", value: "workstation_layout_is_faulty", group: "Work process" },
+  { title: "Unsafe design/layout/construction", value: "unsafe_design_layout_construction", group: "Work process" },
+  { title: "Operating without authority", value: "unauthorized_task_operation", group: "Work process" },
   {
-    title: "Inadequate safe work practices, procedures or policies",
-    value: "inadequate_safe_work_practices_procedures_policies",
+    title: "Hazardous Method/Procedure Used",
+    value: "hazardous_method_procedure_used",
+    group: "Work process",
   },
-  { title: "Unauthorized Task/Operation", value: "unauthorized_task_operation" },
-  { title: "Inadequate Personal Protective Equipment", value: "inadequate_personal_protective_equipment" },
-  { title: "Not Wearing proper PPE", value: "not_wearing_proper_ppe" },
-  { title: "Workstation Layout is Faulty", value: "workstation_layout_is_faulty" },
-  { title: "Unsafe design/layout/construction", value: "unsafe_design_layout_construction" },
 ];
 const hasAllRequiredFactors = computed(() => {
-  return factors.value.length > 0;
+  const factors = factors1.value
+    .concat(factors2.value)
+    .concat(factors3.value)
+    .concat(factors4.value)
+    .concat(factors5.value);
+
+  return factors.length > 0;
 });
 
 const causes_other = ref("");
@@ -418,7 +497,11 @@ function close() {
   incidents_other.value = "";
   incidents.value = null;
   acts.value = null;
-  factors.value = [];
+  factors1.value = [];
+  factors2.value = [];
+  factors3.value = [];
+  factors4.value = [];
+  factors5.value = [];
   causes.value = [];
 
   emits("close");
@@ -431,6 +514,12 @@ async function save() {
   const collectionInfo = collectionOptions.filter((o) => collections.value.includes(o.value));
   const eventInfo = eventOptions.value.filter((o) => events.value.includes(o.value));
 
+  const factors = factors1.value
+    .concat(factors2.value)
+    .concat(factors3.value)
+    .concat(factors4.value)
+    .concat(factors5.value);
+
   const investigation = {
     incident_id: props.incidentId,
     investigation_data: {
@@ -441,7 +530,7 @@ async function save() {
       incidents: incidents.value,
       acts: acts.value,
       acts_other: acts_other.value,
-      factors: factors.value,
+      factors: factors,
       factors_other: factors_other.value,
       causes: causes.value,
       causes_other: causes_other.value,
@@ -463,8 +552,7 @@ async function save() {
     urgency_code,
     hazard_type_id,
   });
-
-  for (let item of factors.value) {
+  for (let item of factors) {
     items.push({
       incident_id: props.incidentId,
       description: `Contributing Factor: ${item.title}`,
