@@ -35,7 +35,7 @@
         </template>
       </v-list-item>
       <v-list-item
-        v-if="isNotification && currentStep.order == 5"
+        v-if="isCommittee"
         title="Request Committee Review"
         :subtitle="currentStep.step_title"
         @click="showCommitteeDialog = true">
@@ -66,10 +66,10 @@
       </v-list-item>
 
       <v-list-item
+        v-if="canRevert && previousStep.id"
         title="Revert Previous Step"
         :subtitle="previousStep.step_title"
-        @click="revertClick(previousStep)"
-        v-if="previousStep.id">
+        @click="revertClick(previousStep)">
         <template #prepend>
           <v-icon color="error">mdi-arrow-u-left-top-bold</v-icon>
         </template>
@@ -155,6 +155,15 @@ const previousStep = computed(() => {
   return {};
 });
 
+const isCommittee = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+  if (!isNotification.value) return false;
+
+  if (selectedReport.value.incident_type_description == "Hazard" && currentStep.value.order == 4) return true;
+  if (selectedReport.value.incident_type_description == "Incident" && currentStep.value.order == 5) return true;
+
+  return false;
+});
 const isInvestigation = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   return currentStep.value.step_title === "Investigation";
@@ -170,6 +179,24 @@ const isNotification = computed(() => {
 const isReview = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   return currentStep.value.step_title.includes("Committee Review");
+});
+
+const isSupervisorUser = computed(() => {
+  const relevantReasons = ["supervisor", "Safety Practitioner", "Safety Authority"];
+  return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
+});
+
+const canRevert = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title) || isNil(previousStep.value)) return false;
+
+  const nonRevertableSteps = ["Control the Hazard", "Controls Implemented", "Control Plan"];
+  if (nonRevertableSteps.includes(previousStep.value.step_title)) return false;
+
+  if (isSystemAdmin) return true; // System admins can revert any step
+  if (isSupervisorUser.value) return true; // Supervisors can revert steps
+  if (isCommittee.value) return false; // Committee steps cannot be reverted
+
+  return false;
 });
 
 async function completeClick(step) {
