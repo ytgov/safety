@@ -117,7 +117,7 @@
             </v-card-text>
           </v-card>
 
-          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin || isAction">
+          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin || isAction || isCommittee">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
@@ -213,7 +213,7 @@
           </v-card>
 
           <InvestigationCard
-            v-if="selectedReport.investigation && (isSupervisor || isSystemAdmin)"
+            v-if="selectedReport.investigation && (isSupervisor || isSystemAdmin || isCommittee)"
             :investigation="selectedReport.investigation"></InvestigationCard>
         </v-col>
       </v-row>

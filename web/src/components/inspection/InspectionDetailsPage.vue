@@ -184,7 +184,7 @@ function formatDate(input) {
 }
 
 function doShowActionEdit(action) {
-  if (isSupervisor.value || isSystemAdmin.value) {
+  if (isSupervisor.value || isSystemAdmin.value || isReporter.value) {
     actionToEdit.value = action;
     showActionEdit.value = true;
     return;

@@ -5,6 +5,15 @@
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
+          <v-label>Hazard description</v-label>
+          <v-text-field v-model="action.description" />
+        </v-card-text>
+      </v-window-item>
+
+      <v-window-item :value="1">
+        <v-card-text>
+          <h3>{{ currentStep.title }}</h3>
+
           <div class="d-flex">
             <v-checkbox v-model="action.categories" value="Chemical" hide-details density="compact" label="Chemical" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
@@ -78,7 +87,7 @@
         </v-card-text>
       </v-window-item>
 
-      <v-window-item :value="1">
+      <v-window-item :value="2">
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
@@ -145,7 +154,7 @@
         </v-card-text>
       </v-window-item>
 
-      <v-window-item :value="2">
+      <v-window-item :value="3">
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
@@ -158,13 +167,14 @@
             make it sooner.
           </p>
 
-          <DateSelector v-model="action.due_date" ref="dater" label="Due date" :max="maxDueDate" :min="today" />
+          <v-label>Due date</v-label>
+          <DateSelector v-model="action.due_date" ref="dater" :max="maxDueDate" :min="today" />
 
           <v-label class="mt-5">Hierarchy of controls</v-label>
           <v-select v-model="action.control" :items="controlOptions" :item-props="true" />
 
           <v-label>Task description</v-label>
-          <v-text-field v-model="action.title" maxlength="200" hide-details />
+          <v-text-field v-model="action.title" hide-details />
         </v-card-text>
       </v-window-item>
     </v-window>
@@ -190,7 +200,7 @@ import { useActionStore } from "@/store/ActionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 
 const props = defineProps(["action", "hazardId"]);
-const emit = defineEmits(["doClose"]);
+const emit = defineEmits(["doClose", "save"]);
 
 const dater = ref(null);
 
@@ -222,9 +232,10 @@ const controlOptions = ref([
 
 const setupStep = ref(0);
 const setupStepOptions = ref([
-  { title: "Hazard Categories", step: 0 },
-  { title: "Risk Priority", step: 1 },
-  { title: "Summary", step: 2 },
+  { title: "Hazard Identification", step: 0 },
+  { title: "Hazard Categories", step: 1 },
+  { title: "Risk Priority", step: 2 },
+  { title: "Summary", step: 3 },
 ]);
 
 watch(
@@ -244,9 +255,11 @@ const isPrev = computed(() => {
   return currentStep.value.step > 0;
 });
 const isNext = computed(() => {
-  if (setupStep.value == 0) return props.action.categories.length > 0;
-  if (setupStep.value == 1) return !isNil(riskPriority.value);
-  if (setupStep.value == 2) return isNil(props.action.control) || isEmpty(props.action.title);
+  if (setupStep.value == 0) return props.action.description.length > 0;
+  if (setupStep.value == 1) return props.action.categories.length > 0;
+  if (setupStep.value == 2) return !isNil(riskPriority.value);
+  if (setupStep.value == 3)
+    return isNil(props.action.control) || isEmpty(props.action.title) || isEmpty(props.action.description);
 
   return currentStep.value.step < setupStepOptions.value.length - 1;
 });
@@ -281,14 +294,9 @@ function closeClick() {
 }
 
 async function saveClick() {
-  showOverlay("Saving Action");
   props.action.status_code = "Ready";
   props.action.urgency_code = riskPriority.value;
-
-  await saveAction(props.action).then(() => {
-    closeClick();
-    hideOverlay();
-  });
+  emit("save");
 }
 
 function formatDate(input) {

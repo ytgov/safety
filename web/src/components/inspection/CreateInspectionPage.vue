@@ -23,6 +23,19 @@
             </v-col>
 
             <v-col cols="12" sm="4">
+              <v-label class="mb-1" style="white-space: inherit">Department responsible</v-label>
+
+              <v-autocomplete
+                v-model="report.department_code"
+                :items="departments"
+                item-title="name"
+                item-value="code"
+                hide-details
+                :readonly="!isNil(selectedReport)"
+                :rules="[requiredRule]" />
+            </v-col>
+
+            <v-col cols="12" sm="4">
               <v-label class="mb-1" style="white-space: inherit">General location of inspection</v-label>
               <v-autocomplete
                 v-model="report.location_code"
@@ -34,16 +47,11 @@
                 :rules="[requiredRule]" />
             </v-col>
 
-            <v-col cols="12" sm="4">
-              <v-label class="mb-1" style="white-space: inherit">Department responsible</v-label>
-
-              <v-autocomplete
-                v-model="report.department_code"
-                :items="departments"
-                item-title="name"
-                item-value="code"
-                :readonly="!isNil(selectedReport)"
-                :rules="[requiredRule]" />
+            <v-col cols="12" sm="12">
+              <v-label class="mb-1" style="white-space: inherit"
+                >Specific location in building where the inspection ocurred</v-label
+              >
+              <v-text-field v-model="report.location_detail" />
             </v-col>
           </v-row>
 

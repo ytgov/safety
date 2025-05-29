@@ -6,27 +6,22 @@
         <v-spacer />
         <v-btn icon="mdi-close" @click="close"></v-btn>
       </v-toolbar>
-      <ActionCreateForm :action="action" @do-close="close" @save="save" />
+      <InspectionActionCreateForm :action="action" @do-close="close" @save="save" />
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
-import { useReportStore } from "@/store/ReportStore";
+import { ref, watch } from "vue";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
-import { isNil } from "lodash";
 import { useActionStore } from "@/store/ActionStore";
-import ActionCreateForm from "@/components/action/ActionCreateForm.vue";
+import InspectionActionCreateForm from "@/components/action/InspectionActionCreateForm.vue";
 
 const props = defineProps(["incidentId", "incident_type_description", "hazardReport", "modelValue"]);
 const emits = defineEmits(["complete", "close"]);
 
 const show = ref(false);
-
-const reportStore = useReportStore();
-const { saveInvestigation } = reportStore;
 
 const actionStore = useActionStore();
 const { saveAction } = actionStore;
@@ -38,7 +33,7 @@ watch(
   (val) => {
     if (val) {
       action.value = {
-        description: `${props.hazardReport?.description}`,
+        description: "",
         incident_id: props.incidentId,
         categories: [],
       };

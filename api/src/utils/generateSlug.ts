@@ -28,7 +28,7 @@ export async function generateIdentifier(db: Knex) {
     }
   }
 
-  const identifier = `${DateTime.utc().year}-${index.toString().padStart(3, "0")}`;
+  const identifier = `${DateTime.utc().year}-${index.toString().padStart(4, "0")}`;
 
   return identifier;
 }

@@ -160,7 +160,12 @@ const isCommittee = computed(() => {
   if (!isNotification.value) return false;
 
   if (selectedReport.value.incident_type_description == "Hazard" && currentStep.value.order == 4) return true;
-  if (selectedReport.value.incident_type_description == "Incident" && currentStep.value.order == 5) return true;
+  if (
+    (selectedReport.value.incident_type_description == "Incident" ||
+      selectedReport.value.incident_type_description == "No Loss Incident (near miss)") &&
+    currentStep.value.order == 5
+  )
+    return true;
 
   return false;
 });
@@ -205,6 +210,7 @@ async function completeClick(step) {
 async function revertClick(step) {
   await revertStep(step);
 }
+
 async function deleteClick(step) {
   confirm.value.show(
     "Delete Incident",
