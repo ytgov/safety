@@ -1,5 +1,5 @@
 <template>
-  <h1 class="text-h4">Safety Portal</h1>
+  <h1 class="text-h4">STICH</h1>
 
   <v-row>
     <v-col cols="12" md="6">

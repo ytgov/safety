@@ -34,6 +34,9 @@
         :items-length="totalCount"
         @update:page="updatePage"
         @click:row="openReport">
+        <template #item.identifier="{ value }">
+          <span class="text-no-wrap">{{ value }}</span>
+        </template>
         <template #item.created_at="{ item }">
           {{ formatDate(item.created_at) }}
         </template>

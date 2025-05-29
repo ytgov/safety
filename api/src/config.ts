@@ -72,7 +72,7 @@ export const MAIL_CONFIG = {
   secure: false, // true for 465, false for other ports
 };
 
-export const APPLICATION_NAME = process.env.APPLICATION_NAME || "YG Safety Portal";
+export const APPLICATION_NAME = process.env.APPLICATION_NAME || "STICH";
 
 export const DB_SCHEMA = process.env.DB_SCHEMA || "";
 export const DB_USER_TABLE = process.env.DB_USER_TABLE || "";

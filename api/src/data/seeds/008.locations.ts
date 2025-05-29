@@ -5,8 +5,7 @@ export async function seed(knex: knex.Knex) {
   const locations = await knex<Department>("locations");
 
   const toInsert = [
-    { code: "JSB", name: "Whitehorse - Jim Smith Building" },
-    { code: "WHO", name: "Whitehorse - other" },
+    { code: "WHI", name: "Whitehorse" },
     { code: "DAW", name: "Dawson City" },
     { code: "WAT", name: "Watson Lake" },
     { code: "CAR", name: "Carmacks" },
@@ -19,8 +18,7 @@ export async function seed(knex: knex.Knex) {
     { code: "DEB", name: "Destruction Bay" },
     { code: "TES", name: "Teslin" },
     { code: "OLC", name: "Old Crow" },
-    { code: "OTR", name: "On the road" },
-    { code: "ITF", name: "In the field" },
+    { code: "ITF", name: "In the field or on the road" },
   ] as Array<Department>;
 
   for (const item of toInsert) {

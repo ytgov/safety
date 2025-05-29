@@ -1,9 +1,9 @@
 <template>
   <h1 class="text-h4">Report a Safety Concern</h1>
   <p class="text-body-2">
-    Personal information is collected under the Workers' Safety and Compensation Act, Section #, for the purposes of
-    Incident investigation and corrective action. For further information, contant the Director of Health, Safety &
-    Wellbeing at 867-332-5974
+    All personal information is collected under the authority of section 15 (c) (i) of the Access to Information and
+    Protection of Privacy Act. It is collected and used for the purposes of hazard and incident management related to
+    the <em>Workers' Safety and Compensation Act</em>.
   </p>
 
   <v-form class="mt-6" v-model="isValid">
@@ -88,7 +88,7 @@
           </v-col>
           <v-col cols="12" md="12" class="py-0">
             <v-label class="mb-1" style="white-space: inherit"
-              >Specific location where the event occurred (such as a spot in a building)</v-label
+              >Specific location where the event occurred (such as site or building details and area within)</v-label
             >
             <v-text-field v-model="report.location_detail" :rules="[requiredRule]" />
           </v-col>

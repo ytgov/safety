@@ -154,9 +154,16 @@ export class EmailService {
       /``TASK_DETAILS``/g,
       `${action.description}, due on ${FormatDate(action.due_date ?? new Date())}`
     );
+
+    let reportType = "reports";
+
+    if (incident.incident_type_id == 6) {
+      reportType = "inspections";
+    }
+
     content = content.replace(
       /``INCIDENT_URL``/g,
-      `${FRONTEND_OVERRIDE}/reports/${incident.slug}?action=${action.slug}`
+      `${FRONTEND_OVERRIDE}/${reportType}/${incident.slug}?action=${action.slug}`
     );
 
     console.log("-- TASK ASSIGNED NOTIFICATION", recipient.email);

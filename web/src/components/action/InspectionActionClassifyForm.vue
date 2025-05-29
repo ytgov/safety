@@ -2,7 +2,7 @@
   <div class="px-2">
     <v-window v-model="setupStep" style="max-height: 550px; overflow-y: auto">
       <v-window-item :value="0">
-        <v-card-text>
+        <v-card-text>asdfdsaf
           <h3>{{ currentStep.title }}</h3>
 
           <div class="d-flex">
