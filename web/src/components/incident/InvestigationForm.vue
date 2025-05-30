@@ -440,7 +440,7 @@ const incidentOptions = [
   { title: "Caught in/ on/ between objects", value: "caught_in_on_between_objects" },
   { title: "Struck against/ Struck by", value: "struck_against_struck_by" },
   { title: "Fire/explosion", value: "fire_explosion" },
-  { title: "Contact with electrical component", value: "contact_with_electrical_component" },
+  { title: "Burn or electrocution", value: "burn_or_electrocution" },
   { title: "Spill/ containment breach", value: "spill_containment_breach" },
 ];
 const hasAllRequiredIncidents = computed(() => {
