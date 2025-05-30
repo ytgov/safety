@@ -20,6 +20,6 @@ export async function up(knex: knex.Knex) {
 }
 
 export async function down(knex: knex.Knex) {
-  await knex.schema.dropTable("committees");
   await knex.schema.dropTable("committee_users");
+  await knex.schema.dropTable("committees");
 }
