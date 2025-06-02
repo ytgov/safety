@@ -183,3 +183,13 @@ ul.v-breadcrumbs {
   color: #000000bb;
   opacity: 1;
 }
+
+.v-app-bar.v-toolbar {
+  background-color: #fff;
+}
+.v-app-bar.v-toolbar.development-instance {
+  background-color: #ff000033;
+}
+.v-app-bar.v-toolbar.test-instance {
+  background-color: #ff000033;
+}
