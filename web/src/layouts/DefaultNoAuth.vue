@@ -1,11 +1,11 @@
 <template>
-  <v-app-bar app color="#fff" flat height="70" style="left: 0; border-bottom: 3px #f3b228 solid">
+  <v-app-bar app :class="instanceClass" flat height="70" style="left: 0; border-bottom: 3px #f3b228 solid">
     <router-link to="/"
       ><img src="/yukon.svg" style="margin-top: -10px; margin-left: 14px" height="44" class="mr-0 mr-md-6"
     /></router-link>
     <!-- <v-img class="ml-0m pl-0" src="src/assets/yukon.svg" height="44" /> -->
     <v-app-bar-title class="pt-0 font-weight-bold">
-      <router-link to="/" class="title-link">{{ applicationName }}</router-link>
+      <router-link to="/" class="title-link">{{ applicationName }} {{ instanceName }}</router-link>
     </v-app-bar-title>
 
     <template #append>
@@ -85,7 +85,7 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from "vue";
+import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
 import { applicationName } from "@/config";
@@ -104,6 +104,22 @@ const { isSystemAdmin, user } = storeToRefs(userStore);
 const { logout, loginWithRedirect } = useAuth0();
 
 showOverlay();
+
+const instanceName = computed(() => {
+  if (location.hostname === "localhost") {
+    return "Dev";
+  } else if (location.hostname === "safety-test.gov.yk.ca") {
+    return "Test";
+  } else {
+    return "";
+  }
+});
+
+const instanceClass = computed(() => {
+  if (instanceName.value === "") return "production-instance";
+  else if (instanceName.value === "Test") return "test-instance";
+  else return "development-instance";
+});
 
 onMounted(async () => {
   await userStore.initialize();
