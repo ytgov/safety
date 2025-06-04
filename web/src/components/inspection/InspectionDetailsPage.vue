@@ -36,8 +36,15 @@
                     readonly></v-text-field>
                 </v-col>
                 <v-col>
-                  <v-label class="mb-1" style="white-space: inherit">General location</v-label>
+                  <v-label class="mb-1" style="white-space: inherit">Area</v-label>
                   <v-text-field v-model="selectedReport.location_name" readonly append-inner-icon="mdi-lock" />
+                </v-col>
+                <v-col>
+                  <v-label class="mb-1" style="white-space: inherit">Location</v-label>
+                  <v-text-field
+                    :model-value="selectedReport.inspection_location_name"
+                    readonly
+                    append-inner-icon="mdi-lock" />
                 </v-col>
               </v-row>
 

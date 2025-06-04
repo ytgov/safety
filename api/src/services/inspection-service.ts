@@ -46,6 +46,7 @@ export class InspectionService {
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .innerJoin("locations", "incidents.location_code", "locations.code")
+      .leftOuterJoin("inspection_locations", "inspection_locations.id", "incidents.inspection_location_id")
       .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
       .where("incident_types.name", "inspection")
       .select<Incident>(
@@ -54,7 +55,8 @@ export class InspectionService {
         "incident_types.description as incident_type_description",
         "incident_statuses.name as status_name",
         "departments.name as department_name",
-        "locations.name as location_name"
+        "locations.name as location_name",
+        "inspection_locations.name as inspection_location_name"
       )
       .first();
 

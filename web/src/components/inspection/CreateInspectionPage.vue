@@ -32,11 +32,12 @@
                 item-value="code"
                 hide-details
                 :readonly="!isNil(selectedReport)"
-                :rules="[requiredRule]" />
+                :rules="[requiredRule]"
+                @update:model-value="report.inspection_location_id = null" />
             </v-col>
 
             <v-col cols="12" sm="4">
-              <v-label class="mb-1" style="white-space: inherit">General location of inspection</v-label>
+              <v-label class="mb-1" style="white-space: inherit">Area</v-label>
               <v-autocomplete
                 v-model="report.location_code"
                 :items="locations"
@@ -48,10 +49,12 @@
             </v-col>
 
             <v-col cols="12" sm="12">
-              <v-label class="mb-1" style="white-space: inherit"
-                >Specific location in building where the inspection ocurred</v-label
-              >
-              <v-text-field v-model="report.location_detail" />
+              <v-label class="mb-1" style="white-space: inherit">Location</v-label>
+              <InspectionLocationSelector
+                v-model="report.inspection_location_id"
+                :department="report.department_code"
+                :readonly="!isNil(selectedReport)"
+                :rules="[requiredRule]" />
             </v-col>
           </v-row>
 
@@ -148,6 +151,7 @@ import { requiredRule } from "@/utils/validation";
 import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue";
 import InspectionActionList from "@/components/action/InspectionActionList.vue";
 import ActionDialog from "../action/ActionDialog.vue";
+import InspectionLocationSelector from "../InspectionLocationSelector.vue";
 
 const inspectionStore = useInspectionStore();
 const { initialize, addInspection, loadReport } = inspectionStore;
@@ -197,7 +201,8 @@ const canSave = computed(() => {
     isNil(report.value) ||
     isNil(report.value.date) ||
     isNil(report.value.location_code) ||
-    isNil(report.value.department_code)
+    isNil(report.value.department_code) ||
+    isNil(report.value.inspection_location_id)
   )
     return false;
 
