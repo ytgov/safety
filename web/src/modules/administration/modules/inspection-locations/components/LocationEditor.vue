@@ -8,7 +8,7 @@
       <v-card-text>
         <v-text-field v-model="selectedLocation.name" dense outlined label="Name" />
         <v-text-field v-model="selectedLocation.description" dense outlined label="Description" />
-        <DepartmentSelector v-model="selectedLocation.department_code" />
+        <DepartmentSelector v-model="selectedLocation.department_code" label="Department" />
       </v-card-text>
       <v-card-actions class="mx-4 mb-2">
         <v-btn color="primary" variant="flat" @click="saveLocation">Save</v-btn>

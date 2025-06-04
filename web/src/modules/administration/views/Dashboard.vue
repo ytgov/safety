@@ -77,7 +77,7 @@
           <v-icon
             class="float-left"
             style="font-size: 90px; opacity: 25%; position: absolute; left: 10px; margin-top: -12px"
-            >mdi-account-multiple</v-icon
+            >mdi-map-search</v-icon
           >
           <div style="font-size: 52px; line-height: 52px">{{ inspectionLocationCount }}</div>
           <div>Inspection Locations</div>
