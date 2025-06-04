@@ -21,6 +21,7 @@ import {
   inspectionLocationRouter,
 } from "./routes";
 import { checkJwt, loadUser } from "./middleware/authz.middleware";
+import { RequireAdmin } from "./middleware";
 import migrator from "./data/migrator";
 
 const app = express();
@@ -65,7 +66,7 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
   doHealthCheck(req, res);
 });
 
-app.use("/migrate", migrator.migrationRouter);
+app.use("/migrate", checkJwt, loadUser, RequireAdmin, migrator.migrationRouter);
 
 app.use("/api/directory", directoryRouter);
 app.use("/api/department", departmentRouter);
