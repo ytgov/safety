@@ -36,6 +36,13 @@ const routes: RouteRecordRaw[] = [
       requireSystemAdmin: true,
     },
   },
+  {
+    path: "administration/inspection-locations",
+    component: () => import("@/modules/administration/modules/inspection-locations/views/LocationList.vue"),
+    meta: {
+      requireSystemAdmin: true,
+    },
+  },
 ];
 
 export default routes;

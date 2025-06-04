@@ -4,6 +4,7 @@ export * from "./committee-router";
 export * from "./department-router";
 export * from "./directory-router";
 export * from "./hazard-router";
+export * from "./inspection-location-router";
 export * from "./inspection-router";
 export * from "./location-router";
 export * from "./offline-report-router";
