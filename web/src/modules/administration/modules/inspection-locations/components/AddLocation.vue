@@ -16,7 +16,7 @@
           <v-card-text class="pt-5">
             <v-text-field v-model="chosenOne.name" dense outlined label="Name" />
             <v-text-field v-model="chosenOne.description" dense outlined label="Description" />
-            <DepartmentSelector v-model="chosenOne.department_code" />
+            <DepartmentSelector v-model="chosenOne.department_code" label="Department" />
 
             <v-btn
               color="primary"

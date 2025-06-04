@@ -15,7 +15,7 @@
           <v-text-field v-model="search" label="Search" outlined dense clearable prepend-inner-icon="mdi-magnify" />
         </v-col>
         <v-col cols="12" md="6">
-          <LocationSelect v-model="location" label="Location" clearable />
+          <LocationSelect v-model="location" label="Area" clearable />
         </v-col>
       </v-row>
 
