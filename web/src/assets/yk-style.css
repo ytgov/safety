@@ -188,8 +188,8 @@ ul.v-breadcrumbs {
   background-color: #fff;
 }
 .v-app-bar.v-toolbar.development-instance {
-  background-color: #ff000033;
+  background-color: #ffcccc;
 }
 .v-app-bar.v-toolbar.test-instance {
-  background-color: #ff000033;
+  background-color: #ffcccc;
 }
