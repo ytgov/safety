@@ -361,6 +361,7 @@ export interface Incident {
   incident_type_id: number;
   hs_recommendations?: string;
   identifier?: string;
+  inspection_location_id?: number;
 
   incident_type_description: string;
   status_name: string;

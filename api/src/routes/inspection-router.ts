@@ -16,7 +16,9 @@ inspectionRouter.get("/", async (req: Request, res: Response) => {
   const { page, perPage, search, status, urgency, location } = req.query;
 
   const pageNum = parseInt(page as string) || 1;
-  const perPageNum = parseInt(perPage as string) || 10;
+  let perPageNum = parseInt(perPage as string) || 10;
+
+  if (perPageNum < 0) perPageNum = 1000;
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
@@ -43,6 +45,7 @@ inspectionRouter.get("/", async (req: Request, res: Response) => {
   const count = await db.getCount(userIsAdmin ? "System Admin" : req.user.email, countQuery);
 
   const locations = await knex("locations");
+  const inspectionLocations = await knex("inspection_locations");
   const types = await knex("incident_types");
   const statuses = await knex("incident_statuses");
   const access = await knex("incident_users_view").where({ user_email: req.user.email });
@@ -52,6 +55,7 @@ inspectionRouter.get("/", async (req: Request, res: Response) => {
     item.type = types.find((t: any) => t.id === item.incident_type_id);
     item.status = statuses.find((s: any) => s.code === item.status_code);
     item.access = access.filter((a: any) => a.incident_id === item.id) ?? [];
+    item.inspection_location = inspectionLocations.find((a: any) => a.id === item.inspection_location_id);
   }
 
   return res.json({ data: list, totalCount: count?.count });
@@ -77,7 +81,14 @@ inspectionRouter.get("/:slug", async (req: Request, res: Response) => {
 
 inspectionRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { description, investigation_notes, additional_description, urgency_code, incident_type_id } = req.body;
+  const {
+    description,
+    investigation_notes,
+    additional_description,
+    urgency_code,
+    incident_type_id,
+    inspection_location_id,
+  } = req.body;
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
@@ -85,9 +96,14 @@ inspectionRouter.put("/:id", async (req: Request, res: Response) => {
   const data = await db.getById(id, userIsAdmin ? "System Admin" : req.user.email);
   if (!data) return res.status(404).send();
 
-  await knex("incidents")
-    .where({ id })
-    .update({ description, investigation_notes, additional_description, urgency_code, incident_type_id });
+  await knex("incidents").where({ id }).update({
+    description,
+    investigation_notes,
+    additional_description,
+    urgency_code,
+    incident_type_id,
+    inspection_location_id,
+  });
 
   return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
 });
@@ -124,7 +140,7 @@ inspectionRouter.delete("/:id", async (req: Request, res: Response) => {
 });
 
 inspectionRouter.post("/", async (req: Request, res: Response) => {
-  let { date, location_code, department_code } = req.body;
+  let { date, location_code, department_code, inspection_location_id } = req.body;
 
   const reporting_person_email = req.user.email;
 
@@ -145,6 +161,7 @@ inspectionRouter.post("/", async (req: Request, res: Response) => {
       proxy_user_id: req.user.id,
       urgency_code: "Low",
       location_code,
+      inspection_location_id,
       slug: generateSlug(),
     } as Incident;
 

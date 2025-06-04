@@ -93,6 +93,7 @@ export const useInspectionStore = defineStore("inspections", {
       formData.append("location_code", report.location_code);
       formData.append("department_code", report.department_code ?? "");
       formData.append("description", report.description);
+      formData.append("inspection_location_id", (report.inspection_location_id || "").toString());
 
       for (const file of report.files || []) {
         formData.append("files", file);

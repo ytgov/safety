@@ -6,6 +6,7 @@ import { Investigation } from "./investigation-model";
 import { Location } from "./location-model";
 import { IncidentType } from "./incident-type-model";
 import { IncidentStatus } from "./incident-status-model";
+import { InspectionLocation } from "./inspection-location-model";
 
 export interface Incident {
   id?: number;
@@ -28,6 +29,7 @@ export interface Incident {
   location_detail?: string;
   slug: string;
   identifier?: string;
+  inspection_location_id?: number;
 
   attachments?: any[];
   steps?: IncidentStep[];
@@ -35,6 +37,7 @@ export interface Incident {
   hazards?: IncidentHazard[];
   investigation?: Investigation;
   location?: Location;
+  inspection_location?: InspectionLocation;
   type?: IncidentType;
   status?: IncidentStatus;
   access?: IncidentUserAccess[];
