@@ -53,9 +53,10 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
           console.log("EMAIL", email, e);
 
           if (e && e.auth_subject == email) {
+            // If the user exists but the auth_subject is not set, update it
             req.user = { ...req.auth, ...e };
 
-            await db.update(email, {
+            await db.update(e.id, {
               auth_subject: sub,
               first_name: e.first_name,
               last_name: e.last_name,
@@ -66,6 +67,18 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
               unit: "",
               is_active: true,
               title: "",
+            });
+
+            return next();
+          } else if (e) {
+            // If the user exists but the auth_subject is different, update it
+            req.user = { ...req.auth, ...e };
+
+            await db.update(e.id, {
+              auth_subject: sub,
+              first_name: e.first_name,
+              last_name: e.last_name,
+              display_name: `${first_name} ${last_name}`,
             });
 
             return next();
