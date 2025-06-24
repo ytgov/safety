@@ -1,6 +1,7 @@
 import axios from "axios";
 import moment from "moment";
 import { AD_CLIENT_ID, AD_CLIENT_SECRET, AD_TENANT_ID } from "../config";
+import { isNil } from "lodash";
 
 const AD_SCOPE = "https://graph.microsoft.com/.default";
 
@@ -55,7 +56,7 @@ export class DirectoryService {
       }
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType";
 
       return axios
         .get<AzureADUserGetResponse>(
@@ -69,10 +70,23 @@ export class DirectoryService {
             for (let dir of resp.data.value) {
               // get rid of results for external people like contractors
               if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue;
-              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
               if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue;
               if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue;
               if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue;
+              if (isNil(dir.mail)) continue;
+
+              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) {
+                if (dir.otherMails && dir.otherMails.length > 0) {
+                  dir.mail = dir.otherMails.find((m) => m.toLowerCase().endsWith("@wcb.yk.ca")) ?? dir.mail;
+
+                  dir.userPrincipalName = dir.userPrincipalName.replace(
+                    "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
+                    "@YNet.gov.yk.ca"
+                  );
+                } else continue;
+              }
+
+              if (dir.mail.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
 
               let long_name = `${dir.givenName} ${dir.surname} (${dir.userPrincipalName
                 .toLowerCase()
@@ -142,10 +156,23 @@ export class DirectoryService {
             for (let dir of resp.data.value) {
               // get rid of results for external people like contractors
               if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue;
-              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
               if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue;
               if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue;
               if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue;
+              if (isNil(dir.mail)) continue;
+
+              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) {
+                if (dir.otherMails && dir.otherMails.length > 0) {
+                  dir.mail = dir.otherMails.find((m) => m.toLowerCase().endsWith("@wcb.yk.ca")) ?? dir.mail;
+
+                  dir.userPrincipalName = dir.userPrincipalName.replace(
+                    "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
+                    "@YNet.gov.yk.ca"
+                  );
+                } else continue;
+              }
+
+              if (dir.mail.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
 
               let long_name = `${dir.givenName} ${dir.surname} (${dir.userPrincipalName
                 .toLowerCase()
@@ -212,4 +239,5 @@ export interface AzureADUser {
   jobTitle: string;
   department: string;
   officeLocation: string;
+  otherMails: string[];
 }

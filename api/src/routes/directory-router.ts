@@ -86,7 +86,7 @@ directoryRouter.post("/search-action-directory-email", async (req: Request, res:
       ],
     });
   }
-  
+
   const data = await directoryService.searchByEmail(terms);
 
   if (data.length > 0) {
