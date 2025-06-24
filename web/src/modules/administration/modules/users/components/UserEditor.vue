@@ -84,9 +84,7 @@ import { useRoleStore } from "@/store/RoleStore";
 
 export default {
   name: "UserEditor",
-  data: () => ({
-    departmentRelevantList: [8, 9],
-  }),
+  data: () => ({}),
   computed: {
     ...mapState(useUserAdminStore, ["selectedUser"]),
     ...mapState(useDepartmentStore, ["departments"]),
@@ -94,6 +92,10 @@ export default {
 
     visible() {
       return this.selectedUser ? true : false;
+    },
+    departmentRelevantList() {
+      const departmental = ["Safety Practitioner", "Safety Authority"];
+      return this.roles.filter((role) => departmental.includes(role.name)).map((role) => role.id);
     },
   },
   methods: {
