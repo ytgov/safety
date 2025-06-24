@@ -37,9 +37,13 @@ export class UserService {
     return db("users").insert(item).returning("*");
   }
 
-  async update(id: number | string, item: User_Update): Promise<User> {
+  async update(id: number | string, item: User_Update | Partial<User_Update>): Promise<User> {
     return db("users")
       .where({ id: parseInt(`${id}`) })
       .update(item);
+  }
+
+  async updateByEmail(email: string, item: User_Update): Promise<User> {
+    return db("users").where({ email }).update(item);
   }
 }
