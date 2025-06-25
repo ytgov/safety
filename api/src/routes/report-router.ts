@@ -187,7 +187,6 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
 });
 
 reportRouter.post("/", async (req: Request, res: Response) => {
-  const {} = req.body;
   req.body.email = req.user.email;
   req.body.status = "Initial Report";
 
