@@ -65,7 +65,7 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
               division: "",
               branch: "",
               unit: "",
-              is_active: true,
+              is_active: 1,
               title: "",
             });
 
@@ -94,7 +94,7 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
             division: "",
             branch: "",
             unit: "",
-            is_active: true,
+            is_active: 1,
             title: "",
           };
 
