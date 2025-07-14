@@ -12,7 +12,7 @@ export interface User {
   division: string;
   branch: string;
   unit: string;
-  is_active: boolean | string;
+  is_active: boolean | string | number;
 
   roles?: UserRole[];
 }
@@ -28,7 +28,7 @@ export interface User_Create {
   division: string;
   branch: string;
   unit: string;
-  is_active: boolean | string;
+  is_active: boolean | string | number;
 }
 
 export interface User_Update {
@@ -41,7 +41,7 @@ export interface User_Update {
   division: string;
   branch: string;
   unit: string;
-  is_active: boolean | string;
+  is_active: boolean | string | number;
 }
 
 /* export class UserHelper {
