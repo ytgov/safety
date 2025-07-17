@@ -23,6 +23,13 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: "administration/injest-data",
+    component: () => import("@/modules/administration/modules/injest-data/views/InjestDataList.vue"),
+    meta: {
+      requireSystemAdmin: true,
+    },
+  },
+  {
     path: "administration/committees",
     component: () => import("@/modules/administration/modules/committees/views/CommitteeList.vue"),
     meta: {
