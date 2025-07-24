@@ -28,7 +28,7 @@
         class="ml-2"></v-text-field>
     </template>
     <template v-slot:right>
-      <add-location :onComplete="loadItems"></add-location>
+      <AddData :onComplete="loadItems"></AddData>
     </template>
 
     <v-data-table :search="search" :headers="headers" :items="items" :loading="isLoading" @click:row="rowClick">
@@ -41,13 +41,13 @@
 import { mapActions, mapState } from "pinia";
 import { clone } from "lodash";
 
-import AddLocation from "@/modules/administration/modules/injest-data/components/AddLocation.vue";
-import LocationEditor from "@/modules/administration/modules/injest-data/components/LocationEditor.vue";
+import AddData from "@/modules/administration/modules/injest-data/components/DataInjestionButton.vue";
+import LocationEditor from "@/modules/administration/modules/injest-data/components/DataInjestionEditor.vue";
 
 import { useLocationAdminStore } from "../store";
 
 export default {
-  components: { AddLocation, LocationEditor },
+  components: { AddData, LocationEditor },
   data: () => ({
     headers: [
       { title: "Code", key: "code" },
