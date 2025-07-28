@@ -5,6 +5,7 @@ export { ActionStatus, ActionStatuses } from "./action-status-model";
 export { ActionType, ActionTypes } from "./action-type-model";
 export { Building } from "./building-model";
 export { Department } from "./department-model";
+export { DataInjectionSource } from "./data-injection-source-model";
 export { HazardAttachment } from "./hazard-attachment-model";
 export { HazardLog } from "./hazard-log-model";
 export { Hazard } from "./hazard-model";

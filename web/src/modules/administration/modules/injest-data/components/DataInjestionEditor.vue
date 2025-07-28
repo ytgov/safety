@@ -24,7 +24,7 @@ import { mapActions, mapState } from "pinia";
 import { useLocationAdminStore } from "../store";
 
 export default {
-  name: "LocationEditor",
+  name: "DataInjectionEditor",
   data: () => ({}),
   computed: {
     ...mapState(useLocationAdminStore, ["selectedLocation"]),

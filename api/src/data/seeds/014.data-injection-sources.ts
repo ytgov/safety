@@ -1,0 +1,18 @@
+import knex from "knex";
+import { DataInjectionSource } from "../models";
+
+export async function seed(knex: knex.Knex) {
+  const data_injection_sources = await knex<DataInjectionSource>("data_injection_sources");
+
+  const toInsert = [
+    { source_name: "RL6", description: "HSS's incident system" },
+    { source_name: "morTech", description: "Airport's incident system" },
+    { source_name: "Trasnportation Maintainance", description: "HPW's Incident system" },
+  ] as Array<DataInjectionSource>;
+
+  for (const item of toInsert) {
+    if (data_injection_sources.find((d) => d.source_name == item.source_name)) continue;
+
+    await knex("data_injection_sources").insert(item);
+  }
+}
