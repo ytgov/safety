@@ -1,4 +1,4 @@
-export interface DataInjectionSource {
+export interface DataInjectionMapping {
   id?: number;
   source_id: number;
   source_attribute: string;
