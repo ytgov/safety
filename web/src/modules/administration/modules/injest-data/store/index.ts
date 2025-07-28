@@ -9,6 +9,7 @@ let m = useNotificationStore();
 interface AdminState {
   dataInjectionSources: Array<DataInjectionSource>;
   selectedDataInjectionSourceId: number | undefined;
+  selectedDataInjectionFile: File |undefined;
   isLoading: boolean;
 }
 
@@ -17,6 +18,7 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
     dataInjectionSources: [],
     isLoading: false,
     selectedDataInjectionSourceId: undefined,
+    selectedDataInjectionFile: undefined
   }),
   getters: {
     dataInjectionSourceCount(state) {
@@ -42,6 +44,12 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
     },
     unselectDataInjectionSourceId() {
       this.selectedDataInjectionSourceId = undefined;
+    },
+    selectDataInjectionFile(dataInjectionFile: File) {
+      this.selectedDataInjectionFile = dataInjectionFile;
+    },
+    unselectDataInjectionFile() {
+      this.selectedDataInjectionFile = undefined;
     },
   },
 });

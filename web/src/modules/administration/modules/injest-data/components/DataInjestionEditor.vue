@@ -18,6 +18,16 @@
           dense
           outlined
         />
+        <v-file-input
+          v-model="selectedFile"
+          label="Upload File"
+          dense
+          outlined
+          accept=".csv"
+          show-size
+          prepend-icon="mdi-upload"
+          class="mb-2"
+        />
       </v-card-text>
 
       <v-card-actions class="mx-4 mb-2">
@@ -46,6 +56,7 @@ export default {
     ...mapState(useDataInjectionSourceAdminStore, [
       "dataInjectionSources",
       "selectedDataInjectionSourceId",
+      "selectedDataInjectionFile",
     ]),
     internalVisible: {
       get() {
@@ -59,9 +70,22 @@ export default {
       get() {
         return this.selectedDataInjectionSourceId;
       },
-      set(val: number | undefined) {
-        if (val != undefined) {
-          this.selectDataInjectionSourceId(val);
+      set(id: number | undefined) {
+        if (id != undefined) {
+          this.selectDataInjectionSourceId(id);
+        }
+      },
+    },
+    selectedFile: {
+      get() {
+        return this.selectedDataInjectionFile;
+      },
+      set(file: File | undefined) {
+        if (file != undefined) {
+          this.selectDataInjectionFile(file);
+        }
+        else {
+          this.unselectDataInjectionFile();
         }
       },
     },
@@ -71,9 +95,12 @@ export default {
       "getAllDataInjectionSources",
       "selectDataInjectionSourceId",
       "unselectDataInjectionSourceId",
+      "selectDataInjectionFile",
+      "unselectDataInjectionFile"
     ]),
     handleClose() {
       this.unselectDataInjectionSourceId();
+      this.unselectDataInjectionFile();
       this.internalVisible = false;
     },
   },
