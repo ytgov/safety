@@ -10,7 +10,7 @@
 
       <v-card-text>
         <v-select
-          v-model="selectedDataInjectionSourceId"
+          v-model="selectedId"
           :items="dataInjectionSources"
           item-title="source_name"
           item-value="id"
@@ -53,6 +53,16 @@ export default {
       },
       set(val: boolean) {
         this.$emit("update:modelValue", val);
+      },
+    },
+    selectedId: {
+      get() {
+        return this.selectedDataInjectionSourceId;
+      },
+      set(val: number | undefined) {
+        if (val != undefined) {
+          this.selectDataInjectionSourceId(val);
+        }
       },
     },
   },
