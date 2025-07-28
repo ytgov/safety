@@ -17,38 +17,45 @@
   <h1>Injest-Data</h1>
 
   <base-card showHeader="t" heading="" elevation="0">
+      <!--
     <template v-slot:left>
-      <v-text-field
         v-model="search"
         label="Search"
         single-line
         hide-details
         append-inner-icon="mdi-magnify"
         density="compact"
-        class="ml-2"></v-text-field>
+        class="ml-2">
+      </v-text-field>
     </template>
+    -->
     <template v-slot:right>
-      <AddData :onComplete="loadItems"></AddData>
+      <v-btn
+        color="primary"
+        variant="flat"
+        size="small"
+        class="mr-5"
+        @click="showEditor = true"
+      >
+        Add Data
+      </v-btn>
     </template>
 
-    <v-data-table :search="search" :headers="headers" :items="items" :loading="isLoading" @click:row="rowClick">
-    </v-data-table>
-
-    <location-editor></location-editor>
+    <DataInjestionEditor v-model="showEditor" />
   </base-card>
 </template>
 <script lang="ts">
 import { mapActions, mapState } from "pinia";
 import { clone } from "lodash";
 
-import AddData from "@/modules/administration/modules/injest-data/components/DataInjestionButton.vue";
-import LocationEditor from "@/modules/administration/modules/injest-data/components/DataInjestionEditor.vue";
+import DataInjestionEditor from "@/modules/administration/modules/injest-data/components/DataInjestionEditor.vue";
 
-import { useLocationAdminStore } from "../store";
+import { useDataInjectionSourceAdminStore } from "../store";
 
 export default {
-  components: { AddData, LocationEditor },
+  components: { DataInjestionEditor },
   data: () => ({
+    showEditor: false,
     headers: [
       { title: "Code", key: "code" },
       { title: "Name", key: "name" },
@@ -57,13 +64,6 @@ export default {
     search: "",
   }),
   computed: {
-    ...mapState(useLocationAdminStore, ["locations", "isLoading"]),
-    items() {
-      return this.locations;
-    },
-    totalItems() {
-      return this.locations.length;
-    },
     breadcrumbs() {
       return [
         {
@@ -75,19 +75,6 @@ export default {
         },
       ];
     },
-  },
-  beforeMount() {
-    this.loadItems();
-  },
-  methods: {
-    ...mapActions(useLocationAdminStore, ["getAllLocations", "selectLocation"]),
-
-    async loadItems() {
-      await this.getAllLocations();
-    },
-    rowClick(event: Event, thing: any) {
-      this.selectLocation(clone(thing.item));
-    },
-  },
+  }
 };
 </script>

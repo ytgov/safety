@@ -19,6 +19,7 @@ import {
   inspectionRouter,
   committeeRouter,
   inspectionLocationRouter,
+  dataInjectionSourceRouter
 } from "./routes";
 import { checkJwt, loadUser } from "./middleware/authz.middleware";
 import { RequireAdmin } from "./middleware";
@@ -72,6 +73,7 @@ app.use("/api/directory", directoryRouter);
 app.use("/api/department", departmentRouter);
 app.use("/api/location", locationRouter);
 app.use("/api/attachment", attachmentRouter);
+app.use("/api/data-injection-source", dataInjectionSourceRouter);
 
 app.use("/api/reports", checkJwt, loadUser, reportRouter);
 app.use("/api/inspections", checkJwt, loadUser, inspectionRouter);

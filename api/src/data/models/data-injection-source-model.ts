@@ -1,5 +1,5 @@
 export interface DataInjectionSource {
-  id: number;
+  id?: number;
   source_name: string;
   description?: string;
 }

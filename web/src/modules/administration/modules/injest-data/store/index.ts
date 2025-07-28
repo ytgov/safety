@@ -2,88 +2,56 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 
 import { useNotificationStore } from "@/store/NotificationStore";
 import { useApiStore } from "@/store/ApiStore";
-import { LOCATION_URL } from "@/urls";
+import { DATA_INJECTION_SOURCE_URL } from "@/urls";
 
 let m = useNotificationStore();
 
 interface AdminState {
-  locations: Array<Location>;
-  selectedLocation: Location | undefined;
+  dataInjectionSources: Array<DataInjectionSource>;
+  selectedDataInjectionSourceId: number | undefined;
   isLoading: boolean;
 }
 
-export const useLocationAdminStore = defineStore("locationAdmin", {
+export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSourceAdmin", {
   state: (): AdminState => ({
-    locations: [],
+    dataInjectionSources: [],
     isLoading: false,
-    selectedLocation: undefined,
+    selectedDataInjectionSourceId: undefined,
   }),
   getters: {
-    locationCount(state) {
-      if (state && state.locations) return state.locations.length;
+    dataInjectionSourceCount(state) {
+      if (state && state.dataInjectionSources) return state.dataInjectionSources.length;
       return 0;
     },
   },
   actions: {
-    async getAllLocations() {
+    async getAllDataInjectionSources() {
       this.isLoading = true;
       let api = useApiStore();
       await api
-        .secureCall("get", LOCATION_URL)
+        .secureCall("get", DATA_INJECTION_SOURCE_URL)
         .then((resp) => {
-          this.locations = resp.data;
+          this.dataInjectionSources = resp.data;
         })
         .finally(() => {
           this.isLoading = false;
         });
     },
-    selectLocation(location: any) {
-      this.selectedLocation = location;
+    selectDataInjectionSourceId(dataInjectionSourceId: number) {
+      this.selectedDataInjectionSourceId = dataInjectionSourceId;
     },
-    unselectLocation() {
-      this.selectedLocation = undefined;
-    },
-    async saveLocation() {
-      this.isLoading = true;
-      let api = useApiStore();
-
-      if (!this.selectedLocation) return;
-
-      await api
-        .secureCall("put", `${LOCATION_URL}/${this.selectedLocation.code}`, this.selectedLocation)
-        .then(async (resp) => {
-          //this.locations = resp.data;
-
-          this.unselectLocation();
-        })
-        .finally(() => {
-          this.isLoading = false;
-        });
-
-      m.notify({ text: "Location saved", variant: "success" });
-      this.getAllLocations();
-    },
-    async addLocation(location: any) {
-      let api = useApiStore();
-
-      return api.secureCall("post", LOCATION_URL, location).then(async (resp) => {
-        if (resp && resp.data && resp.data.error) {
-          m.notify({ text: resp.data.error[0].text, variant: "error" });
-        }
-
-        await this.getAllLocations();
-        return resp.data;
-      });
+    unselectDataInjectionSourceId() {
+      this.selectedDataInjectionSourceId = undefined;
     },
   },
 });
 
-export interface Location {
-  code: string;
-  name: string;
-  description: string;
+export interface DataInjectionSource {
+  id: number;
+  source_name: string;
+  description?: string;
 }
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useLocationAdminStore, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(useDataInjectionSourceAdminStore, import.meta.hot));
 }
