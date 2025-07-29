@@ -4,6 +4,7 @@ export { Action } from "./action-model";
 export { ActionStatus, ActionStatuses } from "./action-status-model";
 export { ActionType, ActionTypes } from "./action-type-model";
 export { Building } from "./building-model";
+export { DataInjection } from "./data-injection-model";
 export { DataInjectionMapping } from "./data-injection-mapping-model";
 export { DataInjectionSource } from "./data-injection-source-model";
 export { Department } from "./department-model";
