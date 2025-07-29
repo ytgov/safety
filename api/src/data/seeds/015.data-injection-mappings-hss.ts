@@ -2,7 +2,6 @@ import knex from "knex";
 
 export async function seed(knex: knex.Knex) {
   const mappings = [
-    // Source ID 1: HSS
     {
       source_id: 1,
       source_attribute: "File ID",

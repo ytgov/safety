@@ -6,8 +6,8 @@ export async function seed(knex: knex.Knex) {
 
   const toInsert = [
     { source_name: "RL6", description: "HSS's incident system" },
-    { source_name: "morTech", description: "Airport's incident system" },
-    { source_name: "Trasnportation Maintainance", description: "HPW's Incident system" },
+    { source_name: "Vortex", description: "Airport's incident system" },
+    { source_name: "Workhub", description: "HPW's Incident system" },
   ] as Array<DataInjectionSource>;
 
   for (const item of toInsert) {

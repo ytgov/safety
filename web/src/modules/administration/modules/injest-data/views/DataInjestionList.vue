@@ -17,18 +17,6 @@
   <h1>Injest-Data</h1>
 
   <base-card showHeader="t" heading="" elevation="0">
-      <!--
-    <template v-slot:left>
-        v-model="search"
-        label="Search"
-        single-line
-        hide-details
-        append-inner-icon="mdi-magnify"
-        density="compact"
-        class="ml-2">
-      </v-text-field>
-    </template>
-    -->
     <template v-slot:right>
       <v-btn
         color="primary"
@@ -45,12 +33,7 @@
   </base-card>
 </template>
 <script lang="ts">
-import { mapActions, mapState } from "pinia";
-import { clone } from "lodash";
-
 import DataInjestionEditor from "@/modules/administration/modules/injest-data/components/DataInjestionEditor.vue";
-
-import { useDataInjectionSourceAdminStore } from "../store";
 
 export default {
   components: { DataInjestionEditor },
