@@ -15,6 +15,7 @@ export const DEPARTMENT_URL = `${config.apiBaseUrl}/api/department`;
 export const ROLE_URL = `${config.apiBaseUrl}/api/role`;
 export const LOCATION_URL = `${config.apiBaseUrl}/api/location`;
 export const INSPECTION_LOCATION_URL = `${config.apiBaseUrl}/api/inspection-location`;
+export const DATA_INJECTION_URL = `${config.apiBaseUrl}/api/data-injection`;
 export const DATA_INJECTION_SOURCE_URL = `${config.apiBaseUrl}/api/data-injection-source`;
 export const ATTACHMENT_URL = `${config.apiBaseUrl}/api/attachment`;
 export const HAZARD_URL = `${config.apiBaseUrl}/api/hazard`;

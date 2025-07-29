@@ -4,15 +4,15 @@ import { db } from "../data";
 import { DataInjectionSource, DataInjection } from "src/data/models";
 
 function makeDataInjectionBase(
-  sourceId: number,
-  userId: number
+  source_id: number,
+  user_id: number
 ): Omit<DataInjection, 'id'> {
   return {
-    source_id:        sourceId,
+    source_id:        source_id,
     identifier:       "",
     incident_type_id: 5,
     status_code:      "NoAct",
-    proxy_user_id:    userId,
+    proxy_user_id:    user_id,
     description:           "",
     description_moderated: "",
     urgency_code:         "",
@@ -25,10 +25,10 @@ export class DataInjectionService {
 
   async insertCsvFromFilePath(
     filePath: string,
-    sourceId: number,
-    userId: number
+    source_id: number,
+    user_id: number
   ): Promise<void> {
-    const source = await this.getSourceOrThrow(sourceId);
+    const source = await this.getSourceOrThrow(source_id);
     const rows = this.validateAndParseCSVData(source, filePath);
 
     if (rows.length === 0) {
@@ -37,10 +37,10 @@ export class DataInjectionService {
 
     await this.clearDataInjections(source, rows);
 
-    const mappings = await db("data_injection_mappings").where({ source_id: sourceId });
+    const mappings = await db("data_injection_mappings").where({ source_id: source_id });
 
     const transformedRows = rows.map(row =>
-      this.transformRow(row, mappings, source.source_name, sourceId, userId)
+      this.transformRow(row, mappings, source.source_name, source_id, user_id)
     );
 
     await db.transaction(async trx => {
@@ -67,10 +67,10 @@ export class DataInjectionService {
     }
 
     private async getSourceOrThrow(
-      sourceId: number
+      source_id: number
     ): Promise<DataInjectionSource> {
-      const source = await db("data_injection_sources").where({ id: sourceId }).first();
-      if (!source) throw new Error(`Unknown source ID: ${sourceId}`);
+      const source = await db("data_injection_sources").where({ id: source_id }).first();
+      if (!source) throw new Error(`Unknown source ID: ${source_id}`);
       return source;
     }
 
@@ -108,10 +108,10 @@ export class DataInjectionService {
         target_value?: string;
       }>,
       sourceName: string,
-      sourceId: number,
-      userId: number
+      source_id: number,
+      user_id: number
     ): DataInjection {
-      const base = makeDataInjectionBase(sourceId, userId);
+      const base = makeDataInjectionBase(source_id, user_id);
       const transformed: any = { ...base };
 
       mappings.forEach(({ source_attribute, target_attribute }) => {

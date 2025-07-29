@@ -1,10 +1,12 @@
 import express, { Request, Response } from "express";
-
+import multer from "multer";
 import { db } from "../data";
 import { RequireAdmin } from "../middleware";
-import { DataInjectionService } from "src/services";
+import { DataInjectionService, UserService } from "src/services";
 
 export const dataInjectionRouter = express.Router();
+
+const upload = multer({ dest: "uploads/" });
 
 dataInjectionRouter.get("/", async (req: Request, res: Response) => {
   const list = await db("data_injections").orderBy("source_id");
@@ -24,32 +26,31 @@ dataInjectionRouter.delete("/:id", RequireAdmin, async (req: Request, res: Respo
   await db("data_injections").where({ id }).delete();
 });
 
-dataInjectionRouter.post("/", async (req: Request, res: Response) => {
-  const dataInjecionDb = new DataInjectionService();
-  let { user_id, sourceId, csvFile } = req.body;
-  if (!user_id) {
-    return res
-      .status(400)
-      .json({ error: "Missing required parameter: user_id" });
+dataInjectionRouter.post(
+  "/",
+  upload.single("csvFile"),
+  async (req, res, next) => {
+    const dataInjectionService = new DataInjectionService();
+    const userService = new UserService();
+    const { source_id, user_id } = req.body;
+    if (!req.file) return res.status(400).json({ error: "Missing file" });
+    if (!user_id) return res.status(400).json({ error: "Missing user_id" });
+    if (!source_id) return res.status(400).json({ error: "Missing sourceId" });
+
+    if (userService.getById(user_id) === undefined) {
+      return res.status(400).json({ error: "Invalid user_id" });
+    }
+    
+    try {
+      await dataInjectionService.insertCsvFromFilePath(
+        req.file.path,    
+        Number(source_id),
+        Number(user_id)
+      );
+      res.json({ success: true });
+    } catch (err) {
+      throw new Error(`Data injection failed`);
+    }
   }
 
-  if (!sourceId) {
-    return res
-      .status(400)
-      .json({ error: "Missing required parameter: sourceId" });
-  }
-
-  if (!csvFile) {
-    return res
-      .status(400)
-      .json({ error: "Missing required parameter: csvFile" });
-  }
-
-  try {
-    await dataInjecionDb.insertCsvFromFilePath(csvFile.path, sourceId, user_id);
-    res.json({ success: true });
-  } catch (err) {
-    throw new Error("Invalid Data");
-  }  
-
-});
+);
