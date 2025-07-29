@@ -31,7 +31,7 @@
       </v-card-text>
 
       <v-card-actions class="mx-4 mb-2">
-        <v-btn color="primary" variant="flat">Save</v-btn>
+        <v-btn color="primary" variant="flat" @click="handleSave">Save</v-btn>
         <v-spacer></v-spacer>
         <v-btn color="yg_sun" variant="outlined" @click="handleClose">Close</v-btn>
       </v-card-actions>
@@ -42,6 +42,10 @@
 <script lang="ts">
 import { mapActions, mapState } from "pinia";
 import { useDataInjectionSourceAdminStore } from "../store";
+import { useUserStore } from "@/store/UserStore";
+import { useNotificationStore } from "@/store/NotificationStore";
+
+
 
 export default {
   name: "DataInjestionEditor",
@@ -58,6 +62,7 @@ export default {
       "selectedDataInjectionSourceId",
       "selectedDataInjectionFile",
     ]),
+    ...mapState(useUserStore, ["user"]),
     internalVisible: {
       get() {
         return this.modelValue;
@@ -96,13 +101,58 @@ export default {
       "selectDataInjectionSourceId",
       "unselectDataInjectionSourceId",
       "selectDataInjectionFile",
-      "unselectDataInjectionFile"
+      "unselectDataInjectionFile",
+      "addDataInjection",
     ]),
+    ...mapActions(useUserStore, ["loadCurrentUser"]),
     handleClose() {
       this.unselectDataInjectionSourceId();
       this.unselectDataInjectionFile();
       this.internalVisible = false;
     },
+    async handleSave() {
+      const notify = useNotificationStore();
+      this.isLoading = true;
+
+      try {
+        // 1) ensure we have current user
+        await this.loadCurrentUser();
+        
+        // 2) guard missing inputs
+        if (!this.selectedDataInjectionSourceId || !this.selectedDataInjectionFile) {
+          return notify.notify({
+            text:    "Please select a data source and upload a file.",
+            variant: "warning",
+            icon:    "mdi-alert-circle",
+            status_code: 400,
+          });
+        }
+        if (!this.user?.id) {
+          return notify.notify({
+            text:    "You must be logged in to do this.",
+            variant: "error",
+            icon:    "mdi-alert-circle",
+            status_code: 401,
+          });
+        }
+
+        // 3) perform the injection
+        await this.addDataInjection(this.user.id);
+        // success toast is already shown inside addDataInjection
+
+      } catch (err) {
+        console.error("save failed", err);
+        notify.notify({
+          text:    "An unexpected error occurred.",
+          variant: "error",
+          icon:    "mdi-alert-circle",
+          status_code: 500,
+        });
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
   },
 };
 </script>
