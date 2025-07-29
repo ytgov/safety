@@ -3,12 +3,6 @@ import Papa from "papaparse";
 import { db } from "../data";
 import { DataInjectionSource, DataInjection } from "src/data/models";
 
-const HEADER_KEYS: Record<string, string> = {
-  RL6: "File ID",
-  Vortex: "ID",
-  Workhub: "Number",
-};
-
 function makeDataInjectionBase(
   sourceId: number,
   userId: number
@@ -35,13 +29,13 @@ export class DataInjectionService {
     userId: number
   ): Promise<void> {
     const source = await this.getSourceOrThrow(sourceId);
-    const rows = this.validateAndParseCSVData(source.source_name, filePath);
+    const rows = this.validateAndParseCSVData(source, filePath);
 
     if (rows.length === 0) {
       throw new Error("No valid data found in the CSV file.");
     }
 
-    await this.clearDataInjections(sourceId, source.source_name, rows);
+    await this.clearDataInjections(source, rows);
 
     const mappings = await db("data_injection_mappings").where({ source_id: sourceId });
 
@@ -55,16 +49,11 @@ export class DataInjectionService {
   }
 
   async clearDataInjections(
-      sourceId: number,
-      sourceName: string,
+      source: DataInjectionSource,
       rows: Record<string, string>[]
     ): Promise<void> {
-      const idKey = HEADER_KEYS[sourceName];
-      if (!idKey) {
-        throw new Error(`Unsupported source: ${sourceName}`);
-      }
       const identifiers = rows
-        .map(row => row[idKey])
+        .map(row => row[source.identifier_column_name])
         .filter((id): id is string => Boolean(id));
 
       if (identifiers.length === 0) {
@@ -72,7 +61,7 @@ export class DataInjectionService {
       }
 
       await db("data_injections")
-        .where({ source_id: sourceId })
+        .where({ source_id: source.id })
         .whereIn("identifier", identifiers)
         .delete();
     }
@@ -86,28 +75,27 @@ export class DataInjectionService {
     }
 
     private validateAndParseCSVData(
-      sourceName: string,
+      source: DataInjectionSource,
       csvPath: string
     ): Record<string, string>[] {
       const csv = readFileSync(csvPath, "utf-8");
       const lines = csv.split(/\r?\n/);
 
-      const headerText = HEADER_KEYS[sourceName];
-      if (!headerText) {
-        throw new Error(`Unsupported source: ${sourceName}`);
-      }
-
-      const headerIndex = lines.findIndex(line => line.includes(headerText));
+      const headerIndex = lines.findIndex(line => line.includes(source.identifier_column_name));
       if (headerIndex === -1) {
-        throw new Error(`Header row with '${headerText}' not found`);
+        throw new Error(`Header row with '${source.identifier_column_name}' not found`);
       }
 
       const trimmedCsv = lines.slice(headerIndex).join("\n");
-      const { data } = Papa.parse<Record<string, string>>(trimmedCsv, {
+      const { data, meta } = Papa.parse<Record<string, string>>(trimmedCsv, {
         header: true,
         skipEmptyLines: true,
       });
 
+
+      if (meta.fields?.length != source.column_count) {
+        throw new Error("Invalid CSV format");
+      }
       return data;
     }
 
