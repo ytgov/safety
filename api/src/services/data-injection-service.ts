@@ -35,6 +35,7 @@ export class DataInjectionService {
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, user_id));
     await db.transaction((trx) => trx.batchInsert("data_injections", transformed, 500));
   }
+
   async clearDataInjections(
     source: DataInjectionSource,
     rows: Record<string, string>[]
@@ -75,7 +76,6 @@ export class DataInjectionService {
       skipEmptyLines: true,
     });
 
-    console.log("length of data:", meta.fields?.length);
     if (meta.fields?.length !== source.column_count) {
       throw new Error("Invalid CSV format: wrong number of columns");
     }
@@ -102,22 +102,13 @@ export class DataInjectionService {
     const transformed: any = { ...base };
 
     if (source.source_name === "Workhub") {
-      const raw = row["Incident Date"];
-      if (raw) {
-        const clean = raw.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
-        console.log("Parsing WorkHub date:", clean);
-        const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
-        if (!dt.isValid) {
-          throw new Error(`Invalid date in WorkHub CSV: ${raw}`);
-        }
-        row["Incident Date"] = dt.toISODate();
-      }
+      const raw = row["Incident Date"]?.trim() || "";
+      row["Incident Date"] = this.formatDate(raw) || "";
     }
     console.log("Transforming row:", row);
-
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
-      if (raw == null)
+      if (raw == undefined)
         throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
       if (source.source_name === "RL6" && target_attribute === "location_detail") {
@@ -126,10 +117,22 @@ export class DataInjectionService {
       } else if (source_value != null && raw === source_value) {
         transformed[target_attribute] = target_value;
       } else if (source_value == null) {
-        transformed[target_attribute] = raw;
+        transformed[target_attribute] = raw || null;
       }
     });
 
     return transformed as DataInjection;
   }
+
+  private formatDate(rawString: string): string | null {
+      if (!rawString) return null;
+
+      const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
+      console.log("Parsing WorkHub date:", clean);
+      const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
+      if (!dt.isValid) {
+          throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
+      }
+      return dt.toISODate();
+    }
 }
