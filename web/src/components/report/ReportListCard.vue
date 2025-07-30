@@ -10,9 +10,10 @@
       <v-list
         v-if="myReports && myReports.length > 0"
         bg-color="#fff"
-        class="py-0"
+        class="py-0 report‐list"
         style="border: 1px #aaa solid"
-        rounded>
+        rounded
+        >
         <div v-for="(report, idx) of myReports">
           <v-list-item :subtitle="makeSubtitle(report)" class="pt-1 pb-2" @click="openReportClick(report)">
             <template #prepend>
@@ -68,3 +69,10 @@ function openReportClick(input: Incident) {
   router.push(`/reports/${input.slug}`);
 }
 </script>
+
+<style scoped>
+.report‐list {
+  max-height: 400px; 
+  overflow-y: auto;
+}
+</style>
