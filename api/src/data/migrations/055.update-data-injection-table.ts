@@ -21,5 +21,3 @@ export async function down(knex: Knex): Promise<void> {
     table.specificType("occured_at", "TIMESTAMP(0) WITH TIME ZONE").nullable();
   });
 }
-
-

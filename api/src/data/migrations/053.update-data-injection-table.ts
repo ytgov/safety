@@ -7,7 +7,6 @@ export async function up(knex: Knex): Promise<void> {
 
     table.date("reported_at").nullable().alter();
     table.date("occured_at").nullable().alter();
-
   });
 }
 

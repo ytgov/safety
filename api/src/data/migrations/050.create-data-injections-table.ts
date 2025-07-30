@@ -14,8 +14,10 @@ export async function up(knex: knex.Knex) {
     table.string("location_detail").nullable();
     table.specificType("reported_at", "TIMESTAMP(0) WITH TIME ZONE").nullable();
     table.specificType("occured_at", "TIMESTAMP(0) WITH TIME ZONE").nullable();
-    table.specificType("created_at", "TIMESTAMP(0) WITH TIME ZONE").notNullable().defaultTo(knex.fn.now());
-    
+    table
+      .specificType("created_at", "TIMESTAMP(0) WITH TIME ZONE")
+      .notNullable()
+      .defaultTo(knex.fn.now());
 
     table.foreign("source_id").references("data_injection_sources.id");
     table.foreign("incident_type_id").references("incident_types.id");

@@ -7,4 +7,3 @@ dataInjectionSourceRouter.get("/", async (req: Request, res: Response) => {
   const list = await knex("data_injection_sources");
   return res.json({ data: list });
 });
-

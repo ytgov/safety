@@ -60,13 +60,10 @@ export async function seed(knex: knex.Knex) {
       source_attribute: "Description",
       target_attribute: "description",
     },
-
   ];
 
   for (const row of mappings) {
-    const exists = await knex("data_injection_mappings")
-      .where(row)
-      .first();
+    const exists = await knex("data_injection_mappings").where(row).first();
 
     if (!exists) {
       await knex("data_injection_mappings").insert(row);

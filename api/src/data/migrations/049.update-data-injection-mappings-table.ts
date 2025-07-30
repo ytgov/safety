@@ -11,4 +11,3 @@ export async function down(knex: knex.Knex) {
     table.dropForeign(["source_id"]);
   });
 }
-

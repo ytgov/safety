@@ -27,7 +27,7 @@ dataInjectionRouter.delete("/:id", RequireAdmin, async (req: Request, res: Respo
 });
 
 dataInjectionRouter.post("/", async (req: Request, res: Response) => {
-  const svc   = new DataInjectionService();
+  const svc = new DataInjectionService();
   const users = new UserService();
   const { source_id, user_id } = req.body;
 
@@ -39,20 +39,13 @@ dataInjectionRouter.post("/", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Invalid user_id" });
   }
 
-  const uploaded = Array.isArray(req.files.csvFile)
-    ? req.files.csvFile[0]
-    : req.files.csvFile;
+  const uploaded = Array.isArray(req.files.csvFile) ? req.files.csvFile[0] : req.files.csvFile;
 
   try {
-    await svc.insertCsvFromFilePath(
-      uploaded.data,
-      Number(source_id),
-      Number(user_id)
-    );
+    await svc.insertCsvFromFilePath(uploaded.data, Number(source_id), Number(user_id));
     return res.json({ success: true });
   } catch (err: any) {
     console.error(" DataInjectionService Error:", err);
     return res.status(500).json({ error: err.message });
   }
 });
-

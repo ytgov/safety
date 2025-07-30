@@ -15,4 +15,3 @@ export async function down(knex: Knex): Promise<void> {
     table.string("location_detail", 255).nullable().alter();
   });
 }
-
