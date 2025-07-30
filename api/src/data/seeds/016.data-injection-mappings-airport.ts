@@ -9,7 +9,7 @@ export async function seed(knex: knex.Knex) {
     },
     {
       source_id: 2,
-      source_attribute: "Date/Time Occured",
+      source_attribute: "Date/Time Occurred",
       target_attribute: "occured_at",
     },
     {
@@ -71,21 +71,21 @@ export async function seed(knex: knex.Knex) {
     },
     {
       source_id: 2,
-      source_attribute: "Severity Level (Reported)",
+      source_attribute: "Severity",
       source_value: "Insignificant",
       target_attribute: "urgency_code",
       target_value: "Low",
     },
     {
       source_id: 2,
-      source_attribute: "Severity Level (Reported)",
+      source_attribute: "Severity",
       source_value: "Minor",
       target_attribute: "urgency_code",
       target_value: "Low",
     },
     {
       source_id: 2,
-      source_attribute: "Severity Level (Reported)",
+      source_attribute: "Severity",
       source_value: "Moderate",
       target_attribute: "urgency_code",
       target_value: "Medium",

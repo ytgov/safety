@@ -9,16 +9,16 @@ function makeDataInjectionBase(
   user_id: number
 ): Omit<DataInjection, 'id'> {
   return {
-    source_id:        source_id,
-    identifier:       "",
+    source_id: source_id,
+    identifier: "",
     incident_type_id: 5,
-    status_code:      "NoAct",
-    proxy_user_id:    user_id,
-    description:           "",
+    status_code: "NoAct",
+    proxy_user_id: user_id,
+    description: "",
     description_moderated: "",
-    urgency_code:         "",
-    location_detail:      "",
-    created_at:       new Date(),
+    urgency_code: undefined,
+    location_detail: "",
+    created_at: new Date(),
   };
 }
 
@@ -88,6 +88,7 @@ export class DataInjectionService {
       skipEmptyLines: true,
     });
 
+    console.log("length of data:", meta.fields?.length);
     if (meta.fields?.length !== source.column_count) {
       throw new Error("Invalid CSV format: wrong number of columns");
     }
