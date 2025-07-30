@@ -49,7 +49,7 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
     unselectDataInjectionFile() {
       this.selectedDataInjectionFile = undefined;
     },
-     async addDataInjection(userId: number) {
+    async addDataInjection(userId: number) {
       const api    = useApiStore();
       const notify = useNotificationStore();
 
@@ -68,20 +68,21 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
         form.append("source_id", this.selectedDataInjectionSourceId.toString());
         form.append("user_id", userId.toString());
 
-        const resp = await api.secureCall("post", DATA_INJECTION_URL, form);
+        const result = await api.secureUpload("post", DATA_INJECTION_URL, form);
 
-        if (resp.data?.error) {
-          notify.notify({ text: Array.isArray(resp.data.error) ? resp.data.error.map((e: any) => e.text).join(", ") : String(resp.data.error), variant: "error" });
+        if (result.error) {
+          notify.notify({ text: String(result.error), variant: "error" });
         } else {
           notify.notify({ text: "Data Injection File added successfully", variant: "success" });
           this.unselectDataInjectionSourceId();
           this.unselectDataInjectionFile();
         }
 
-        return resp.data;
-      } catch (err) {
+        return result;
+
+      } catch (err: any) {
         console.error("Data injection failed", err);
-        notify.notify({ text: "Upload failed. Please try again.", variant: "error" });
+        notify.notify({ text: err.message || "Upload failed. Please try again.", variant: "error" });
         throw err;
       } finally {
         this.isLoading = false;

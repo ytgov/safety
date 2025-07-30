@@ -24,30 +24,28 @@ function makeDataInjectionBase(
 export class DataInjectionService {
 
   async insertCsvFromFilePath(
-    filePath: string,
+    csvBuffer: Buffer,
     source_id: number,
     user_id: number
   ): Promise<void> {
-    const source = await this.getSourceOrThrow(source_id);
-    const rows = this.validateAndParseCSVData(source, filePath);
+    // Convert buffer → UTF-8 text
+    const csvText = csvBuffer.toString("utf-8");
 
+    // Fetch config & parse
+    const source = await this.getSourceOrThrow(source_id);
+    const rows   = this.parseAndValidateCsv(source, csvText);
     if (rows.length === 0) {
       throw new Error("No valid data found in the CSV file.");
     }
 
+    // Clear + transform + insert
     await this.clearDataInjections(source, rows);
-
-    const mappings = await db("data_injection_mappings").where({ source_id: source_id });
-
-    const transformedRows = rows.map(row =>
+    const mappings    = await db("data_injection_mappings").where({ source_id });
+    const transformed = rows.map(row =>
       this.transformRow(row, mappings, source.source_name, source_id, user_id)
     );
-
-    await db.transaction(async trx => {
-      await trx.batchInsert("data_injections", transformedRows, 500);
-    });
+    await db.transaction(trx => trx.batchInsert("data_injections", transformed, 500));
   }
-
   async clearDataInjections(
       source: DataInjectionSource,
       rows: Record<string, string>[]
@@ -74,30 +72,25 @@ export class DataInjectionService {
       return source;
     }
 
-    private validateAndParseCSVData(
-      source: DataInjectionSource,
-      csvPath: string
-    ): Record<string, string>[] {
-      const csv = readFileSync(csvPath, "utf-8");
-      const lines = csv.split(/\r?\n/);
-
-      const headerIndex = lines.findIndex(line => line.includes(source.identifier_column_name));
-      if (headerIndex === -1) {
-        throw new Error(`Header row with '${source.identifier_column_name}' not found`);
-      }
-
-      const trimmedCsv = lines.slice(headerIndex).join("\n");
-      const { data, meta } = Papa.parse<Record<string, string>>(trimmedCsv, {
-        header: true,
-        skipEmptyLines: true,
-      });
-
-
-      if (meta.fields?.length != source.column_count) {
-        throw new Error("Invalid CSV format");
-      }
-      return data;
+  private parseAndValidateCsv(
+    source: DataInjectionSource,
+    csvText: string
+  ): Record<string, string>[] {
+    const lines = csvText.split(/\r?\n/);
+    const idx   = lines.findIndex(l => l.includes(source.identifier_column_name));
+    if (idx < 0) {
+      throw new Error(`Header row with '${source.identifier_column_name}' not found`);
     }
+    const trimmed = lines.slice(idx).join("\n");
+    const { data, meta } = Papa.parse<Record<string, string>>(trimmed, {
+      header: true,
+      skipEmptyLines: true,
+    });
+    if (meta.fields?.length !== source.column_count) {
+      throw new Error("Invalid CSV format");
+    }
+    return data;
+  }
 
     private transformRow(
       row: Record<string, string>,
