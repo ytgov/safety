@@ -31,9 +31,9 @@ dataInjectionRouter.post("/", async (req: Request, res: Response) => {
   const users = new UserService();
   const { source_id, user_id } = req.body;
 
-  if (!req.files?.csvFile)   return res.status(400).json({ error: "Missing file" });
-  if (!user_id)              return res.status(400).json({ error: "Missing user_id" });
-  if (!source_id)            return res.status(400).json({ error: "Missing source_id" });
+  if (!req.files?.csvFile) return res.status(400).json({ error: "Missing file" });
+  if (!user_id) return res.status(400).json({ error: "Missing user_id" });
+  if (!source_id) return res.status(400).json({ error: "Missing source_id" });
 
   if (!users.getById(Number(user_id))) {
     return res.status(400).json({ error: "Invalid user_id" });

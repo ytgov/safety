@@ -1,7 +1,8 @@
 import { promises as fs, readFileSync } from "fs";
 import Papa from "papaparse";
 import { db } from "../data";
-import { DataInjectionSource, DataInjection } from "src/data/models";
+import { DateTime } from "luxon";
+import { DataInjectionSource, DataInjection, DataInjectionMapping } from "src/data/models";
 
 function makeDataInjectionBase(
   source_id: number,
@@ -28,21 +29,15 @@ export class DataInjectionService {
     source_id: number,
     user_id: number
   ): Promise<void> {
-    // Convert buffer → UTF-8 text
     const csvText = csvBuffer.toString("utf-8");
 
-    // Fetch config & parse
     const source = await this.getSourceOrThrow(source_id);
     const rows   = this.parseAndValidateCsv(source, csvText);
-    if (rows.length === 0) {
-      throw new Error("No valid data found in the CSV file.");
-    }
 
-    // Clear + transform + insert
     await this.clearDataInjections(source, rows);
     const mappings    = await db("data_injection_mappings").where({ source_id });
     const transformed = rows.map(row =>
-      this.transformRow(row, mappings, source.source_name, source_id, user_id)
+      this.transformRow(row, mappings, source, user_id)
     );
     await db.transaction(trx => trx.batchInsert("data_injections", transformed, 500));
   }
@@ -72,53 +67,74 @@ export class DataInjectionService {
       return source;
     }
 
+
   private parseAndValidateCsv(
     source: DataInjectionSource,
     csvText: string
   ): Record<string, string>[] {
     const lines = csvText.split(/\r?\n/);
-    const idx   = lines.findIndex(l => l.includes(source.identifier_column_name));
-    if (idx < 0) {
-      throw new Error(`Header row with '${source.identifier_column_name}' not found`);
+    const headerIndex = lines.findIndex((l) =>
+      l.includes(source.identifier_column_name)
+    );
+    if (headerIndex < 0) {
+      throw new Error(
+        `Header row with '${source.identifier_column_name}' not found`
+      );
     }
-    const trimmed = lines.slice(idx).join("\n");
+
+    const trimmed = lines.slice(headerIndex).join("\n");
     const { data, meta } = Papa.parse<Record<string, string>>(trimmed, {
       header: true,
       skipEmptyLines: true,
     });
+
     if (meta.fields?.length !== source.column_count) {
-      throw new Error("Invalid CSV format");
+      throw new Error("Invalid CSV format: wrong number of columns");
     }
-    return data;
+
+    const validData = data.filter(
+      (r) =>
+        r[source.identifier_column_name]?.trim().length
+    );
+
+    if (validData.length === 0) {
+      throw new Error("No valid data found in the CSV file.");
+    }
+
+    return validData;
   }
 
     private transformRow(
       row: Record<string, string>,
-      mappings: Array<{
-        source_attribute: string;
-        target_attribute: string;
-        source_value?: string;
-        target_value?: string;
-      }>,
-      sourceName: string,
-      source_id: number,
+      mappings: Array<DataInjectionMapping>,
+      source: DataInjectionSource,
       user_id: number
     ): DataInjection {
-      const base = makeDataInjectionBase(source_id, user_id);
+      if (!source.id){
+        throw new Error("Missing source id");
+      }
+      const base = makeDataInjectionBase(source.id, user_id);
       const transformed: any = { ...base };
 
-      mappings.forEach(({ source_attribute, target_attribute }) => {
-        const raw = row[source_attribute];
-        if (raw != null) {
-          transformed[target_attribute] = raw;
+      if (source.source_name === "Workhub") {
+        const raw = row["Incident Date"];
+        if (raw) {
+          const clean = raw.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
+          console.log("Parsing WorkHub date:", clean);
+          const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
+          if (!dt.isValid) {
+            throw new Error(`Invalid date in WorkHub CSV: ${raw}`);
+          }
+          row["Incident Date"] = dt.toISODate();
         }
-      });
+      }
+      console.log("Transforming row:", row);
 
       mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
         const raw = row[source_attribute];
         if (raw == null) throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
-        if (sourceName === "RL6" && target_attribute === "location_detail") {
+        if (source.source_name === "RL6" && target_attribute === "location_detail") {
           const existing = transformed.location_detail || "";
           transformed.location_detail = existing
             ? `${existing}, ${raw}`

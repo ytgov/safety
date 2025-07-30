@@ -30,7 +30,7 @@ export async function seed(knex: knex.Knex) {
     },
     {
       source_id: 1,
-      source_attribute: "Event Date (yyyy/mm/dd)",
+      source_attribute: "Event Date  (yyyy/mm/dd)",
       target_attribute: "occured_at",
     },
     {
@@ -55,6 +55,20 @@ export async function seed(knex: knex.Knex) {
     {
       source_id: 1,
       source_attribute: "Severity Level (Reported)",
+      source_value: "Incident (serious)",
+      target_attribute: "incident_type_id",
+      target_value: "1",
+    },
+    {
+      source_id: 1,
+      source_attribute: "Severity Level (Reported)",
+      source_value: "Near Miss (minor)",
+      target_attribute: "incident_type_id",
+      target_value: "3",
+    },
+    {
+      source_id: 1,
+      source_attribute: "Severity Level (Reported)",
       source_value: "Incident (minor)",
       target_attribute: "urgency_code",
       target_value: "Low",
@@ -63,6 +77,20 @@ export async function seed(knex: knex.Knex) {
       source_id: 1,
       source_attribute: "Severity Level (Reported)",
       source_value: "Near Miss (serious)",
+      target_attribute: "urgency_code",
+      target_value: "Critical",
+    },
+    {
+      source_id: 1,
+      source_attribute: "Severity Level (Reported)",
+      source_value: "Near Miss (minor)",
+      target_attribute: "urgency_code",
+      target_value: "Low",
+    },
+    {
+      source_id: 1,
+      source_attribute: "Severity Level (Reported)",
+      source_value: "Incident (serious)",
       target_attribute: "urgency_code",
       target_value: "Critical",
     },
