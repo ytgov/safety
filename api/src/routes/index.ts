@@ -6,6 +6,7 @@ export * from "./directory-router";
 export * from "./hazard-router";
 export * from "./inspection-location-router";
 export * from "./data-injection-source-router";
+export * from "./data-injection-router";
 export * from "./inspection-router";
 export * from "./location-router";
 export * from "./offline-report-router";

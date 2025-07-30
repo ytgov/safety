@@ -135,19 +135,13 @@ export default {
             status_code: 401,
           });
         }
-
+        console.log(this.selectedDataInjectionFile);
         // 3) perform the injection
         await this.addDataInjection(this.user.id);
         // success toast is already shown inside addDataInjection
 
       } catch (err) {
-        console.error("save failed", err);
-        notify.notify({
-          text:    "An unexpected error occurred.",
-          variant: "error",
-          icon:    "mdi-alert-circle",
-          status_code: 500,
-        });
+        console.error("save failed");
       } finally {
         this.isLoading = false;
       }

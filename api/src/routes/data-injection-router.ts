@@ -26,31 +26,33 @@ dataInjectionRouter.delete("/:id", RequireAdmin, async (req: Request, res: Respo
   await db("data_injections").where({ id }).delete();
 });
 
-dataInjectionRouter.post(
-  "/",
-  upload.single("csvFile"),
-  async (req, res, next) => {
-    const dataInjectionService = new DataInjectionService();
-    const userService = new UserService();
-    const { source_id, user_id } = req.body;
-    if (!req.file) return res.status(400).json({ error: "Missing file" });
-    if (!user_id) return res.status(400).json({ error: "Missing user_id" });
-    if (!source_id) return res.status(400).json({ error: "Missing sourceId" });
+dataInjectionRouter.post("/", async (req: Request, res: Response) => {
+  const svc   = new DataInjectionService();
+  const users = new UserService();
+  const { source_id, user_id } = req.body;
 
-    if (userService.getById(user_id) === undefined) {
-      return res.status(400).json({ error: "Invalid user_id" });
-    }
-    
-    try {
-      await dataInjectionService.insertCsvFromFilePath(
-        req.file.path,    
-        Number(source_id),
-        Number(user_id)
-      );
-      res.json({ success: true });
-    } catch (err) {
-      throw new Error(`Data injection failed`);
-    }
+  if (!req.files?.csvFile)   return res.status(400).json({ error: "Missing file" });
+  if (!user_id)              return res.status(400).json({ error: "Missing user_id" });
+  if (!source_id)            return res.status(400).json({ error: "Missing source_id" });
+
+  if (!users.getById(Number(user_id))) {
+    return res.status(400).json({ error: "Invalid user_id" });
   }
 
-);
+  const uploaded = Array.isArray(req.files.csvFile)
+    ? req.files.csvFile[0]
+    : req.files.csvFile;
+
+  try {
+    await svc.insertCsvFromFilePath(
+      uploaded.data,
+      Number(source_id),
+      Number(user_id)
+    );
+    return res.json({ success: true });
+  } catch (err: any) {
+    console.error(" DataInjectionService Error:", err);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
