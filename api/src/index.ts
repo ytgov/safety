@@ -25,7 +25,6 @@ import {
 import { checkJwt, loadUser } from "./middleware/authz.middleware";
 import { RequireAdmin } from "./middleware";
 import migrator from "./data/migrator";
-import { NODE_ENV } from "./config"; // or just use process.env.NODE_ENV
 
 const app = express();
 app.use(express.json()); // for parsing application/json
@@ -68,14 +67,6 @@ app.use(
 app.get("/api/healthCheck", (req: Request, res: Response) => {
   doHealthCheck(req, res);
 });
-
-
-
-if (process.env.NODE_ENV === "development") {
-  app.use("/migrate", migrator.migrationRouter); // ✅ no auth in dev
-} else {
-  app.use("/migrate", checkJwt, loadUser, RequireAdmin, migrator.migrationRouter); // 🔒 keep secure in prod
-}
 
 
 app.use("/api/directory", directoryRouter);
