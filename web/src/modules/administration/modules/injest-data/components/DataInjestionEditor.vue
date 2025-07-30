@@ -1,9 +1,21 @@
 <template>
-  <v-dialog v-model="internalVisible" persistent max-width="700">
+  <v-dialog
+    v-model="internalVisible"
+    persistent
+    max-width="700"
+  >
     <v-card>
-      <v-toolbar color="primary" variant="dark" title="Edit Location">
+      <v-toolbar
+        color="primary"
+        variant="dark"
+        title="Edit Location"
+      >
         <v-spacer></v-spacer>
-        <v-btn icon @click="handleClose" color="white">
+        <v-btn
+          icon
+          @click="handleClose"
+          color="white"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -31,9 +43,19 @@
       </v-card-text>
 
       <v-card-actions class="mx-4 mb-2">
-        <v-btn color="primary" variant="flat" @click="handleSave">Save</v-btn>
+        <v-btn
+          color="primary"
+          variant="flat"
+          @click="handleSave"
+          >Save</v-btn
+        >
         <v-spacer></v-spacer>
-        <v-btn color="yg_sun" variant="outlined" @click="handleClose">Close</v-btn>
+        <v-btn
+          color="yg_sun"
+          variant="outlined"
+          @click="handleClose"
+          >Close</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -44,8 +66,6 @@ import { mapActions, mapState } from "pinia";
 import { useDataInjectionSourceAdminStore } from "../store";
 import { useUserStore } from "@/store/UserStore";
 import { useNotificationStore } from "@/store/NotificationStore";
-
-
 
 export default {
   name: "DataInjestionEditor",
@@ -88,8 +108,7 @@ export default {
       set(file: File | undefined) {
         if (file != undefined) {
           this.selectDataInjectionFile(file);
-        }
-        else {
+        } else {
           this.unselectDataInjectionFile();
         }
       },
@@ -117,21 +136,21 @@ export default {
       try {
         // 1) ensure we have current user
         await this.loadCurrentUser();
-        
+
         // 2) guard missing inputs
         if (!this.selectedDataInjectionSourceId || !this.selectedDataInjectionFile) {
           return notify.notify({
-            text:    "Please select a data source and upload a file.",
+            text: "Please select a data source and upload a file.",
             variant: "warning",
-            icon:    "mdi-alert-circle",
+            icon: "mdi-alert-circle",
             status_code: 400,
           });
         }
         if (!this.user?.id) {
           return notify.notify({
-            text:    "You must be logged in to do this.",
+            text: "You must be logged in to do this.",
             variant: "error",
-            icon:    "mdi-alert-circle",
+            icon: "mdi-alert-circle",
             status_code: 401,
           });
         }
@@ -139,14 +158,12 @@ export default {
         // 3) perform the injection
         await this.addDataInjection(this.user.id);
         // success toast is already shown inside addDataInjection
-
       } catch (err) {
         console.error("save failed");
       } finally {
         this.isLoading = false;
       }
     },
-
   },
 };
 </script>

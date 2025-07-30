@@ -24,7 +24,8 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "administration/injest-data",
-    component: () => import("@/modules/administration/modules/injest-data/views/DataInjestionList.vue"),
+    component: () =>
+      import("@/modules/administration/modules/injest-data/views/DataInjestionList.vue"),
     meta: {
       requireSystemAdmin: true,
     },
@@ -45,7 +46,8 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: "administration/inspection-locations",
-    component: () => import("@/modules/administration/modules/inspection-locations/views/LocationList.vue"),
+    component: () =>
+      import("@/modules/administration/modules/inspection-locations/views/LocationList.vue"),
     meta: {
       requireSystemAdmin: true,
     },

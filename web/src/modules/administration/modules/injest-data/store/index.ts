@@ -7,7 +7,7 @@ import { DATA_INJECTION_URL, DATA_INJECTION_SOURCE_URL } from "@/urls";
 interface AdminState {
   dataInjectionSources: Array<DataInjectionSource>;
   selectedDataInjectionSourceId: number | undefined;
-  selectedDataInjectionFile: File |undefined;
+  selectedDataInjectionFile: File | undefined;
   isLoading: boolean;
 }
 
@@ -16,7 +16,7 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
     dataInjectionSources: [],
     isLoading: false,
     selectedDataInjectionSourceId: undefined,
-    selectedDataInjectionFile: undefined
+    selectedDataInjectionFile: undefined,
   }),
   getters: {
     dataInjectionSourceCount(state) {
@@ -50,12 +50,15 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
       this.selectedDataInjectionFile = undefined;
     },
     async addDataInjection(userId: number) {
-      const api    = useApiStore();
+      const api = useApiStore();
       const notify = useNotificationStore();
 
       // Guards
       if (!this.selectedDataInjectionSourceId) {
-        return notify.notify({ text: "Please select a data injection source first", variant: "error" });
+        return notify.notify({
+          text: "Please select a data injection source first",
+          variant: "error",
+        });
       }
       if (!this.selectedDataInjectionFile) {
         return notify.notify({ text: "Please choose a CSV file to upload", variant: "error" });
@@ -79,10 +82,12 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
         }
 
         return result;
-
       } catch (err: any) {
         console.error("Data injection failed", err);
-        notify.notify({ text: err.message || "Upload failed. Please try again.", variant: "error" });
+        notify.notify({
+          text: err.message || "Upload failed. Please try again.",
+          variant: "error",
+        });
         throw err;
       } finally {
         this.isLoading = false;
