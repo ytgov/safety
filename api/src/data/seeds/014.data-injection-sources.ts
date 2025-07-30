@@ -10,6 +10,7 @@ export async function seed(knex: knex.Knex) {
       description: "HSS's incident system",
       identifier_column_name: "File ID",
       column_count: 10,
+      target_attribute_to_transform: "location_detail",
     },
     {
       source_name: "Vortex",
@@ -22,6 +23,7 @@ export async function seed(knex: knex.Knex) {
       description: "HPW's Incident system",
       identifier_column_name: "Number",
       column_count: 32,
+      source_attribute_to_transform: "Incident Date",
     },
   ] as Array<DataInjectionSource>;
 

@@ -1,8 +1,8 @@
-import { promises as fs, readFileSync } from "fs";
 import Papa from "papaparse";
-import { db } from "../data";
 import { DateTime } from "luxon";
-import { DataInjectionSource, DataInjection, DataInjectionMapping } from "src/data/models";
+
+import { db } from "../data";
+import { DataInjection, DataInjectionMapping, DataInjectionSource } from "src/data/models";
 
 function makeDataInjectionBase(source_id: number, user_id: number): Omit<DataInjection, "id"> {
   return {
@@ -79,9 +79,7 @@ export class DataInjectionService {
     if (meta.fields?.length !== source.column_count) {
       throw new Error("Invalid CSV format: wrong number of columns");
     }
-
     const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
-
     if (validData.length === 0) {
       throw new Error("No valid data found in the CSV file.");
     }
@@ -101,17 +99,19 @@ export class DataInjectionService {
     const base = makeDataInjectionBase(source.id, user_id);
     const transformed: any = { ...base };
 
-    if (source.source_name === "Workhub") {
-      const raw = row["Incident Date"]?.trim() || "";
-      row["Incident Date"] = this.formatDate(raw) || "";
+    if (source.source_name === "Workhub" 
+      && source.source_attribute_to_transform) {
+      const raw = row[source.source_attribute_to_transform]?.trim() || "";
+      row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
     }
-    console.log("Transforming row:", row);
+
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
       if (raw == undefined)
         throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
-      if (source.source_name === "RL6" && target_attribute === "location_detail") {
+      if (source.source_name === "RL6" 
+        && target_attribute === source.target_attribute_to_transform) {
         const existing = transformed.location_detail || "";
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
       } else if (source_value != null && raw === source_value) {
@@ -124,11 +124,10 @@ export class DataInjectionService {
     return transformed as DataInjection;
   }
 
-  private formatDate(rawString: string): string | null {
+  private formatDate(source: DataInjectionSource,rawString: string): string | null {
       if (!rawString) return null;
 
       const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
-      console.log("Parsing WorkHub date:", clean);
       const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
       if (!dt.isValid) {
           throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);

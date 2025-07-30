@@ -1,30 +1,30 @@
-import express, { Request, Response } from "express";
 import cors from "cors";
 import path from "path";
 import helmet from "helmet";
+import migrator from "./data/migrator";
 import fileUpload from "express-fileupload";
+import { RequireAdmin } from "./middleware";
+import express, { Request, Response } from "express";
 import { API_PORT, AUTH0_DOMAIN, FRONTEND_URL } from "./config";
-import { doHealthCheck } from "./utils/healthCheck";
+import { checkJwt, loadUser } from "./middleware/authz.middleware";
 import {
-  locationRouter,
+  actionRouter,
+  attachmentRouter,
+  committeeRouter,
+  dataInjectionRouter,
+  dataInjectionSourceRouter,
+  departmentRouter,
   directoryRouter,
+  hazardRouter,
+  inspectionLocationRouter,
+  inspectionRouter,
+  locationRouter,
+  offlineReportRouter,
   reportRouter,
   roleRouter,
   userRouter,
-  departmentRouter,
-  actionRouter,
-  attachmentRouter,
-  offlineReportRouter,
-  hazardRouter,
-  inspectionRouter,
-  committeeRouter,
-  inspectionLocationRouter,
-  dataInjectionRouter,
-  dataInjectionSourceRouter,
 } from "./routes";
-import { checkJwt, loadUser } from "./middleware/authz.middleware";
-import { RequireAdmin } from "./middleware";
-import migrator from "./data/migrator";
+import { doHealthCheck } from "./utils/healthCheck";
 
 const app = express();
 app.use(express.json()); // for parsing application/json
@@ -67,6 +67,14 @@ app.use(
 app.get("/api/healthCheck", (req: Request, res: Response) => {
   doHealthCheck(req, res);
 });
+
+
+
+if (process.env.NODE_ENV === "development") {
+  app.use("/migrate", migrator.migrationRouter);
+} else {
+  app.use("/migrate", checkJwt, loadUser, RequireAdmin, migrator.migrationRouter); 
+}
 
 
 app.use("/api/directory", directoryRouter);

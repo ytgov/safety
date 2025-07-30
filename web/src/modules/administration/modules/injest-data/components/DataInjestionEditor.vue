@@ -63,8 +63,8 @@
 
 <script lang="ts">
 import { mapActions, mapState } from "pinia";
-import { useDataInjectionSourceAdminStore } from "../store";
 import { useUserStore } from "@/store/UserStore";
+import { useDataInjectionSourceAdminStore } from "../store";
 import { useNotificationStore } from "@/store/NotificationStore";
 
 export default {
@@ -81,6 +81,7 @@ export default {
       "dataInjectionSources",
       "selectedDataInjectionSourceId",
       "selectedDataInjectionFile",
+      "isLoading",
     ]),
     ...mapState(useUserStore, ["user"]),
     internalVisible: {
@@ -134,10 +135,8 @@ export default {
       this.isLoading = true;
 
       try {
-        // 1) ensure we have current user
         await this.loadCurrentUser();
 
-        // 2) guard missing inputs
         if (!this.selectedDataInjectionSourceId || !this.selectedDataInjectionFile) {
           return notify.notify({
             text: "Please select a data source and upload a file.",
@@ -154,10 +153,7 @@ export default {
             status_code: 401,
           });
         }
-        console.log(this.selectedDataInjectionFile);
-        // 3) perform the injection
         await this.addDataInjection(this.user.id);
-        // success toast is already shown inside addDataInjection
       } catch (err) {
         console.error("save failed");
       } finally {

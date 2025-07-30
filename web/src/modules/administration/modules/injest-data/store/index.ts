@@ -101,7 +101,9 @@ export interface DataInjectionSource {
   source_name: string;
   description?: string;
   identifier_column_name: string;
-  created_at: Date;
+  column_count: number;
+  source_attribute_to_transform?: string;
+  target_attribute_to_transform?: string;
 }
 
 if (import.meta.hot) {
