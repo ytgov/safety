@@ -1,7 +1,6 @@
-import { Knex } from "knex";
+import { Urgency } from "./urgency-model";
 import { IncidentType } from "./incident-type-model";
 import { IncidentStatus } from "./incident-status-model";
-import { Urgency } from "./urgency-model";
 import { DataInjestionSource } from "./data-injestion-source-model";
 
 export interface DataInjestion {
@@ -15,9 +14,9 @@ export interface DataInjestion {
   description_moderated?: string;
   urgency_code?: string;
   location_detail?: string;
-  reported_at?: Date | Knex.Raw<any>;
-  occured_at?: Date | Knex.Raw<any>;
-  created_at: Date | Knex.Raw<any>;
+  reported_at?: Date
+  occured_at?: Date
+  created_at: Date
 
   type?: IncidentType;
   status?: IncidentStatus;
