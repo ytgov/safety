@@ -2,9 +2,9 @@ import Papa from "papaparse";
 import { DateTime } from "luxon";
 
 import { db } from "../data";
-import { DataInjection, DataInjectionMapping, DataInjectionSource } from "src/data/models";
+import { DataInjestion, DataInjestionMapping, DataInjestionSource } from "src/data/models";
 
-function makeDataInjectionBase(source_id: number, user_id: number): Omit<DataInjection, "id"> {
+function makeDataInjestionBase(source_id: number, user_id: number): Omit<DataInjestion, "id"> {
   return {
     source_id: source_id,
     identifier: "",
@@ -19,7 +19,7 @@ function makeDataInjectionBase(source_id: number, user_id: number): Omit<DataInj
   };
 }
 
-export class DataInjectionService {
+export class DataInjestionService {
   async insertCsvFromFilePath(
     csvBuffer: Buffer,
     source_id: number,
@@ -30,14 +30,14 @@ export class DataInjectionService {
     const source = await this.getSourceOrThrow(source_id);
     const rows = this.parseAndValidateCsv(source, csvText);
 
-    await this.clearDataInjections(source, rows);
-    const mappings = await db("data_injection_mappings").where({ source_id });
+    await this.clearDataInjestions(source, rows);
+    const mappings = await db("data_injestion_mappings").where({ source_id });
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, user_id));
-    await db.transaction((trx) => trx.batchInsert("data_injections", transformed, 500));
+    await db.transaction((trx) => trx.batchInsert("data_injestions", transformed, 500));
   }
 
-  async clearDataInjections(
-    source: DataInjectionSource,
+  async clearDataInjestions(
+    source: DataInjestionSource,
     rows: Record<string, string>[]
   ): Promise<void> {
     const identifiers = rows
@@ -48,20 +48,20 @@ export class DataInjectionService {
       return;
     }
 
-    await db("data_injections")
+    await db("data_injestions")
       .where({ source_id: source.id })
       .whereIn("identifier", identifiers)
       .delete();
   }
 
-  private async getSourceOrThrow(source_id: number): Promise<DataInjectionSource> {
-    const source = await db("data_injection_sources").where({ id: source_id }).first();
+  private async getSourceOrThrow(source_id: number): Promise<DataInjestionSource> {
+    const source = await db("data_injestion_sources").where({ id: source_id }).first();
     if (!source) throw new Error(`Unknown source ID: ${source_id}`);
     return source;
   }
 
   private parseAndValidateCsv(
-    source: DataInjectionSource,
+    source: DataInjestionSource,
     csvText: string
   ): Record<string, string>[] {
     const lines = csvText.split(/\r?\n/);
@@ -89,14 +89,14 @@ export class DataInjectionService {
 
   private transformRow(
     row: Record<string, string>,
-    mappings: Array<DataInjectionMapping>,
-    source: DataInjectionSource,
+    mappings: Array<DataInjestionMapping>,
+    source: DataInjestionSource,
     user_id: number
-  ): DataInjection {
+  ): DataInjestion {
     if (!source.id) {
       throw new Error("Missing source id");
     }
-    const base = makeDataInjectionBase(source.id, user_id);
+    const base = makeDataInjestionBase(source.id, user_id);
     const transformed: any = { ...base };
 
     if (source.source_name === "Workhub" 
@@ -121,10 +121,10 @@ export class DataInjectionService {
       }
     });
 
-    return transformed as DataInjection;
+    return transformed as DataInjestion;
   }
 
-  private formatDate(source: DataInjectionSource,rawString: string): string | null {
+  private formatDate(source: DataInjestionSource,rawString: string): string | null {
       if (!rawString) return null;
 
       const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();

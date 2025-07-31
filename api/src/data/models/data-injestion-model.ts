@@ -2,9 +2,9 @@ import { Knex } from "knex";
 import { IncidentType } from "./incident-type-model";
 import { IncidentStatus } from "./incident-status-model";
 import { Urgency } from "./urgency-model";
-import { DataInjectionSource } from "./data-injection-source-model";
+import { DataInjestionSource } from "./data-injestion-source-model";
 
-export interface DataInjection {
+export interface DataInjestion {
   id?: number;
   source_id: number;
   identifier: string;
@@ -22,5 +22,5 @@ export interface DataInjection {
   type?: IncidentType;
   status?: IncidentStatus;
   urgency?: Urgency;
-  source?: DataInjectionSource;
+  source?: DataInjestionSource;
 }

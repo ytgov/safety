@@ -11,8 +11,8 @@ import {
   actionRouter,
   attachmentRouter,
   committeeRouter,
-  dataInjectionRouter,
-  dataInjectionSourceRouter,
+  dataInjestionRouter,
+  dataInjestionSourceRouter,
   departmentRouter,
   directoryRouter,
   hazardRouter,
@@ -81,8 +81,8 @@ app.use("/api/directory", directoryRouter);
 app.use("/api/department", departmentRouter);
 app.use("/api/location", locationRouter);
 app.use("/api/attachment", attachmentRouter);
-app.use("/api/data-injection", dataInjectionRouter);
-app.use("/api/data-injection-source", dataInjectionSourceRouter);
+app.use("/api/data-injestion", dataInjestionRouter);
+app.use("/api/data-injestion-source", dataInjestionSourceRouter);
 
 app.use("/api/reports", checkJwt, loadUser, reportRouter);
 app.use("/api/inspections", checkJwt, loadUser, inspectionRouter);

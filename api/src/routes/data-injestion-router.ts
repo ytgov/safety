@@ -2,32 +2,32 @@ import express, { Request, Response } from "express";
 import multer from "multer";
 import { db } from "../data";
 import { RequireAdmin } from "../middleware";
-import { DataInjectionService, UserService } from "src/services";
+import { DataInjestionService, UserService } from "src/services";
 
-export const dataInjectionRouter = express.Router();
+export const dataInjestionRouter = express.Router();
 
 const upload = multer({ dest: "uploads/" });
 
-dataInjectionRouter.get("/", async (req: Request, res: Response) => {
-  const list = await db("data_injections").orderBy("source_id");
+dataInjestionRouter.get("/", async (req: Request, res: Response) => {
+  const list = await db("data_injestions").orderBy("source_id");
   return res.json({ data: list, totalCount: list.length });
 });
 
-dataInjectionRouter.get("/:id", async (req: Request, res: Response) => {
+dataInjestionRouter.get("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const data = await db("data_injections").where({ id }).first();
+  const data = await db("data_injestions").where({ id }).first();
   if (!data) return res.status(404).send();
   return res.json({ data });
 });
 
-dataInjectionRouter.delete("/:id", RequireAdmin, async (req: Request, res: Response) => {
+dataInjestionRouter.delete("/:id", RequireAdmin, async (req: Request, res: Response) => {
   const { id } = req.params;
 
-  await db("data_injections").where({ id }).delete();
+  await db("data_injestions").where({ id }).delete();
 });
 
-dataInjectionRouter.post("/", async (req: Request, res: Response) => {
-  const svc = new DataInjectionService();
+dataInjestionRouter.post("/", async (req: Request, res: Response) => {
+  const svc = new DataInjestionService();
   const users = new UserService();
   const { source_id, user_id } = req.body;
 
@@ -45,7 +45,7 @@ dataInjectionRouter.post("/", async (req: Request, res: Response) => {
     await svc.insertCsvFromFilePath(uploaded.data, Number(source_id), Number(user_id));
     return res.json({ success: true });
   } catch (err: any) {
-    console.error(" DataInjectionService Error:", err);
+    console.error(" DataInjestionService Error:", err);
     return res.status(500).json({ error: err.message });
   }
 });

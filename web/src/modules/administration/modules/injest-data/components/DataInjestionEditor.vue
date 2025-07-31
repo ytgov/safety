@@ -23,7 +23,7 @@
       <v-card-text>
         <v-select
           v-model="selectedId"
-          :items="dataInjectionSources"
+          :items="dataInjestionSources"
           item-title="source_name"
           item-value="id"
           label="Data Source"
@@ -64,7 +64,7 @@
 <script lang="ts">
 import { mapActions, mapState } from "pinia";
 import { useUserStore } from "@/store/UserStore";
-import { useDataInjectionSourceAdminStore } from "../store";
+import { useDataInjestionSourceAdminStore } from "../store";
 import { useNotificationStore } from "@/store/NotificationStore";
 
 export default {
@@ -74,13 +74,13 @@ export default {
   },
   emits: ["update:modelValue"],
   mounted() {
-    this.getAllDataInjectionSources();
+    this.getAllDataInjestionSources();
   },
   computed: {
-    ...mapState(useDataInjectionSourceAdminStore, [
-      "dataInjectionSources",
-      "selectedDataInjectionSourceId",
-      "selectedDataInjectionFile",
+    ...mapState(useDataInjestionSourceAdminStore, [
+      "dataInjestionSources",
+      "selectedDataInjestionSourceId",
+      "selectedDataInjestionFile",
       "isLoading",
     ]),
     ...mapState(useUserStore, ["user"]),
@@ -94,40 +94,40 @@ export default {
     },
     selectedId: {
       get() {
-        return this.selectedDataInjectionSourceId;
+        return this.selectedDataInjestionSourceId;
       },
       set(id: number | undefined) {
         if (id != undefined) {
-          this.selectDataInjectionSourceId(id);
+          this.selectDataInjestionSourceId(id);
         }
       },
     },
     selectedFile: {
       get() {
-        return this.selectedDataInjectionFile;
+        return this.selectedDataInjestionFile;
       },
       set(file: File | undefined) {
         if (file != undefined) {
-          this.selectDataInjectionFile(file);
+          this.selectDataInjestionFile(file);
         } else {
-          this.unselectDataInjectionFile();
+          this.unselectDataInjestionFile();
         }
       },
     },
   },
   methods: {
-    ...mapActions(useDataInjectionSourceAdminStore, [
-      "getAllDataInjectionSources",
-      "selectDataInjectionSourceId",
-      "unselectDataInjectionSourceId",
-      "selectDataInjectionFile",
-      "unselectDataInjectionFile",
-      "addDataInjection",
+    ...mapActions(useDataInjestionSourceAdminStore, [
+      "getAllDataInjestionSources",
+      "selectDataInjestionSourceId",
+      "unselectDataInjestionSourceId",
+      "selectDataInjestionFile",
+      "unselectDataInjestionFile",
+      "addDataInjestion",
     ]),
     ...mapActions(useUserStore, ["loadCurrentUser"]),
     handleClose() {
-      this.unselectDataInjectionSourceId();
-      this.unselectDataInjectionFile();
+      this.unselectDataInjestionSourceId();
+      this.unselectDataInjestionFile();
       this.internalVisible = false;
     },
     async handleSave() {
@@ -137,7 +137,7 @@ export default {
       try {
         await this.loadCurrentUser();
 
-        if (!this.selectedDataInjectionSourceId || !this.selectedDataInjectionFile) {
+        if (!this.selectedDataInjestionSourceId || !this.selectedDataInjestionFile) {
           return notify.notify({
             text: "Please select a data source and upload a file.",
             variant: "warning",
@@ -153,7 +153,7 @@ export default {
             status_code: 401,
           });
         }
-        await this.addDataInjection(this.user.id);
+        await this.addDataInjestion(this.user.id);
       } catch (err) {
         console.error("save failed");
       } finally {

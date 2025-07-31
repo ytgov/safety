@@ -1,8 +1,8 @@
 import knex from "knex";
-import { DataInjectionSource } from "../models";
+import { DataInjestionSource } from "../models";
 
 export async function seed(knex: knex.Knex) {
-  const data_injection_sources = await knex<DataInjectionSource>("data_injection_sources");
+  const data_injestion_sources = await knex<DataInjestionSource>("data_injestion_sources");
 
   const toInsert = [
     {
@@ -25,11 +25,11 @@ export async function seed(knex: knex.Knex) {
       column_count: 32,
       source_attribute_to_transform: "Incident Date",
     },
-  ] as Array<DataInjectionSource>;
+  ] as Array<DataInjestionSource>;
 
   for (const item of toInsert) {
-    if (data_injection_sources.find((d) => d.source_name == item.source_name)) continue;
+    if (data_injestion_sources.find((d) => d.source_name == item.source_name)) continue;
 
-    await knex("data_injection_sources").insert(item);
+    await knex("data_injestion_sources").insert(item);
   }
 }

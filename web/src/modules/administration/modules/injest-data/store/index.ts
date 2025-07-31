@@ -2,88 +2,88 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 
 import { useNotificationStore } from "@/store/NotificationStore";
 import { useApiStore } from "@/store/ApiStore";
-import { DATA_INJECTION_URL, DATA_INJECTION_SOURCE_URL } from "@/urls";
+import { DATA_INJESTION_URL, DATA_INJESTION_SOURCE_URL } from "@/urls";
 
 interface AdminState {
-  dataInjectionSources: Array<DataInjectionSource>;
-  selectedDataInjectionSourceId: number | undefined;
-  selectedDataInjectionFile: File | undefined;
+  dataInjestionSources: Array<DataInjestionSource>;
+  selectedDataInjestionSourceId: number | undefined;
+  selectedDataInjestionFile: File | undefined;
   isLoading: boolean;
 }
 
-export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSourceAdmin", {
+export const useDataInjestionSourceAdminStore = defineStore("dataInjestionSourceAdmin", {
   state: (): AdminState => ({
-    dataInjectionSources: [],
+    dataInjestionSources: [],
     isLoading: false,
-    selectedDataInjectionSourceId: undefined,
-    selectedDataInjectionFile: undefined,
+    selectedDataInjestionSourceId: undefined,
+    selectedDataInjestionFile: undefined,
   }),
   getters: {
-    dataInjectionSourceCount(state) {
-      if (state && state.dataInjectionSources) return state.dataInjectionSources.length;
+    dataInjestionSourceCount(state) {
+      if (state && state.dataInjestionSources) return state.dataInjestionSources.length;
       return 0;
     },
   },
   actions: {
-    async getAllDataInjectionSources() {
+    async getAllDataInjestionSources() {
       this.isLoading = true;
       let api = useApiStore();
       await api
-        .secureCall("get", DATA_INJECTION_SOURCE_URL)
+        .secureCall("get", DATA_INJESTION_SOURCE_URL)
         .then((resp) => {
-          this.dataInjectionSources = resp.data;
+          this.dataInjestionSources = resp.data;
         })
         .finally(() => {
           this.isLoading = false;
         });
     },
-    selectDataInjectionSourceId(dataInjectionSourceId: number) {
-      this.selectedDataInjectionSourceId = dataInjectionSourceId;
+    selectDataInjestionSourceId(dataInjestionSourceId: number) {
+      this.selectedDataInjestionSourceId = dataInjestionSourceId;
     },
-    unselectDataInjectionSourceId() {
-      this.selectedDataInjectionSourceId = undefined;
+    unselectDataInjestionSourceId() {
+      this.selectedDataInjestionSourceId = undefined;
     },
-    selectDataInjectionFile(dataInjectionFile: File) {
-      this.selectedDataInjectionFile = dataInjectionFile;
+    selectDataInjestionFile(dataInjestionFile: File) {
+      this.selectedDataInjestionFile = dataInjestionFile;
     },
-    unselectDataInjectionFile() {
-      this.selectedDataInjectionFile = undefined;
+    unselectDataInjestionFile() {
+      this.selectedDataInjestionFile = undefined;
     },
-    async addDataInjection(userId: number) {
+    async addDataInjestion(userId: number) {
       const api = useApiStore();
       const notify = useNotificationStore();
 
       // Guards
-      if (!this.selectedDataInjectionSourceId) {
+      if (!this.selectedDataInjestionSourceId) {
         return notify.notify({
-          text: "Please select a data injection source first",
+          text: "Please select a data injestion source first",
           variant: "error",
         });
       }
-      if (!this.selectedDataInjectionFile) {
+      if (!this.selectedDataInjestionFile) {
         return notify.notify({ text: "Please choose a CSV file to upload", variant: "error" });
       }
 
       this.isLoading = true;
       try {
         const form = new FormData();
-        form.append("csvFile", this.selectedDataInjectionFile);
-        form.append("source_id", this.selectedDataInjectionSourceId.toString());
+        form.append("csvFile", this.selectedDataInjestionFile);
+        form.append("source_id", this.selectedDataInjestionSourceId.toString());
         form.append("user_id", userId.toString());
 
-        const result = await api.secureUpload("post", DATA_INJECTION_URL, form);
+        const result = await api.secureUpload("post", DATA_INJESTION_URL, form);
 
         if (result.error) {
           notify.notify({ text: String(result.error), variant: "error" });
         } else {
-          notify.notify({ text: "Data Injection File added successfully", variant: "success" });
-          this.unselectDataInjectionSourceId();
-          this.unselectDataInjectionFile();
+          notify.notify({ text: "Data Injestion File added successfully", variant: "success" });
+          this.unselectDataInjestionSourceId();
+          this.unselectDataInjestionFile();
         }
 
         return result;
       } catch (err: any) {
-        console.error("Data injection failed", err);
+        console.error("Data injestion failed", err);
         notify.notify({
           text: err.message || "Upload failed. Please try again.",
           variant: "error",
@@ -96,7 +96,7 @@ export const useDataInjectionSourceAdminStore = defineStore("dataInjectionSource
   },
 });
 
-export interface DataInjectionSource {
+export interface DataInjestionSource {
   id: number;
   source_name: string;
   description?: string;
@@ -107,5 +107,5 @@ export interface DataInjectionSource {
 }
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useDataInjectionSourceAdminStore, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(useDataInjestionSourceAdminStore, import.meta.hot));
 }
