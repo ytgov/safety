@@ -1,9 +1,9 @@
 import { Urgency } from "./urgency-model";
 import { IncidentType } from "./incident-type-model";
 import { IncidentStatus } from "./incident-status-model";
-import { DataInjestionSource } from "./data-injestion-source-model";
+import { DataIngestionSource } from "./data-ingestion-source-model";
 
-export interface DataInjestion {
+export interface DataIngestion {
   id?: number;
   source_id: number;
   identifier: string;
@@ -21,5 +21,5 @@ export interface DataInjestion {
   type?: IncidentType;
   status?: IncidentStatus;
   urgency?: Urgency;
-  source?: DataInjestionSource;
+  source?: DataIngestionSource;
 }

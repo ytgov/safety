@@ -1,5 +1,5 @@
 export * from "./department-service";
-export * from "./data-injestion-service";
+export * from "./data-ingestion-service";
 export * from "./directory-service";
 export * from "./email-service";
 export * from "./incident-service";

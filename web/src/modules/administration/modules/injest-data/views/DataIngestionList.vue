@@ -40,14 +40,14 @@
       </v-btn>
     </template>
 
-    <DataInjestionEditor v-model="showEditor" />
+    <DataIngestionEditor v-model="showEditor" />
   </base-card>
 </template>
 <script lang="ts">
-import DataInjestionEditor from "@/modules/administration/modules/injest-data/components/DataInjestionEditor.vue";
+import DataIngestionEditor from "@/modules/administration/modules/injest-data/components/DataIngestionEditor.vue";
 
 export default {
-  components: { DataInjestionEditor },
+  components: { DataIngestionEditor },
   data: () => ({
     showEditor: false,
     headers: [

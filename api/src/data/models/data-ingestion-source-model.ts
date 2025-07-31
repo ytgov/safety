@@ -1,4 +1,4 @@
-export interface DataInjestionSource {
+export interface DataIngestionSource {
   id?: number;
   source_name: string;
   description?: string;
