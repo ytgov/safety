@@ -93,10 +93,10 @@ export async function seed(knex: knex.Knex) {
   ];
 
   for (const row of mappings) {
-    const exists = await knex("data_injection_mappings").where(row).first();
+    const exists = await knex("data_ingestion_mappings").where(row).first();
 
     if (!exists) {
-      await knex("data_injection_mappings").insert(row);
+      await knex("data_ingestion_mappings").insert(row);
     }
   }
 }
