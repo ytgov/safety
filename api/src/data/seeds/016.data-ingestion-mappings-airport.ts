@@ -5,27 +5,30 @@ export async function seed(knex: knex.Knex) {
     {
       source_id: 2,
       source_attribute: "ID",
+      source_value: null,
       target_attribute: "identifier",
+      target_value: null,
     },
     {
       source_id: 2,
       source_attribute: "Date/Time Occurred",
+      source_value: null,
       target_attribute: "occured_at",
-    },
-    {
-      source_id: 2,
-      source_attribute: "Category",
-      target_attribute: "incident_type_id",
+      target_value: null,
     },
     {
       source_id: 2,
       source_attribute: "Location",
+      source_value: null,
       target_attribute: "location_detail",
+      target_value: null,
     },
     {
       source_id: 2,
       source_attribute: "Summary",
+      source_value: null,
       target_attribute: "description",
+      target_value: null,
     },
     {
       source_id: 2,
@@ -93,18 +96,29 @@ export async function seed(knex: knex.Knex) {
   ];
 
   for (const row of mappings) {
-    const exists = await knex("data_ingestion_mappings").where(
-      { source_id: row.source_id, 
-        source_attribute: row.source_attribute, 
-        source_value: row.source_value}).first();
-
-    if (exists) {
-      await knex('data_ingestion_mappings')
-        .where(exists)
-        .update(row);
+    const { source_id, source_attribute, source_value, target_attribute, target_value } = row;
+    const key = { source_id, source_attribute, target_attribute };
+    if (row.source_value == null) {
+      await knex("data_ingestion_mappings")
+        .where(key)
+        .whereNotNull('source_value')
+        .del();
+    } else {
+      await knex("data_ingestion_mappings")
+        .where(key)
+        .whereNull('source_value')
+        .del();
     }
 
-    if (!exists) {
+    const exists = await knex("data_ingestion_mappings")
+      .where({ ...key, source_value })
+      .first();
+
+    if (exists) {
+      await knex("data_ingestion_mappings")
+        .where({ id: exists.id })
+        .update({ target_value });
+    } else {
       await knex("data_ingestion_mappings").insert(row);
     }
   }
