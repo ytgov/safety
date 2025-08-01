@@ -16,6 +16,8 @@ function makeDataIngestionBase(source_id: number, user_id: number): Omit<DataIng
     urgency_code: undefined,
     location_detail: "",
     created_at: new Date(),
+    reported_at: undefined,
+    occured_at: undefined,
   };
 }
 
@@ -99,8 +101,7 @@ export class DataIngestionService {
     const base = makeDataIngestionBase(source.id, user_id);
     const transformed: any = { ...base };
 
-    if (source.source_name === "Workhub" 
-      && source.source_attribute_to_transform) {
+    if (source.source_name === "Workhub" && source.source_attribute_to_transform) {
       const raw = row[source.source_attribute_to_transform]?.trim() || "";
       row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
     }
@@ -110,8 +111,10 @@ export class DataIngestionService {
       if (raw == undefined)
         throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
-      if (source.source_name === "RL6" 
-        && target_attribute === source.target_attribute_to_transform) {
+      if (
+        source.source_name === "RL6" &&
+        target_attribute === source.target_attribute_to_transform
+      ) {
         const existing = transformed.location_detail || "";
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
       } else if (source_value != null && raw === source_value) {
@@ -124,14 +127,14 @@ export class DataIngestionService {
     return transformed as DataIngestion;
   }
 
-  private formatDate(source: DataIngestionSource,rawString: string): string | null {
-      if (!rawString) return null;
+  private formatDate(source: DataIngestionSource, rawString: string): string | null {
+    if (!rawString) return null;
 
-      const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
-      const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
-      if (!dt.isValid) {
-          throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
-      }
-      return dt.toISODate();
+    const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
+    const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
+    if (!dt.isValid) {
+      throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
     }
+    return dt.toISODate();
+  }
 }
