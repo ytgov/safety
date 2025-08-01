@@ -5,9 +5,9 @@ export async function up(knex: knex.Knex) {
     table.increments("id").notNullable().primary();
     table.integer("source_id").notNullable();
     table.string("source_attribute", 250).notNullable();
-    table.string("source_value");
+    table.string("source_value").nullable();
     table.string("target_attribute", 250).notNullable();
-    table.string("target_value");
+    table.string("target_value").nullable();
   });
 }
 

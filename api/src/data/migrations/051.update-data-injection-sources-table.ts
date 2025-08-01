@@ -2,8 +2,8 @@ import { Knex } from "knex";
 
 export async function up(knex: Knex): Promise<void> {
   await knex.schema.alterTable("data_injection_sources", (table) => {
-    table.string("identifier_column_name", 250);
-    table.integer("column_count");
+    table.string("identifier_column_name", 250).nullable();
+    table.integer("column_count").nullable();
   });
 }
 
