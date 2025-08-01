@@ -31,7 +31,7 @@ export const useDataIngestionSourceAdminStore = defineStore("dataIngestionSource
       await api
         .secureCall("get", DATA_INGESTION_SOURCE_URL)
         .then((resp) => {
-          this.dataIngestionSources = resp.data;
+          this.dataIngestionSources = resp.dataIngestionSources;
         })
         .finally(() => {
           this.isLoading = false;

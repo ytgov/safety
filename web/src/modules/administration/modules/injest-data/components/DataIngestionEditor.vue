@@ -82,7 +82,6 @@ export default {
       "dataIngestionSources",
       "selectedDataIngestionSourceId",
       "selectedDataIngestionFile",
-      "isLoading",
     ]),
     ...mapState(useUserStore, ["user"]),
     internalVisible: {
@@ -133,7 +132,6 @@ export default {
     },
     async handleSave() {
       const notify = useNotificationStore();
-      this.isLoading = true;
 
       try {
         await this.loadCurrentUser();
@@ -157,9 +155,7 @@ export default {
         await this.addDataIngestion(this.user.id);
       } catch (err) {
         console.error("save failed");
-      } finally {
-        this.isLoading = false;
-      }
+      } 
     },
   },
 };
