@@ -1,7 +1,7 @@
 import cors from "cors";
 import path from "path";
 import helmet from "helmet";
-import migrator from "./data/migrator";
+import migrator from "src/data/migrator";
 import fileUpload from "express-fileupload";
 import { RequireAdmin } from "./middleware";
 import express, { Request, Response } from "express";
@@ -46,7 +46,12 @@ app.use(
       "frame-ancestors": ["'self'"],
       "img-src": ["'self'", "data:"],
       "object-src": ["'none'"],
-      "script-src": ["'self'", "'unsafe-eval'", "'unsafe-inline'", "https://storage.googleapis.com"],
+      "script-src": [
+        "'self'",
+        "'unsafe-eval'",
+        "'unsafe-inline'",
+        "https://storage.googleapis.com",
+      ],
       "script-src-attr": ["'none'"],
       "style-src": ["'self'", "https:", "'unsafe-inline'"],
       "worker-src": ["'self'", "blob:"],
@@ -68,14 +73,11 @@ app.get("/api/healthCheck", (req: Request, res: Response) => {
   doHealthCheck(req, res);
 });
 
-
-
 if (process.env.NODE_ENV === "development") {
   app.use("/migrate", migrator.migrationRouter);
 } else {
-  app.use("/migrate", checkJwt, loadUser, RequireAdmin, migrator.migrationRouter); 
+  app.use("/migrate", checkJwt, loadUser, RequireAdmin, migrator.migrationRouter);
 }
-
 
 app.use("/api/directory", directoryRouter);
 app.use("/api/department", departmentRouter);
