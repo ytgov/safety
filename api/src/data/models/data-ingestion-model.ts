@@ -1,8 +1,3 @@
-import { Urgency } from "./urgency-model";
-import { IncidentType } from "./incident-type-model";
-import { IncidentStatus } from "./incident-status-model";
-import { DataIngestionSource } from "./data-ingestion-source-model";
-
 export interface DataIngestion {
   id?: number;
   source_id: number;

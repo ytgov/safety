@@ -117,10 +117,21 @@ export async function seed(knex: knex.Knex) {
   ];
 
   for (const row of mappings) {
-    const exists = await knex("data_ingestion_mappings").where(row).first();
+    const exists = await knex("data_ingestion_mappings").where(
+      { source_id: row.source_id, 
+        source_attribute: row.source_attribute, 
+        source_value: row.source_value}).first();
+
+    if (exists) {
+      await knex('data_ingestion_mappings')
+        .where(exists)
+        .update(row);
+    }
 
     if (!exists) {
       await knex("data_ingestion_mappings").insert(row);
     }
   }
+
+
 }
