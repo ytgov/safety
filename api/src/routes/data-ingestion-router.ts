@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 
 import { db } from "../data";
 import { RequireAdmin } from "../middleware";
-import { DataIngestionService, UserService } from "src/services";
+import { DataIngestionService, DataIngestionSourceService, UserService } from "src/services";
 import { isNil } from "lodash";
 
 export const dataIngestionRouter = express.Router();
@@ -15,14 +15,19 @@ dataIngestionRouter.get("/", async (req: Request, res: Response) => {
 dataIngestionRouter.post("/", async (req: Request, res: Response) => {
   const dataIngestionService = new DataIngestionService();
   const users = new UserService();
+  const dataIngestionSource= new DataIngestionSourceService();
   const { source_id, user_id } = req.body;
 
   if (isNil(req.files?.csvFile)) return res.status(400).json({ error: "Missing file" });
-  if (isNil(user_id)) return res.status(400).json({ error: "Missing user_id" });
-  if (isNil(source_id)) return res.status(400).json({ error: "Missing source_id" });
+  if (isNil(user_id)) return res.status(422).json({ error: "Missing user_id" });
+  if (isNil(source_id)) return res.status(422).json({ error: "Missing source_id" });
 
-  if (!users.getById(Number(user_id))) {
-    return res.status(400).json({ error: "Invalid user_id" });
+  if (isNil(users.getById(Number(user_id)))) {
+    return res.status(422).json({ error: "Invalid user_id" });
+  }
+
+  if (isNil(dataIngestionSource.getById(Number(source_id)))) {
+    return res.status(422).json({ error: "Invalid source_id" });
   }
 
   const uploaded = Array.isArray(req.files.csvFile) ? req.files.csvFile[0] : req.files.csvFile;
