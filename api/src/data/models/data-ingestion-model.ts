@@ -7,19 +7,14 @@ export interface DataIngestion {
   id?: number;
   source_id: number;
   identifier: string;
-  incident_type_id: number;
-  status_code: string;
+  incident_type_id: number | null;
+  status_code: string | null;
   proxy_user_id: number;
-  description?: string;
-  description_moderated?: string;
-  urgency_code?: string;
-  location_detail?: string;
-  reported_at?: Date
-  occured_at?: Date
-  created_at: Date
-
-  type?: IncidentType;
-  status?: IncidentStatus;
-  urgency?: Urgency;
-  source?: DataIngestionSource;
+  description: string | null;
+  description_moderated: string | null;
+  urgency_code: string | null;
+  location_detail: string | null;
+  reported_at: Date | null;
+  occured_at: Date | null;
+  created_at: Date;
 }

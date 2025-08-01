@@ -1,9 +1,9 @@
 export interface DataIngestionSource {
   id?: number;
   source_name: string;
-  description?: string;
+  description: string;
   identifier_column_name: string;
   column_count: number;
-  source_attribute_to_transform?: string;
-  target_attribute_to_transform?: string; 
+  source_attribute_to_transform: string | null;
+  target_attribute_to_transform: string | null;
 }
