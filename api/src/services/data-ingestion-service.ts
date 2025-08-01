@@ -1,28 +1,13 @@
 import Papa from "papaparse";
 import { DateTime } from "luxon";
+import { isNil } from "lodash";
 
 import { db } from "../data";
 import { DataIngestion, DataIngestionMapping, DataIngestionSource } from "src/data/models";
 
-function makeDataIngestionBase(source_id: number, user_id: number): Omit<DataIngestion, "id"> {
-  return {
-    source_id: source_id,
-    identifier: "",
-    incident_type_id: 5,
-    status_code: "NoAct",
-    proxy_user_id: user_id,
-    description: "",
-    description_moderated: "",
-    urgency_code: undefined,
-    location_detail: "",
-    created_at: new Date(),
-    reported_at: undefined,
-    occured_at: undefined,
-  };
-}
 
 export class DataIngestionService {
-  async insertCsvFromFilePath(
+  async insertCsvFromBuffer(
     csvBuffer: Buffer,
     source_id: number,
     user_id: number
@@ -58,7 +43,7 @@ export class DataIngestionService {
 
   private async getSourceOrThrow(source_id: number): Promise<DataIngestionSource> {
     const source = await db("data_ingestion_sources").where({ id: source_id }).first();
-    if (!source) throw new Error(`Unknown source ID: ${source_id}`);
+    if (isNil(source)) throw new Error(`Unknown source ID: ${source_id}`);
     return source;
   }
 
@@ -95,11 +80,16 @@ export class DataIngestionService {
     source: DataIngestionSource,
     user_id: number
   ): DataIngestion {
-    if (!source.id) {
+    if (isNil(source.id)) {
       throw new Error("Missing source id");
     }
-    const base = makeDataIngestionBase(source.id, user_id);
-    const transformed: any = { ...base };
+    const dataInjestiontionAttributes: Partial<DataIngestion> = {
+      source_id: source.id,
+      incident_type_id: 5,
+      status_code: "NoAct",
+      proxy_user_id: user_id,
+    };
+    const transformed: any = { ...dataInjestiontionAttributes };
 
     if (source.source_name === "Workhub" && source.source_attribute_to_transform) {
       const raw = row[source.source_attribute_to_transform]?.trim() || "";
@@ -117,7 +107,7 @@ export class DataIngestionService {
       ) {
         const existing = transformed.location_detail || "";
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
-      } else if (source_value != null && raw === source_value) {
+      } else if (!isNil(source_value) && raw === source_value) {
         transformed[target_attribute] = target_value;
       } else if (source_value == null) {
         transformed[target_attribute] = raw || null;
@@ -128,7 +118,7 @@ export class DataIngestionService {
   }
 
   private formatDate(source: DataIngestionSource, rawString: string): string | null {
-    if (!rawString) return null;
+    if (isNil(rawString)) return null;
 
     const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
     const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
