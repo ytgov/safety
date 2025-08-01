@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 
-import { DataIngestionSourceService } from "src/services";
+import { DataIngestionSourceService } from "@/services";
 
 export const dataIngestionSourceRouter = express.Router();
 const db = new DataIngestionSourceService();

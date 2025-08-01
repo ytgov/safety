@@ -2,8 +2,8 @@ import Papa from "papaparse";
 import { DateTime } from "luxon";
 import { isNil } from "lodash";
 
-import { db } from "../data";
-import { DataIngestion, DataIngestionMapping, DataIngestionSource } from "src/data/models";
+import { db } from "@/data";
+import { DataIngestion, DataIngestionMapping, DataIngestionSource } from "@/data/models";
 
 
 export class DataIngestionService {

@@ -1,8 +1,8 @@
 import express, { Request, Response } from "express";
 
-import { db } from "../data";
+import { db } from "@/data";
 import { RequireAdmin } from "../middleware";
-import { DataIngestionService, DataIngestionSourceService, UserService } from "src/services";
+import { DataIngestionService, DataIngestionSourceService, UserService } from "@/services";
 import { isNil } from "lodash";
 
 export const dataIngestionRouter = express.Router();
