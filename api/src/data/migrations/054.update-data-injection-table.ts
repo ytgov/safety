@@ -10,8 +10,8 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.alterTable("data_injections", (table) => {
-    table.string("description", 255).notNullable().alter();
-    table.string("description_moderated", 255).notNullable().alter();
-    table.string("location_detail", 255).notNullable().alter();
+    table.string("description", 255).nullable().alter();
+    table.string("description_moderated", 255).nullable().alter();
+    table.string("location_detail", 255).nullable().alter();
   });
 }
