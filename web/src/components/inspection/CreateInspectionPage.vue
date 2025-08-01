@@ -133,7 +133,7 @@
       </v-col>
     </v-row>
   </v-form>
-  <ConfirmDialog ref="confirmDlg" />
+  <ConfirmDialog ref="confirmDialog" />
 </template>
 
 <script setup>
@@ -173,7 +173,7 @@ const { hazards } = storeToRefs(hazardStore);
 
 const isValid = ref(false);
 
-const confirmDlg = ref(null)
+const confirmDialog = ref(null)
 const router = useRouter()
 
 const showActionEdit = ref(false);
@@ -252,7 +252,7 @@ function doShowActionEdit(action) {
 }
 
 function completeClick() {
-  confirmDlg.value.show(
+  confirmDialog.value.show(
     'Complete Inspection',
     'Are you sure you want to complete this inspection?',
     () => {
