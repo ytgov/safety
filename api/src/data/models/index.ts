@@ -6,7 +6,7 @@ export { ActionType, ActionTypes } from "./action-type-model";
 export { Building } from "./building-model";
 export { DataIngestion } from "./data-ingestion-model";
 export { DataIngestionMapping } from "./data-ingestion-mapping-model";
-export { DataIngestionSource } from "./data-ingestion-source-model";
+export { DataIngestionSource, DataIngestionSourceNames } from "./data-ingestion-source-model";
 export { Department } from "./department-model";
 export { HazardAttachment } from "./hazard-attachment-model";
 export { HazardLog } from "./hazard-log-model";

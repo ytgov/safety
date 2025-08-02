@@ -31,19 +31,19 @@
                 class="mx-n2"
               >
                 <v-icon
-                  v-if="report.urgency_code == 'Critical'"
+                  v-if="report.urgency_code === UrgencyCodes.CRITICAL"
                   color="#D90000"
                   size="26"
                   >mdi-alpha-c-circle</v-icon
                 >
                 <v-icon
-                  v-else-if="report.urgency_code == 'High'"
+                  v-else-if="report.urgency_code === UrgencyCodes.HIGH"
                   color="#FF8000"
                   size="26"
                   >mdi-alpha-h-circle</v-icon
                 >
                 <v-icon
-                  v-else-if="report.urgency_code == 'Medium'"
+                  v-else-if="report.urgency_code === UrgencyCodes.MEDIUM"
                   color="#f3b228"
                   size="26"
                   >mdi-alpha-m-circle</v-icon
@@ -76,7 +76,7 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { useReportStore, Incident } from "@/store/ReportStore";
+import { useReportStore, Incident, UrgencyCodes } from "@/store/ReportStore";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 

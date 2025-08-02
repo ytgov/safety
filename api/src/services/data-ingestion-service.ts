@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { isNil } from "lodash";
 
 import { db } from "@/data";
-import { DataIngestion, DataIngestionMapping, DataIngestionSource } from "@/data/models";
+import { DataIngestion, DataIngestionMapping, DataIngestionSource, DataIngestionSourceNames } from "@/data/models";
 
 
 export class DataIngestionService {
@@ -91,7 +91,7 @@ export class DataIngestionService {
     };
     const transformed: any = { ...dataInjestiontionAttributes };
 
-    if (source.source_name === "Workhub" && source.source_attribute_to_transform) {
+    if (source.source_name === DataIngestionSourceNames.WORKHUB && source.source_attribute_to_transform) {
       const raw = row[source.source_attribute_to_transform]?.trim() || "";
       row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
     }
@@ -102,7 +102,7 @@ export class DataIngestionService {
         throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
       if (
-        source.source_name === "RL6" &&
+        source.source_name === DataIngestionSourceNames.RL6 &&
         target_attribute === source.target_attribute_to_transform
       ) {
         const existing = transformed.location_detail || "";
