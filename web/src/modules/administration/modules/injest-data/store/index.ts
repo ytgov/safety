@@ -106,7 +106,6 @@ export interface DataIngestionSource {
   target_attribute_to_transform?: string;
 }
 
-
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useDataIngestionSourceAdminStore, import.meta.hot));
 }

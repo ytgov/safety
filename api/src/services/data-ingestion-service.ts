@@ -3,15 +3,15 @@ import { DateTime } from "luxon";
 import { isNil } from "lodash";
 
 import { db } from "@/data";
-import { DataIngestion, DataIngestionMapping, DataIngestionSource, DataIngestionSourceNames } from "@/data/models";
-
+import {
+  DataIngestion,
+  DataIngestionMapping,
+  DataIngestionSource,
+  DataIngestionSourceNames,
+} from "@/data/models";
 
 export class DataIngestionService {
-  async insertCsvFromBuffer(
-    csvBuffer: Buffer,
-    source_id: number,
-    user_id: number
-  ): Promise<void> {
+  async insertCsvFromBuffer(csvBuffer: Buffer, source_id: number, user_id: number): Promise<void> {
     const csvText = csvBuffer.toString("utf-8");
 
     const source = await this.getSourceOrThrow(source_id);
@@ -91,7 +91,10 @@ export class DataIngestionService {
     };
     const transformed: any = { ...dataInjestiontionAttributes };
 
-    if (source.source_name === DataIngestionSourceNames.WORKHUB && source.source_attribute_to_transform) {
+    if (
+      source.source_name === DataIngestionSourceNames.WORKHUB &&
+      source.source_attribute_to_transform
+    ) {
       const raw = row[source.source_attribute_to_transform]?.trim() || "";
       row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
     }

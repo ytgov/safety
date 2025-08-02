@@ -15,7 +15,7 @@ dataIngestionRouter.get("/", async (req: Request, res: Response) => {
 dataIngestionRouter.post("/", async (req: Request, res: Response) => {
   const dataIngestionService = new DataIngestionService();
   const users = new UserService();
-  const dataIngestionSource= new DataIngestionSourceService();
+  const dataIngestionSource = new DataIngestionSourceService();
   const { source_id, user_id } = req.body;
 
   if (isNil(req.files?.csvFile)) return res.status(400).json({ error: "Missing file" });

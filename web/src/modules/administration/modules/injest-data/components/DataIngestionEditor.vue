@@ -155,7 +155,7 @@ export default {
         await this.addDataIngestion(this.user.id);
       } catch (err) {
         console.error("save failed");
-      } 
+      }
     },
   },
 };
