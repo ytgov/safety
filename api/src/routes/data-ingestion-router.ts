@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 
 import { db } from "@/data";
 import { RequireAdmin } from "../middleware";
-import { DataIngestionService, DataIngestionSourceService, UserService } from "@/services";
+import { CreateService as DataIngestionCreateService, DataIngestionSourceService, UserService } from "@/services";
 import { isNil } from "lodash";
 
 export const dataIngestionRouter = express.Router();
@@ -13,7 +13,6 @@ dataIngestionRouter.get("/", async (req: Request, res: Response) => {
 });
 
 dataIngestionRouter.post("/", async (req: Request, res: Response) => {
-  const dataIngestionService = new DataIngestionService();
   const users = new UserService();
   const dataIngestionSource = new DataIngestionSourceService();
   const { source_id, user_id } = req.body;
@@ -33,7 +32,7 @@ dataIngestionRouter.post("/", async (req: Request, res: Response) => {
   const uploaded = Array.isArray(req.files.csvFile) ? req.files.csvFile[0] : req.files.csvFile;
 
   try {
-    await dataIngestionService.insertCsvFromBuffer(
+    await DataIngestionCreateService.perform(
       uploaded.data,
       Number(source_id),
       Number(user_id)

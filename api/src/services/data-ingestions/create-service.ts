@@ -9,17 +9,26 @@ import {
   DataIngestionSource,
   DataIngestionSourceNames,
 } from "@/data/models";
+import BaseService from "@/services/base-service";
 
-export class DataIngestionService {
-  async insertCsvFromBuffer(csvBuffer: Buffer, source_id: number, user_id: number): Promise<void> {
-    const csvText = csvBuffer.toString("utf-8");
+export class CreateService extends BaseService {
+    constructor(
+      private csvBuffer: Buffer,
+      private source_id: number,
+      private user_id: number
+    ) {
+      super()
+    }
 
-    const source = await this.getSourceOrThrow(source_id);
+  async perform(): Promise<void> {
+    const csvText = this.csvBuffer.toString("utf-8");
+
+    const source = await this.getSourceOrThrow(this.source_id);
     const rows = this.parseAndValidateCsv(source, csvText);
 
     await this.clearDataIngestions(source, rows);
-    const mappings = await db("data_ingestion_mappings").where({ source_id });
-    const transformed = rows.map((row) => this.transformRow(row, mappings, source, user_id));
+    const mappings = await db("data_ingestion_mappings").where({ source_id: this.source_id });
+    const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
     await db.transaction((trx) => trx.batchInsert("data_ingestions", transformed, 500));
   }
 
