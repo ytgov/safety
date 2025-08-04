@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { join } from "path";
 
-import { db } from "./";
+import { db } from "./db-client";
 
 export class Migrator {
   readonly migrationRouter;

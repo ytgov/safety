@@ -3,7 +3,7 @@ import { Knex } from "knex";
 import { isEmpty, isNil } from "lodash";
 import { DateTime } from "luxon";
 
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import {
   Action,
   ActionStatuses,

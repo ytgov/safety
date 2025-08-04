@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 import markdownit from "markdown-it";
 
 import { DB_CLIENT } from "../config";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 
 export function FormatDate(input: Date): string {
   return moment(input).format("YYYY-MM-DD");

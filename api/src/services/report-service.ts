@@ -1,5 +1,5 @@
 import { Report } from "../data/models";
-import { db } from "../data";
+import { db } from "../data/db-client";
 
 export class ReportService {
   async getAll(): Promise<Report[]> {

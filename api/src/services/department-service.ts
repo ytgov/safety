@@ -1,5 +1,5 @@
 import { Department } from "../data/models";
-import { db } from "../data";
+import { db } from "../data/db-client";
 import { DirectoryService } from "./directory-service";
 
 export class DepartmentService {

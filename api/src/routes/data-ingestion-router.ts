@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 
-import { db } from "@/data";
+import { db } from "@/data/db-client";
 import { RequireAdmin } from "../middleware";
 import { CreateService as DataIngestionCreateService, DataIngestionSourceService, UserService } from "@/services";
 import { isNil } from "lodash";

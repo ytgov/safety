@@ -1,6 +1,6 @@
 import { User, User_Create, User_Update } from "../data/models";
 import { RoleService } from "./role-service";
-import { db } from "../data";
+import { db } from "../data/db-client";
 
 const roleService = new RoleService();
 

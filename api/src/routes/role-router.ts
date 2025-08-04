@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import { isEmpty } from "lodash";
 import { UserRole } from "../data/models";
 import { InsertableDate } from "../utils/formatters";

@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { DirectoryService } from "../services";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import e from "express";
 
 export const directoryRouter = express.Router();

@@ -1,4 +1,4 @@
-import { db } from "../data";
+import { db } from "../data/db-client";
 
 export class RoleService {
   getRolesForUser(user_id: number) {

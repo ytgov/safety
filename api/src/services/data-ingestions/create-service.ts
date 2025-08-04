@@ -2,7 +2,7 @@ import Papa from "papaparse";
 import { DateTime } from "luxon";
 import { isNil } from "lodash";
 
-import { db } from "@/data";
+import { db } from "@/data/db-client";
 import {
   DataIngestion,
   DataIngestionMapping,

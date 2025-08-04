@@ -1,5 +1,5 @@
 import { DataIngestionSource } from "@/data/models";
-import { db } from "@/data";
+import { db } from "@/data/db-client";
 
 export class DataIngestionSourceService {
   async getAll(): Promise<DataIngestionSource[]> {
