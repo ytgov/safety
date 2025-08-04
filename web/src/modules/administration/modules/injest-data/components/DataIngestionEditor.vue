@@ -64,6 +64,7 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { computed, onMounted } from "vue";
+import { isNil } from "lodash";
 
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
@@ -71,7 +72,7 @@ import { useNotificationStore } from "@/store/NotificationStore";
 import { useRouter } from "vue-router";
 
 const props = defineProps<{ modelValue: boolean }>()
-const emit  = defineEmits<{ 'update:modelValue': [value: boolean] }>()
+const emit  = defineEmits<{ 'update:modelValue': [boolean] }>()
 
 const userStore = useUserStore()
 const dataIngestionStore = useDataIngestionSourceAdminStore()
@@ -118,7 +119,7 @@ async function handleSave() {
   try {
     await userStore.loadCurrentUser()
 
-    if (!user.value?.id) {
+    if (isNil(user.value?.id)) {
       notificationStore.notify({         
         text: "You must be logged in to do this.",
         variant: "warning",
@@ -128,7 +129,7 @@ async function handleSave() {
       return
     }
 
-    if (!selectedId.value || !selectedFile.value) {
+    if (isNil(selectedId.value) || isNil(selectedFile.value)) {
       notificationStore.notify({
         text: "Please select a data source and upload a file.",
         variant: "warning",
