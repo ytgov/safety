@@ -78,15 +78,9 @@ export async function seed(knex: knex.Knex) {
     const { source_id, source_attribute, source_value, target_attribute, target_value } = row;
     const key = { source_id, source_attribute, target_attribute };
     if (row.source_value == null) {
-      await knex("data_ingestion_mappings")
-        .where(key)
-        .whereNotNull('source_value')
-        .del();
+      await knex("data_ingestion_mappings").where(key).whereNotNull("source_value").del();
     } else {
-      await knex("data_ingestion_mappings")
-        .where(key)
-        .whereNull('source_value')
-        .del();
+      await knex("data_ingestion_mappings").where(key).whereNull("source_value").del();
     }
 
     const exists = await knex("data_ingestion_mappings")
@@ -94,9 +88,7 @@ export async function seed(knex: knex.Knex) {
       .first();
 
     if (exists) {
-      await knex("data_ingestion_mappings")
-        .where({ id: exists.id })
-        .update({ target_value });
+      await knex("data_ingestion_mappings").where({ id: exists.id }).update({ target_value });
     } else {
       await knex("data_ingestion_mappings").insert(row);
     }

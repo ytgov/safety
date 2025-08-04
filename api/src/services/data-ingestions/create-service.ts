@@ -12,13 +12,13 @@ import {
 import BaseService from "@/services/base-service";
 
 export class CreateService extends BaseService {
-    constructor(
-      private csvBuffer: Buffer,
-      private source_id: number,
-      private user_id: number
-    ) {
-      super()
-    }
+  constructor(
+    private csvBuffer: Buffer,
+    private source_id: number,
+    private user_id: number
+  ) {
+    super();
+  }
 
   async perform(): Promise<void> {
     const csvText = this.csvBuffer.toString("utf-8");

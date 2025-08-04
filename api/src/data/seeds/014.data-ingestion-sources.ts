@@ -28,16 +28,14 @@ export async function seed(knex: knex.Knex) {
   ] as Array<DataIngestionSource>;
 
   for (const item of toInsert) {
-    const existing = await knex('data_ingestion_sources')
+    const existing = await knex("data_ingestion_sources")
       .where({ source_name: item.source_name })
       .first();
 
     if (existing) {
-      await knex('data_ingestion_sources')
-        .where({ source_name: item.source_name })
-        .update(item);
+      await knex("data_ingestion_sources").where({ source_name: item.source_name }).update(item);
     } else {
-      await knex('data_ingestion_sources').insert(item);
+      await knex("data_ingestion_sources").insert(item);
     }
   }
 }

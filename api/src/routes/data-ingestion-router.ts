@@ -2,7 +2,11 @@ import express, { Request, Response } from "express";
 
 import { db } from "@/data/db-client";
 import { RequireAdmin } from "../middleware";
-import { CreateService as DataIngestionCreateService, DataIngestionSourceService, UserService } from "@/services";
+import {
+  CreateService as DataIngestionCreateService,
+  DataIngestionSourceService,
+  UserService,
+} from "@/services";
 import { isNil } from "lodash";
 
 export const dataIngestionRouter = express.Router();
@@ -32,11 +36,7 @@ dataIngestionRouter.post("/", async (req: Request, res: Response) => {
   const uploaded = Array.isArray(req.files.csvFile) ? req.files.csvFile[0] : req.files.csvFile;
 
   try {
-    await DataIngestionCreateService.perform(
-      uploaded.data,
-      Number(source_id),
-      Number(user_id)
-    );
+    await DataIngestionCreateService.perform(uploaded.data, Number(source_id), Number(user_id));
     return res.json({ success: true });
   } catch (err: any) {
     console.error(" DataIngestionService Error:", err);
