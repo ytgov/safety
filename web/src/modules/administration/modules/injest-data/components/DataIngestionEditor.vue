@@ -61,102 +61,86 @@
   </v-dialog>
 </template>
 
-<script lang="ts">
-import { mapActions, mapState } from "pinia";
+<script setup lang="ts">
+import { storeToRefs } from "pinia";
+import { computed, onMounted } from "vue";
 
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
 import { useNotificationStore } from "@/store/NotificationStore";
+import { useRouter } from "vue-router";
 
-export default {
-  name: "DataIngestionEditor",
-  props: {
-    modelValue: Boolean,
-  },
-  emits: ["update:modelValue"],
-  mounted() {
-    this.getAllDataIngestionSources();
-  },
-  computed: {
-    ...mapState(useDataIngestionSourceAdminStore, [
-      "dataIngestionSources",
-      "selectedDataIngestionSourceId",
-      "selectedDataIngestionFile",
-    ]),
-    ...mapState(useUserStore, ["user"]),
-    internalVisible: {
-      get() {
-        return this.modelValue;
-      },
-      set(val: boolean) {
-        this.$emit("update:modelValue", val);
-      },
-    },
-    selectedId: {
-      get() {
-        return this.selectedDataIngestionSourceId;
-      },
-      set(id: number | undefined) {
-        if (id != undefined) {
-          this.selectDataIngestionSourceId(id);
-        }
-      },
-    },
-    selectedFile: {
-      get() {
-        return this.selectedDataIngestionFile;
-      },
-      set(file: File | undefined) {
-        if (file != undefined) {
-          this.selectDataIngestionFile(file);
-        } else {
-          this.unselectDataIngestionFile();
-        }
-      },
-    },
-  },
-  methods: {
-    ...mapActions(useDataIngestionSourceAdminStore, [
-      "getAllDataIngestionSources",
-      "selectDataIngestionSourceId",
-      "unselectDataIngestionSourceId",
-      "selectDataIngestionFile",
-      "unselectDataIngestionFile",
-      "addDataIngestion",
-    ]),
-    ...mapActions(useUserStore, ["loadCurrentUser"]),
-    handleClose() {
-      this.unselectDataIngestionSourceId();
-      this.unselectDataIngestionFile();
-      this.internalVisible = false;
-    },
-    async handleSave() {
-      const notify = useNotificationStore();
+const props = defineProps<{ modelValue: boolean }>()
+const emit  = defineEmits<{ 'update:modelValue': [value: boolean] }>()
 
-      try {
-        await this.loadCurrentUser();
+const userStore = useUserStore()
+const dataIngestionStore = useDataIngestionSourceAdminStore()
+const notificationStore = useNotificationStore()
 
-        if (!this.selectedDataIngestionSourceId || !this.selectedDataIngestionFile) {
-          return notify.notify({
-            text: "Please select a data source and upload a file.",
-            variant: "warning",
-            icon: "mdi-alert-circle",
-            status_code: 400,
-          });
-        }
-        if (!this.user?.id) {
-          return notify.notify({
-            text: "You must be logged in to do this.",
-            variant: "error",
-            icon: "mdi-alert-circle",
-            status_code: 401,
-          });
-        }
-        await this.addDataIngestion(this.user.id);
-      } catch (err) {
-        console.error("save failed");
-      }
-    },
-  },
-};
+const { user } = storeToRefs(userStore)
+const {
+  dataIngestionSources,
+  selectedDataIngestionSourceId,
+  selectedDataIngestionFile,
+} = storeToRefs(dataIngestionStore)
+
+const internalVisible = computed<boolean>({
+  get: () => props.modelValue,
+  set: modelValue => emit('update:modelValue', modelValue),
+})
+
+const selectedId = computed<number|undefined>({
+  get: ()  => selectedDataIngestionSourceId.value,
+  set: source_id => {
+    if (source_id != null) dataIngestionStore.selectDataIngestionSourceId(source_id)
+  }
+})
+
+const selectedFile = computed<File|undefined>({
+  get: () => selectedDataIngestionFile.value,
+  set: f  => {
+    if (f) dataIngestionStore.selectDataIngestionFile(f)
+    else  dataIngestionStore.unselectDataIngestionFile()
+  }
+})
+
+onMounted(() => {
+  dataIngestionStore.getAllDataIngestionSources()
+})
+
+function handleClose() {
+  dataIngestionStore.unselectDataIngestionSourceId()
+  dataIngestionStore.unselectDataIngestionFile()
+  internalVisible.value = false
+}
+
+async function handleSave() {
+  try {
+    await userStore.loadCurrentUser()
+
+    if (!user.value?.id) {
+      notificationStore.notify({         
+        text: "You must be logged in to do this.",
+        variant: "warning",
+        icon: "mdi-alert-circle",
+        status_code: 401, 
+      })
+      return
+    }
+
+    if (!selectedId.value || !selectedFile.value) {
+      notificationStore.notify({
+        text: "Please select a data source and upload a file.",
+        variant: "warning",
+        icon: "mdi-alert-circle",
+        status_code: 400,
+      })
+      return
+    }
+
+    await dataIngestionStore.addDataIngestion(user.value.id)
+  } catch (err) {
+    console.error('save failed', err)
+  }
+}
 </script>
