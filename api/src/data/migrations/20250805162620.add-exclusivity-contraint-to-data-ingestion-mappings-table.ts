@@ -1,16 +1,8 @@
-import { Knex } from "knex";
+import * as knex from "knex";
 
-export async function up(knex: Knex): Promise<void> {
-
-  await knex.schema.alterTable("data_ingestion_mappings", (table) => {
-    table.unique(
-      ["source_id","source_attribute","source_value","target_attribute"],
-      { indexName: "uq_dim_quad" }
-    );
-  });
-
+export async function up(knex: knex.Knex) {
   await knex.raw(`
-    CREATE OR REPLACE FUNCTION fn_dim_mutual_exclusivity()
+    CREATE OR REPLACE FUNCTION check_unique_mutual_exclusivity()
     RETURNS trigger AS $$
     BEGIN
       IF (NEW.source_value IS NULL OR NEW.source_value = '') THEN
@@ -44,22 +36,15 @@ export async function up(knex: Knex): Promise<void> {
   `);
 
   await knex.raw(`
-    DROP TRIGGER IF EXISTS trg_dim_mutual_exclusivity ON data_ingestion_mappings;
-    CREATE TRIGGER trg_dim_mutual_exclusivity
+    DROP TRIGGER IF EXISTS trigger_check_mutual_exclusivity ON data_ingestion_mappings;
+    CREATE TRIGGER trigger_check_mutual_exclusivity
       BEFORE INSERT OR UPDATE ON data_ingestion_mappings
       FOR EACH ROW
-      EXECUTE FUNCTION fn_dim_mutual_exclusivity();
+      EXECUTE FUNCTION check_unique_mutual_exclusivity();
   `);
 }
 
-export async function down(knex: Knex): Promise<void> {
-  await knex.raw(`DROP TRIGGER IF EXISTS trg_dim_mutual_exclusivity ON data_ingestion_mappings`);
-  await knex.raw(`DROP FUNCTION IF EXISTS fn_dim_mutual_exclusivity()`);
-
-await knex.schema.alterTable("data_ingestion_mappings", (table) => {
-  table.dropUnique(
-    ["source_id","source_attribute","source_value","target_attribute"],
-    "uq_dim_quad"
-  );
-});
+export async function down(knex: knex.Knex) {
+  await knex.raw(`DROP TRIGGER IF EXISTS trigger_check_mutual_exclusivity ON data_ingestion_mappings`);
+  await knex.raw(`DROP FUNCTION IF EXISTS check_unique_mutual_exclusivity()`);
 }
