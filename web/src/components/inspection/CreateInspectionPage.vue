@@ -254,7 +254,7 @@ function doShowActionEdit(action) {
 function completeClick() {
   confirmDialog.value.show(
     "Complete Inspection",
-    `Please click 'Confirm' below only if you have added all relevant Hazards. You cannot add additional Hazards after the Inspection has been completed.`,
+    `Please click 'Confirm' only if you have added all relevant Hazards. You cannot add additional Hazards after the Inspection has been completed.`,
     () => {
       router.push("/inspections");
     },
