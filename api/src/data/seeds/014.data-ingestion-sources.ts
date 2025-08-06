@@ -1,5 +1,5 @@
 import knex from "knex";
-import { DataIngestionSource } from "src/data/models";
+import { DataIngestionSource } from "../../data/models";
 
 export async function seed(knex: knex.Knex) {
   const data_ingestion_sources = await knex<DataIngestionSource>("data_ingestion_sources");
