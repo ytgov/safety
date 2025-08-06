@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { isArray, isNil } from "lodash";
 
 import { Knex } from "knex";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import { InspectionService } from "../services";
 import { Incident, IncidentAttachment, IncidentStatuses, SensitivityLevels, UserRole } from "../data/models";
 import { InsertableDate } from "../utils/formatters";

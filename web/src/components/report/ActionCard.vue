@@ -7,7 +7,12 @@
       <h4 class="text-h5">My Open Actions</h4>
       <p class="mb-3">Unresolved actions assigned to me</p>
 
-      <v-list v-if="actions && actions.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
+      <v-list
+        v-if="actions && actions.length > 0"
+        bg-color="#fff"
+        class="py-0 limit-card-height-400"
+        style="border: 1px #aaa solid"
+        rounded>
         <div v-for="(action, idx) of actions">
           <v-list-item
             :title="makeTitle(action)"

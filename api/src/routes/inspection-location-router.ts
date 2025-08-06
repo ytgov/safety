@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 
-import { db } from "../data";
-import { db as knex } from "../data";
+import { db } from "../data/db-client";
+import { db as knex } from "../data/db-client";
 import { RequireAdmin } from "../middleware";
 
 export const inspectionLocationRouter = express.Router();

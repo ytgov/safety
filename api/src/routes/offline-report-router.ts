@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 import { isArray } from "lodash";
 
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import { DepartmentService, DirectoryService, EmailService, IncidentService, UserService } from "../services";
 import {
   Hazard,

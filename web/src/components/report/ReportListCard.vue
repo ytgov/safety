@@ -10,16 +10,20 @@
       <v-list
         v-if="myReports && myReports.length > 0"
         bg-color="#fff"
-        class="py-0"
+        class="py-0 limit-card-height-400"
         style="border: 1px #aaa solid"
         rounded>
         <div v-for="(report, idx) of myReports">
           <v-list-item :subtitle="makeSubtitle(report)" class="pt-1 pb-2" @click="openReportClick(report)">
             <template #prepend>
               <v-avatar size="small" class="mx-n2">
-                <v-icon v-if="report.urgency_code == 'Critical'" color="#D90000" size="26">mdi-alpha-c-circle</v-icon>
-                <v-icon v-else-if="report.urgency_code == 'High'" color="#FF8000" size="26">mdi-alpha-h-circle</v-icon>
-                <v-icon v-else-if="report.urgency_code == 'Medium'" color="#f3b228" size="26"
+                <v-icon v-if="report.urgency_code === UrgencyCodes.CRITICAL" color="#D90000" size="26"
+                  >mdi-alpha-c-circle</v-icon
+                >
+                <v-icon v-else-if="report.urgency_code === UrgencyCodes.HIGH" color="#FF8000" size="26"
+                  >mdi-alpha-h-circle</v-icon
+                >
+                <v-icon v-else-if="report.urgency_code === UrgencyCodes.MEDIUM" color="#f3b228" size="26"
                   >mdi-alpha-m-circle</v-icon
                 >
                 <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
@@ -45,7 +49,7 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { useReportStore, Incident } from "@/store/ReportStore";
+import { useReportStore, Incident, UrgencyCodes } from "@/store/ReportStore";
 import { storeToRefs } from "pinia";
 import { useRouter } from "vue-router";
 

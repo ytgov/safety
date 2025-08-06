@@ -117,7 +117,7 @@
           <v-btn class="mb-0" color="info" @click="addTaskClick">Add Hazard</v-btn>
           <v-spacer />
 
-          <v-btn class="mb-0" color="warning" to="/inspections">Complete Inspection</v-btn>
+          <v-btn class="mb-0" color="warning" @click="completeClick">Complete Inspection</v-btn>
         </div>
         <InspectionActionList class="mt-5" @showAction="doShowActionEdit"></InspectionActionList>
 
@@ -133,6 +133,7 @@
       </v-col>
     </v-row>
   </v-form>
+  <ConfirmDialog ref="confirmDialog" />
 </template>
 
 <script setup>
@@ -140,18 +141,20 @@ import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { isNil } from "lodash";
 import { DateTime } from "luxon";
+import { useRouter } from "vue-router";
 
 import { useInspectionStore } from "@/store/InspectionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { useDepartmentStore } from "@/store/DepartmentStore";
 import { useHazardStore } from "@/store/HazardStore";
 
-import DateTimeSelector from "@/components/DateTimeSelector.vue";
+import ConfirmDialog from "../ConfirmDialog.vue";
 import { requiredRule } from "@/utils/validation";
-import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue";
-import InspectionActionList from "@/components/action/InspectionActionList.vue";
 import ActionDialog from "../action/ActionDialog.vue";
+import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import InspectionLocationSelector from "../InspectionLocationSelector.vue";
+import InspectionActionList from "@/components/action/InspectionActionList.vue";
+import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue";
 
 const inspectionStore = useInspectionStore();
 const { initialize, addInspection, loadReport } = inspectionStore;
@@ -169,6 +172,9 @@ const { loadHazards, clear } = hazardStore;
 const { hazards } = storeToRefs(hazardStore);
 
 const isValid = ref(false);
+
+const confirmDialog = ref(null);
+const router = useRouter();
 
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
@@ -243,5 +249,16 @@ async function actionReload() {
 function doShowActionEdit(action) {
   actionToEdit.value = action;
   showActionEdit.value = true;
+}
+
+function completeClick() {
+  confirmDialog.value.show(
+    "Complete Inspection",
+    `Please click 'Confirm' only if you have added all relevant Hazards. You cannot add additional Hazards after the Inspection has been completed.`,
+    () => {
+      router.push("/inspections");
+    },
+    () => {}
+  );
 }
 </script>

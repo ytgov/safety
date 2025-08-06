@@ -385,6 +385,12 @@ export interface Urgency {
   description?: string;
 }
 
+export enum UrgencyCodes {
+  CRITICAL = "Critical",
+  HIGH = "High",
+  MEDIUM = "Medium",
+}
+
 if (import.meta.hot) {
   import.meta.hot.accept(acceptHMRUpdate(useReportStore, import.meta.hot));
 }

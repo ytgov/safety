@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import { RequireAdmin } from "../middleware";
 import { checkJwt, loadUser } from "../middleware/authz.middleware";
 

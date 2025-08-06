@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 import { InsertableDate } from "../utils/formatters";
 import { isArray, isEmpty, isNil } from "lodash";
 import { Action, ActionStatuses, HazardStatuses } from "../data/models";

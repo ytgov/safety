@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 
 export const departmentRouter = express.Router();
 
