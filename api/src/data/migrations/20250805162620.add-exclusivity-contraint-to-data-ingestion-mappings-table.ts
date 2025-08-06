@@ -38,6 +38,14 @@ export async function up(knex: knex.Knex) {
       END;
       $$ LANGUAGE plpgsql;
     `);
+
+    await knex.raw(`
+    DROP TRIGGER IF EXISTS "trigger_check_mutual_exclusivity";
+    CREATE TRIGGER "trigger_check_mutual_exclusivity"
+      BEFORE INSERT OR UPDATE ON "data_ingestion_mappings"
+      FOR EACH ROW
+      EXECUTE FUNCTION "check_unique_mutual_exclusivity"();
+  `);
   } else if (client === "oracledb" || client === "oracle") {
     await knex.raw(`
       CREATE OR REPLACE TRIGGER "trigger_check_mutual_exclusivity"
@@ -72,14 +80,6 @@ export async function up(knex: knex.Knex) {
   } else {
     throw new Error("Unsupported database client for this migration.");
   }
-
-  await knex.raw(`
-    DROP TRIGGER IF EXISTS "trigger_check_mutual_exclusivity" ON "data_ingestion_mappings";
-    CREATE TRIGGER "trigger_check_mutual_exclusivity"
-      BEFORE INSERT OR UPDATE ON "data_ingestion_mappings"
-      FOR EACH ROW
-      EXECUTE FUNCTION "check_unique_mutual_exclusivity"();
-  `);
 }
 
 export async function down(knex: knex.Knex) {
