@@ -22,26 +22,19 @@
   </v-breadcrumbs>
 
   <h1>Injest-Data</h1>
+  <div class="d-flex justify-center w-100">
+    <v-btn
+      color="primary"
+      variant="flat"
+      size="large"
+      class="mr-5"
+      @click="showEditor = true"
+    >
+      Add Data
+    </v-btn>
+  </div>
 
-  <base-card
-    showHeader="t"
-    heading=""
-    elevation="0"
-  >
-    <template v-slot:right>
-      <v-btn
-        color="primary"
-        variant="flat"
-        size="small"
-        class="mr-5"
-        @click="showEditor = true"
-      >
-        Add Data
-      </v-btn>
-    </template>
-
-    <DataIngestionEditor v-model="showEditor" />
-  </base-card>
+  <DataIngestionEditor v-model="showEditor" />
 </template>
 <script lang="ts">
 import DataIngestionEditor from "@/modules/administration/modules/injest-data/components/DataIngestionEditor.vue";

@@ -63,7 +63,7 @@ export class CreateService extends BaseService {
     const lines = csvText.split(/\r?\n/);
     const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name));
     if (headerIndex < 0) {
-      throw new Error(`Header row with '${source.identifier_column_name}' not found`);
+      throw new Error(`Invalid data format for Data Source "${source.source_name}": header row with '${source.identifier_column_name}' not found`);
     }
 
     const trimmed = lines.slice(headerIndex).join("\n");
@@ -73,7 +73,7 @@ export class CreateService extends BaseService {
     });
 
     if (meta.fields?.length !== source.column_count) {
-      throw new Error("Invalid CSV format: wrong number of columns");
+      throw new Error(`Invalid data format for Data Source "${source.source_name}": wrong number of columns`);
     }
     const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
     if (validData.length === 0) {
