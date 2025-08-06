@@ -10,6 +10,9 @@ import {
   DataIngestionSourceNames,
 } from "@/data/models";
 import BaseService from "@/services/base-service";
+import { InsertableDate } from "@/utils/formatters";
+
+const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export class CreateService extends BaseService {
   constructor(
@@ -83,6 +86,10 @@ export class CreateService extends BaseService {
     return validData;
   }
 
+  private isIsoDateString(str: string): boolean {
+    return ISO_DATE_REGEX.test(str) && !isNaN(Date.parse(str));
+  }
+
   private transformRow(
     row: Record<string, string>,
     mappings: Array<DataIngestionMapping>,
@@ -121,7 +128,10 @@ export class CreateService extends BaseService {
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
       } else if (!isNil(source_value) && raw === source_value) {
         transformed[target_attribute] = target_value;
-      } else if (source_value == null) {
+      } else if (source_value == null && this.isIsoDateString(raw)) {
+        transformed[target_attribute] = InsertableDate(raw) || null;
+      }
+      else if (source_value == null) {
         transformed[target_attribute] = raw || null;
       }
     });
