@@ -87,13 +87,14 @@ export const useApiStore = defineStore("api", () => {
     } */
     response = await auth0.getAccessTokenSilently().then(async (token) => {
       return await SecureAPICall(method, token)
-        .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
+        .request({ url, data, headers: { "Content-Type": "multipart/form-data" }, validateStatus: () => true })
         .then((res) => {
           return res.data;
         })
         .catch((err) => {
+          const serverMsg = err.response?.data?.error;
           doApiErrorMessage(err);
-          return { error: err };
+          return { error: serverMsg || err.message };
         });
     });
 

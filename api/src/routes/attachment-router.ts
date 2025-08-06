@@ -1,7 +1,7 @@
 import express, { Request, Response } from "express";
 
 import { IncidentAttachment } from "../data/models";
-import { db as knex } from "../data";
+import { db as knex } from "../data/db-client";
 
 export const attachmentRouter = express.Router();
 

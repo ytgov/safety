@@ -1,5 +1,5 @@
 import { Action, Incident } from "../data/models";
-import { db } from "../data";
+import { db } from "../data/db-client";
 import { Knex } from "knex";
 import { isArray } from "lodash";
 
