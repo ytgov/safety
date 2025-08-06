@@ -66,7 +66,9 @@ export class CreateService extends BaseService {
     const lines = csvText.split(/\r?\n/);
     const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name));
     if (headerIndex < 0) {
-      throw new Error(`Invalid data format for Data Source "${source.source_name}": header row with '${source.identifier_column_name}' not found`);
+      throw new Error(
+        `Invalid data format for Data Source "${source.source_name}": header row with '${source.identifier_column_name}' not found`
+      );
     }
 
     const trimmed = lines.slice(headerIndex).join("\n");
@@ -76,7 +78,9 @@ export class CreateService extends BaseService {
     });
 
     if (meta.fields?.length !== source.column_count) {
-      throw new Error(`Invalid data format for Data Source "${source.source_name}": wrong number of columns`);
+      throw new Error(
+        `Invalid data format for Data Source "${source.source_name}": wrong number of columns`
+      );
     }
     const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
     if (validData.length === 0) {
@@ -128,10 +132,9 @@ export class CreateService extends BaseService {
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
       } else if (!isNil(source_value) && raw === source_value) {
         transformed[target_attribute] = target_value;
-      } else if (source_value == null && this.isIsoDateString(raw)) {
+      } else if ((isNil(source_value) || source_value === "") && this.isIsoDateString(raw)) {
         transformed[target_attribute] = InsertableDate(raw) || null;
-      }
-      else if (source_value == null) {
+      } else if (isNil(source_value) || source_value === "") {
         transformed[target_attribute] = raw || null;
       }
     });
@@ -151,5 +154,4 @@ export class CreateService extends BaseService {
     }
     return date.toISODate();
   }
-
 }
