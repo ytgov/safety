@@ -1,7 +1,7 @@
 import cors from "cors";
 import path from "path";
 import helmet from "helmet";
-import migrator from "src/data/migrator";
+import migrator from "./data/migrator";
 import fileUpload from "express-fileupload";
 import { RequireAdmin } from "./middleware";
 import express, { Request, Response } from "express";
