@@ -1,21 +1,9 @@
 <template>
-  <v-dialog
-    v-model="internalVisible"
-    persistent
-    max-width="700"
-  >
+  <v-dialog v-model="internalVisible" persistent max-width="700">
     <v-card>
-      <v-toolbar
-        color="primary"
-        variant="dark"
-        title="Edit Location"
-      >
+      <v-toolbar color="primary" variant="dark" title="Upload Data File">
         <v-spacer></v-spacer>
-        <v-btn
-          icon
-          @click="handleClose"
-          color="white"
-        >
+        <v-btn icon @click="handleClose" color="white">
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -28,8 +16,7 @@
           item-value="id"
           label="Data Source"
           dense
-          outlined
-        />
+          outlined />
         <v-file-input
           v-model="selectedFile"
           label="Upload File"
@@ -37,25 +24,16 @@
           outlined
           accept=".csv"
           show-size
-          prepend-icon="mdi-upload"
-          class="mb-2"
-        />
+          hide-details
+          prepend-icon=""
+          prepend-inner-icon="mdi-upload"
+          class="mb-2" />
       </v-card-text>
 
       <v-card-actions class="mx-4 mb-2">
-        <v-btn
-          color="primary"
-          variant="flat"
-          @click="handleSave"
-          >Save</v-btn
-        >
+        <v-btn color="primary" variant="flat" @click="handleSave">Upload</v-btn>
         <v-spacer></v-spacer>
-        <v-btn
-          color="yg_sun"
-          variant="outlined"
-          @click="handleClose"
-          >Close</v-btn
-        >
+        <v-btn color="yg_sun" variant="outlined" @click="handleClose">Close</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>

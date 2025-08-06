@@ -7,7 +7,7 @@
       <v-list
         v-if="mySupervisorReports && mySupervisorReports.length > 0"
         bg-color="#fff"
-        class="py-0"
+        class="py-0 limit-card-height-400"
         style="border: 1px #aaa solid"
         rounded>
         <div v-for="(report, idx) of mySupervisorReports">

@@ -173,8 +173,8 @@ const { hazards } = storeToRefs(hazardStore);
 
 const isValid = ref(false);
 
-const confirmDialog = ref(null)
-const router = useRouter()
+const confirmDialog = ref(null);
+const router = useRouter();
 
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
@@ -253,13 +253,12 @@ function doShowActionEdit(action) {
 
 function completeClick() {
   confirmDialog.value.show(
-    'Complete Inspection',
-    'Are you sure you want to complete this inspection?',
+    "Complete Inspection",
+    `Please click 'Confirm' only if you have added all relevant Hazards. You cannot add additional Hazards after the Inspection has been completed.`,
     () => {
-      router.push('/inspections')
+      router.push("/inspections");
     },
     () => {}
-  )
+  );
 }
-
 </script>
