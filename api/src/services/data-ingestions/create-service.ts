@@ -145,11 +145,11 @@ export class CreateService extends BaseService {
 
     const clean = cleanString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
 
-    const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
-    if (!dt.isValid) {
+    const date = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
+    if (!date.isValid) {
       throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
     }
-    return dt.toISODate();
+    return date.toISODate();
   }
 
 }
