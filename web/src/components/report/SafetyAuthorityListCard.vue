@@ -6,7 +6,7 @@
       </h4>
       <p class="mb-3">Urgent or delayed reports from my department</p>
 
-      <v-list bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
+      <v-list bg-color="#fff" class="py-0 limit-card-height-400" style="border: 1px #aaa solid" rounded>
         <div v-for="(report, idx) of myReports">
           <v-list-item :subtitle="makeSubtitle(report)" class="pt-1 pb-2" @click="openReportClick(report)">
             <template #prepend>

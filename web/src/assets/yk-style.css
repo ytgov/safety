@@ -193,3 +193,8 @@ ul.v-breadcrumbs {
 .v-app-bar.v-toolbar.test-instance {
   background-color: #ffcccc;
 }
+
+.limit-card-height-400 {
+  max-height: 400px;
+  overflow-y: auto;
+}
