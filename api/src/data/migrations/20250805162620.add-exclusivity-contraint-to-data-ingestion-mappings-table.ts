@@ -74,7 +74,7 @@ export async function up(knex: knex.Knex) {
   }
 
   await knex.raw(`
-    DROP TRIGGER IF EXISTS "trigger_check_mutual_exclusivity" ON data_ingestion_mappings;
+    DROP TRIGGER IF EXISTS "trigger_check_mutual_exclusivity" ON "data_ingestion_mappings";
     CREATE TRIGGER "trigger_check_mutual_exclusivity"
       BEFORE INSERT OR UPDATE ON "data_ingestion_mappings"
       FOR EACH ROW
