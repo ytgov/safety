@@ -140,13 +140,16 @@ export class CreateService extends BaseService {
   }
 
   private formatDate(source: DataIngestionSource, rawString: string): string | null {
-    if (isNil(rawString)) return null;
+    const cleanString = rawString.trim();
+    if (!cleanString) return null;
 
-    const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
+    const clean = cleanString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
+
     const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
     if (!dt.isValid) {
       throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
     }
     return dt.toISODate();
   }
+
 }
