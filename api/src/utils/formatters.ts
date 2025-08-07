@@ -67,3 +67,12 @@ export function InsertableDate(input: string | null) {
 
   return null;
 }
+
+export const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}/;
+
+export function ExstractISODate(str: string): string | null {
+  const cleanString = str.trim();
+  if (!cleanString) return null;
+  const match = cleanString.match(ISO_DATE_REGEX);
+  return match ? match[0] : null;
+}

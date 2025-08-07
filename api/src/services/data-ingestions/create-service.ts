@@ -5,14 +5,13 @@ import { isNil } from "lodash";
 import { db } from "@/data/db-client";
 import {
   DataIngestion,
+  dateFields,
   DataIngestionMapping,
   DataIngestionSource,
   DataIngestionSourceNames,
 } from "@/data/models";
 import BaseService from "@/services/base-service";
-import { InsertableDate } from "@/utils/formatters";
-
-const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+import { InsertableDate, ExstractISODate } from "@/utils/formatters";
 
 export class CreateService extends BaseService {
   constructor(
@@ -90,10 +89,6 @@ export class CreateService extends BaseService {
     return validData;
   }
 
-  private isIsoDateString(str: string): boolean {
-    return ISO_DATE_REGEX.test(str) && !isNaN(Date.parse(str));
-  }
-
   private transformRow(
     row: Record<string, string>,
     mappings: Array<DataIngestionMapping>,
@@ -111,6 +106,7 @@ export class CreateService extends BaseService {
     };
     const transformed: any = { ...dataInjestiontionAttributes };
 
+    /*
     if (
       source.source_name === DataIngestionSourceNames.WORKHUB &&
       source.source_attribute_to_transform
@@ -118,7 +114,7 @@ export class CreateService extends BaseService {
       const raw = row[source.source_attribute_to_transform]?.trim() || "";
       row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
     }
-
+*/
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
       if (raw == undefined)
@@ -132,26 +128,16 @@ export class CreateService extends BaseService {
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
       } else if (!isNil(source_value) && raw === source_value) {
         transformed[target_attribute] = target_value;
-      } else if ((isNil(source_value) || source_value === "") && this.isIsoDateString(raw)) {
-        transformed[target_attribute] = InsertableDate(raw) || null;
       } else if (isNil(source_value) || source_value === "") {
-        transformed[target_attribute] = raw || null;
+        if (dateFields.includes(target_attribute as keyof DataIngestion)) {
+          const extractedDate = ExstractISODate(raw);
+          transformed[target_attribute] = InsertableDate(extractedDate);
+        } else {
+          transformed[target_attribute] = raw || null;
+        }
       }
     });
 
     return transformed as DataIngestion;
-  }
-
-  private formatDate(source: DataIngestionSource, rawString: string): string | null {
-    const cleanString = rawString.trim();
-    if (!cleanString) return null;
-
-    const clean = cleanString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
-
-    const date = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
-    if (!date.isValid) {
-      throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
-    }
-    return date.toISODate();
   }
 }
