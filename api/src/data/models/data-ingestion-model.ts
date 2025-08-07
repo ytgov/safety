@@ -13,3 +13,5 @@ export interface DataIngestion {
   occured_at: Date | null | undefined;
   created_at: Date;
 }
+
+export const dateFields: (keyof DataIngestion)[] = ["reported_at", "occured_at", "created_at"];

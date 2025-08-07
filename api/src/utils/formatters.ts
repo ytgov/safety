@@ -1,5 +1,5 @@
 import moment from "moment";
-import _, { isDate } from "lodash";
+import _, { isDate, isNil } from "lodash";
 import { DateTime } from "luxon";
 import markdownit from "markdown-it";
 
@@ -66,4 +66,13 @@ export function InsertableDate(input: string | null) {
   }
 
   return null;
+}
+
+export const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}/;
+
+export function ExstractISODate(str: string): string | null {
+  const cleanString = str.trim();
+  if (isNil(cleanString)) return null;
+  const match = cleanString.match(ISO_DATE_REGEX);
+  return match ? match[0] : null;
 }
