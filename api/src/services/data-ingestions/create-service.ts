@@ -5,11 +5,13 @@ import { isNil } from "lodash";
 import { db } from "@/data/db-client";
 import {
   DataIngestion,
+  dateFields,
   DataIngestionMapping,
   DataIngestionSource,
   DataIngestionSourceNames,
 } from "@/data/models";
 import BaseService from "@/services/base-service";
+import { InsertableDate, ExstractISODate } from "@/utils/formatters";
 
 export class CreateService extends BaseService {
   constructor(
@@ -63,7 +65,9 @@ export class CreateService extends BaseService {
     const lines = csvText.split(/\r?\n/);
     const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name));
     if (headerIndex < 0) {
-      throw new Error(`Invalid data format for Data Source "${source.source_name}": header row with '${source.identifier_column_name}' not found`);
+      throw new Error(
+        `Invalid data format for Data Source "${source.source_name}": header row with '${source.identifier_column_name}' not found`
+      );
     }
 
     const trimmed = lines.slice(headerIndex).join("\n");
@@ -73,7 +77,9 @@ export class CreateService extends BaseService {
     });
 
     if (meta.fields?.length !== source.column_count) {
-      throw new Error(`Invalid data format for Data Source "${source.source_name}": wrong number of columns`);
+      throw new Error(
+        `Invalid data format for Data Source "${source.source_name}": wrong number of columns`
+      );
     }
     const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
     if (validData.length === 0) {
@@ -100,14 +106,6 @@ export class CreateService extends BaseService {
     };
     const transformed: any = { ...dataInjestiontionAttributes };
 
-    if (
-      source.source_name === DataIngestionSourceNames.WORKHUB &&
-      source.source_attribute_to_transform
-    ) {
-      const raw = row[source.source_attribute_to_transform]?.trim() || "";
-      row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
-    }
-
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
       if (raw == undefined)
@@ -121,22 +119,16 @@ export class CreateService extends BaseService {
         transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
       } else if (!isNil(source_value) && raw === source_value) {
         transformed[target_attribute] = target_value;
-      } else if (source_value == null) {
-        transformed[target_attribute] = raw || null;
+      } else if (isNil(source_value) || source_value === "") {
+        if (dateFields.includes(target_attribute as keyof DataIngestion)) {
+          const extractedDate = ExstractISODate(raw);
+          transformed[target_attribute] = InsertableDate(extractedDate);
+        } else {
+          transformed[target_attribute] = raw || null;
+        }
       }
     });
 
     return transformed as DataIngestion;
-  }
-
-  private formatDate(source: DataIngestionSource, rawString: string): string | null {
-    if (isNil(rawString)) return null;
-
-    const clean = rawString.replace(/\s*[-–]\s*[^-–]*$/, "").trim();
-    const dt = DateTime.fromFormat(clean, "yyyy-MM-dd h:mm a", { zone: "utc" });
-    if (!dt.isValid) {
-      throw new Error(`Invalid date in WorkHub CSV: ${rawString}`);
-    }
-    return dt.toISODate();
   }
 }
