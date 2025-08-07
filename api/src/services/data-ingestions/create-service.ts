@@ -13,11 +13,7 @@ import BaseService from "@/services/base-service";
 import { InsertableDate, ExstractISODate } from "@/utils/formatters";
 
 export class CreateService extends BaseService {
-  constructor(
-    private csvBuffer: Buffer,
-    private source_id: number,
-    private user_id: number
-  ) {
+  constructor(private csvBuffer: Buffer, private source_id: number, private user_id: number) {
     super();
   }
 
@@ -30,25 +26,23 @@ export class CreateService extends BaseService {
     await this.clearDataIngestions(source, rows);
     const mappings = await db("data_ingestion_mappings").where({ source_id: this.source_id });
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
-    await db.transaction((trx) => trx.batchInsert("data_ingestions", transformed, 10));
+    await db.transaction(async (trx) => {
+      for (const row of transformed) {
+        await trx.insert(row);
+      }
+
+      //trx.batchInsert("data_ingestions", transformed, 10);
+    });
   }
 
-  async clearDataIngestions(
-    source: DataIngestionSource,
-    rows: Record<string, string>[]
-  ): Promise<void> {
-    const identifiers = rows
-      .map((row) => row[source.identifier_column_name])
-      .filter((id): id is string => Boolean(id));
+  async clearDataIngestions(source: DataIngestionSource, rows: Record<string, string>[]): Promise<void> {
+    const identifiers = rows.map((row) => row[source.identifier_column_name]).filter((id): id is string => Boolean(id));
 
     if (identifiers.length === 0) {
       return;
     }
 
-    await db("data_ingestions")
-      .where({ source_id: source.id })
-      .whereIn("identifier", identifiers)
-      .delete();
+    await db("data_ingestions").where({ source_id: source.id }).whereIn("identifier", identifiers).delete();
   }
 
   private async getSourceOrThrow(source_id: number): Promise<DataIngestionSource> {
@@ -57,10 +51,7 @@ export class CreateService extends BaseService {
     return source;
   }
 
-  private parseAndValidateCsv(
-    source: DataIngestionSource,
-    csvText: string
-  ): Record<string, string>[] {
+  private parseAndValidateCsv(source: DataIngestionSource, csvText: string): Record<string, string>[] {
     const lines = csvText.split(/\r?\n/);
     const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name));
     if (headerIndex < 0) {
@@ -76,9 +67,7 @@ export class CreateService extends BaseService {
     });
 
     if (meta.fields?.length !== source.column_count) {
-      throw new Error(
-        `Invalid data format for Data Source "${source.source_name}": wrong number of columns`
-      );
+      throw new Error(`Invalid data format for Data Source "${source.source_name}": wrong number of columns`);
     }
     const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
     if (validData.length === 0) {
@@ -107,8 +96,7 @@ export class CreateService extends BaseService {
 
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
-      if (raw == undefined)
-        throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
+      if (raw == undefined) throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
       if (
         source.source_name === DataIngestionSourceNames.RL6 &&
