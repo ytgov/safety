@@ -28,7 +28,7 @@ export class CreateService extends BaseService {
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
     await db.transaction(async (trx) => {
       for (const row of transformed) {
-        await trx.insert(row);
+        await trx("data_ingestions").insert(row);
       }
 
       //trx.batchInsert("data_ingestions", transformed, 10);
