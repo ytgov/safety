@@ -1,5 +1,4 @@
 import Papa from "papaparse";
-import { DateTime } from "luxon";
 import { isNil } from "lodash";
 
 import { db } from "@/data/db-client";
@@ -31,7 +30,7 @@ export class CreateService extends BaseService {
     await this.clearDataIngestions(source, rows);
     const mappings = await db("data_ingestion_mappings").where({ source_id: this.source_id });
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
-    await db.transaction((trx) => trx.batchInsert("data_ingestions", transformed, 500));
+    await db.transaction((trx) => trx.batchInsert("data_ingestions", transformed, 10));
   }
 
   async clearDataIngestions(
