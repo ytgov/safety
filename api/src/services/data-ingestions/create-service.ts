@@ -106,15 +106,6 @@ export class CreateService extends BaseService {
     };
     const transformed: any = { ...dataInjestiontionAttributes };
 
-    /*
-    if (
-      source.source_name === DataIngestionSourceNames.WORKHUB &&
-      source.source_attribute_to_transform
-    ) {
-      const raw = row[source.source_attribute_to_transform]?.trim() || "";
-      row[source.source_attribute_to_transform] = this.formatDate(source, raw) || "";
-    }
-*/
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
       if (raw == undefined)
