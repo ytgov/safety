@@ -11,6 +11,7 @@ import {
 } from "@/data/models";
 import BaseService from "@/services/base-service";
 import { InsertableDate, ExstractISODate } from "@/utils/formatters";
+import { UserService, DataIngestionSourceService } from "@/services";
 
 export class CreateService extends BaseService {
   constructor(private csvBuffer: Buffer, private source_id: number, private user_id: number) {
@@ -18,31 +19,38 @@ export class CreateService extends BaseService {
   }
 
   async perform(): Promise<void> {
+    const users = new UserService(); 
+    const dataIngestionSource = new DataIngestionSourceService();
+    if (isNil(this.csvBuffer)) throw new Error( "Missing file" );
+    if (isNil(this.user_id)) throw new Error( "Missing user_id" );
+    if (isNil(this.source_id)) throw new Error( "Missing source_id" );
+
+    if (isNil(await users.getById(Number(this.user_id)))) {
+      throw new Error( "Invalid user_id" );
+    }
+
+    if (isNil(await dataIngestionSource.getById(Number(this.source_id)))) {
+      throw new Error( "Invalid source_id" );
+    }
+
     const csvText = this.csvBuffer.toString("utf-8");
 
     const source = await this.getSourceOrThrow(this.source_id);
     const rows = this.parseAndValidateCsv(source, csvText);
 
-    await this.clearDataIngestions(source, rows);
+    const identifiers = rows
+      .map((row) => row[source.identifier_column_name])
+      .filter((id): id is string => Boolean(id)); 
+
+    await db("data_ingestions").where({ source_id: source.id }).whereIn("identifier", identifiers).delete();
+
     const mappings = await db("data_ingestion_mappings").where({ source_id: this.source_id });
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
     await db.transaction(async (trx) => {
       for (const row of transformed) {
         await trx("data_ingestions").insert(row);
       }
-
-      //trx.batchInsert("data_ingestions", transformed, 10);
     });
-  }
-
-  async clearDataIngestions(source: DataIngestionSource, rows: Record<string, string>[]): Promise<void> {
-    const identifiers = rows.map((row) => row[source.identifier_column_name]).filter((id): id is string => Boolean(id));
-
-    if (identifiers.length === 0) {
-      return;
-    }
-
-    await db("data_ingestions").where({ source_id: source.id }).whereIn("identifier", identifiers).delete();
   }
 
   private async getSourceOrThrow(source_id: number): Promise<DataIngestionSource> {
