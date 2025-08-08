@@ -28,8 +28,9 @@ dataIngestionRouter.post("/", async (req: Request, res: Response) => {
     return res.json({ success: true });
   } catch (err: any) {
     console.error(" DataIngestionService Error:", err);
-    return res.status(500).json({ error: err.message });
-  }
+    return res.status(422).json({ 
+      message: `Assessment deletion failed: ${err}` });
+    }
 });
 
 dataIngestionRouter.get("/:dataIngestionId", async (req: Request, res: Response) => {

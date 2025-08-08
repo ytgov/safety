@@ -42,15 +42,19 @@ export class CreateService extends BaseService {
       .map((row) => row[source.identifier_column_name])
       .filter((id): id is string => Boolean(id)); 
 
-    await db("data_ingestions").where({ source_id: source.id }).whereIn("identifier", identifiers).delete();
-
     const mappings = await db("data_ingestion_mappings").where({ source_id: this.source_id });
     const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
-    await db.transaction(async (trx) => {
-      for (const row of transformed) {
-        await trx("data_ingestions").insert(row);
-      }
-    });
+      await db.transaction(async (trx) => {
+        if (identifiers.length > 0) {
+          await trx("data_ingestions")
+            .where({ source_id: source.id })
+            .whereIn("identifier", identifiers)
+            .delete();
+        }
+        for (const row of transformed) {
+          await trx("data_ingestions").insert(row);
+        }
+      });
   }
 
   private async getSourceOrThrow(source_id: number): Promise<DataIngestionSource> {
