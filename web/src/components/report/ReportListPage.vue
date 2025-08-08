@@ -100,7 +100,7 @@ const headers = [
 ];
 
 const reportStore = useReportStore();
-const { loadReports } = reportStore;
+const { loadReports, csvExport } = reportStore;
 const { reports, totalCount, isLoading } = storeToRefs(reportStore);
 
 reload();
@@ -132,7 +132,12 @@ function formatDate(input) {
 function openReport(event, { item }) {
   router.push(`/reports/${item.slug}`);
 }
-function csvExportClick() {
-  
+async function csvExportClick() {
+  await csvExport({
+    search: search.value,
+    status: status.value,
+    urgency: urgency.value,
+    location: location.value,
+  })
 }
 </script>

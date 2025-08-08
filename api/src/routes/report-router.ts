@@ -70,7 +70,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
   return res.json({ data: list, totalCount: count?.count });
 });
 
-reportRouter.get("/export-csv-reports", async (req: Request, res: Response) => {
+reportRouter.get("/csv-export", async (req: Request, res: Response) => {
   const { search, status, urgency, location } = req.query;
 
   const userIsAdmin =
@@ -98,7 +98,9 @@ reportRouter.get("/export-csv-reports", async (req: Request, res: Response) => {
     item.access = access.filter((a: any) => a.incident_id === item.id) ?? [];
   }
 
-  return res.json({ data: list});
+  const csvContent = db.csvExport(list);
+
+  return res.json({ csvContent: csvContent });
 });
 
 reportRouter.get("/my-reports", async (req: Request, res: Response) => {

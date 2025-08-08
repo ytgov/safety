@@ -150,4 +150,43 @@ export class IncidentService {
   async update(id: number, item: any): Promise<Incident> {
     return db("incidents").where({ id }).update(item);
   }
+
+  csvExport(reports: Incident[]): string {
+    const headers = [
+    { title: "Id", value: "identifier" },
+    { title: "Description", value: "description" },
+    { title: "Status", value: "status" },
+    { title: "Urgency", value: "urgency_code" },
+    { title: "Identified", value: "created_at" },
+    { title: "Location", value: "location.name" },
+    { title: "Assignee", value: "assigned_to" },
+  ];
+    const headerTitles = headers.map((header) => header.title)
+    const rows = reports.map((report) => {
+      return headerTitles.map((headerTitle) => {
+        switch (headerTitle) {
+          case "Id":
+            return report.id
+          case "Description":
+            return report.description
+          case "Status":
+            return report.status?.name
+          case "Urgency":
+            return report.urgency_code
+          case "Identified":
+            return report.created_at
+          case "Location":
+            return report.location?.name
+          //case "Assignee":
+            //return report.assigned_to
+          default:
+            return ""
+        }
+      })
+    })
+
+    const csvContent = [headerTitles.join(","), ...rows.map((row) => row.join(","))].join("\n")
+
+    return csvContent
+  }
 }

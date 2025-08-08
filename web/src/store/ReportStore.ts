@@ -14,6 +14,7 @@ export const useReportStore = defineStore("reports", {
     reports: [] as Incident[],
     totalCount: 0,
     linkedUsers: [] as any[],
+    csvContent: "",
   }),
   getters: {
     currentStep(state) {
@@ -101,6 +102,12 @@ export const useReportStore = defineStore("reports", {
         });
     },
 
+/*************  ✨ Windsurf Command ⭐  *************/
+    /**
+     * Get the list of reports that the current user is a supervisor for.
+     * @returns {Promise<Incident[]>} - List of reports
+     */
+/*******  50e2dae1-6ad8-43ba-ba2a-5ac53f5025c3  *******/
     async loadMySupervisorReports() {
       const api = useApiStore();
       return api
@@ -317,8 +324,46 @@ export const useReportStore = defineStore("reports", {
         this.loadLinkedUsers();
       });
     },
+    async csvExport({
+      search,
+      status,
+      urgency,
+      location,
+    }: {
+      search: string | null;
+      status: string | null;
+      urgency: string | null;
+      location: string | null;
+    }) {
+      this.isLoading = true;
+      try{
+      const api = useApiStore();
+
+      let queryUrl = `${REPORTS_URL}/csv-export?`;
+
+      if (!isEmpty(search)) queryUrl += `search=${search}&`;
+      if (!isNil(status)) queryUrl += `status=${status}&`;
+      if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
+      if (!isNil(location)) queryUrl += `location=${location}&`;
+
+      api.secureCall("get", queryUrl).then((resp) => {
+        this.csvContent = resp.csvContent;
+      });
+      const blob = new Blob([this.csvContent], { type: "text/csv" })
+      const link = document.createElement("a")
+      link.href = URL.createObjectURL(blob)
+      link.setAttribute("download", `recoveries_${new Date().toISOString()}.csv`)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }catch(err){
+      console.log(err)
+    }finally{
+      this.isLoading = false;
+    }
+    },}
   },
-});
+);
 
 export interface Report {
   createDate?: Date;
