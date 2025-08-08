@@ -68,8 +68,8 @@ export const useDataIngestionSourceAdminStore = defineStore("dataIngestionSource
       try {
         const form = new FormData();
         form.append("csvFile", this.selectedDataIngestionFile);
-        form.append("source_id", this.selectedDataIngestionSourceId.toString());
-        form.append("user_id", userId.toString());
+        form.append("sourceId", this.selectedDataIngestionSourceId.toString());
+        form.append("userId", userId.toString());
 
         const result = await api.secureUpload("post", DATA_INGESTION_URL, form);
 

@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="internalVisible" persistent max-width="700">
+  <v-dialog :model-value="modelValue" persistent max-width="700">
     <v-card>
       <v-toolbar color="primary" variant="dark" title="Upload Data File">
         <v-spacer></v-spacer>
@@ -47,7 +47,6 @@ import { isNil } from "lodash";
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
 import { useNotificationStore } from "@/store/NotificationStore";
-import { useRouter } from "vue-router";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [boolean] }>();
@@ -60,7 +59,7 @@ const { user } = storeToRefs(userStore);
 const { dataIngestionSources, selectedDataIngestionSourceId, selectedDataIngestionFile } =
   storeToRefs(dataIngestionStore);
 
-const internalVisible = computed<boolean>({
+const modelValue = computed<boolean>({
   get: () => props.modelValue,
   set: (modelValue) => emit("update:modelValue", modelValue),
 });
@@ -87,7 +86,7 @@ onMounted(() => {
 function handleClose() {
   dataIngestionStore.unselectDataIngestionSourceId();
   dataIngestionStore.unselectDataIngestionFile();
-  internalVisible.value = false;
+  modelValue.value = false;
 }
 
 async function handleSave() {
