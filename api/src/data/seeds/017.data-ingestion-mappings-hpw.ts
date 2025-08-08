@@ -1,7 +1,8 @@
 import knex from "knex";
+import { DataIngestionMapping } from "@/data/models";
 
 export async function seed(knex: knex.Knex) {
-  const mappings = [
+  const dataIngestionMappingsAttributes: DataIngestionMapping[]  = [
     {
       source_id: 3,
       source_attribute: "Number",
@@ -74,10 +75,10 @@ export async function seed(knex: knex.Knex) {
     },
   ];
 
-  for (const row of mappings) {
-    const { source_id, source_attribute, source_value, target_attribute, target_value } = row;
+  for (const dataIngestionMappingsAttribute of dataIngestionMappingsAttributes) {
+    const { source_id, source_attribute, source_value, target_attribute, target_value } = dataIngestionMappingsAttribute;
     const key = { source_id, source_attribute, target_attribute };
-    if (row.source_value == null) {
+    if (dataIngestionMappingsAttribute.source_value == null) {
       await knex("data_ingestion_mappings").where(key).whereNotNull("source_value").del();
     } else {
       await knex("data_ingestion_mappings").where(key).whereNull("source_value").del();
@@ -90,7 +91,7 @@ export async function seed(knex: knex.Knex) {
     if (exists) {
       await knex("data_ingestion_mappings").where({ id: exists.id }).update({ target_value });
     } else {
-      await knex("data_ingestion_mappings").insert(row);
+      await knex("data_ingestion_mappings").insert(dataIngestionMappingsAttribute);
     }
   }
 }

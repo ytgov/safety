@@ -1,10 +1,10 @@
 import knex from "knex";
-import { DataIngestionSource } from "../../data/models";
+import { DataIngestionSource } from "@/data/models";
 
 export async function seed(knex: knex.Knex) {
   const data_ingestion_sources = await knex<DataIngestionSource>("data_ingestion_sources");
 
-  const toInsert = [
+  const dataIngestionSourcesAttributes: DataIngestionSource[]  = [
     {
       source_name: "RL6",
       description: "HSS's incident system",
@@ -27,15 +27,15 @@ export async function seed(knex: knex.Knex) {
     },
   ] as Array<DataIngestionSource>;
 
-  for (const item of toInsert) {
+  for (const dataIngestionSourcesAttribute of dataIngestionSourcesAttributes) {
     const existing = await knex("data_ingestion_sources")
-      .where({ source_name: item.source_name })
+      .where({ source_name: dataIngestionSourcesAttribute.source_name })
       .first();
 
     if (existing) {
-      await knex("data_ingestion_sources").where({ source_name: item.source_name }).update(item);
+      await knex("data_ingestion_sources").where({ source_name: dataIngestionSourcesAttribute.source_name }).update(dataIngestionSourcesAttribute);
     } else {
-      await knex("data_ingestion_sources").insert(item);
+      await knex("data_ingestion_sources").insert(dataIngestionSourcesAttribute);
     }
   }
 }
