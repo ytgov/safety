@@ -102,12 +102,6 @@ export const useReportStore = defineStore("reports", {
         });
     },
 
-/*************  ✨ Windsurf Command ⭐  *************/
-    /**
-     * Get the list of reports that the current user is a supervisor for.
-     * @returns {Promise<Incident[]>} - List of reports
-     */
-/*******  50e2dae1-6ad8-43ba-ba2a-5ac53f5025c3  *******/
     async loadMySupervisorReports() {
       const api = useApiStore();
       return api
@@ -134,7 +128,8 @@ export const useReportStore = defineStore("reports", {
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
       formData.append("additional_people", (report.additional_people ?? []).join(","));
-      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
+      if (report.supervisor_alt_email)
+        formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -165,7 +160,8 @@ export const useReportStore = defineStore("reports", {
       formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
-      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
+      if (report.supervisor_alt_email)
+        formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -192,7 +188,7 @@ export const useReportStore = defineStore("reports", {
         additional_description: this.selectedReport.additional_description,
         urgency_code: this.selectedReport.urgency_code,
         incident_type_id: this.selectedReport.incident_type_id,
-        hs_recommendations: this.selectedReport.hs_recommendations
+        hs_recommendations: this.selectedReport.hs_recommendations,
       };
 
       const api = useApiStore();
@@ -256,7 +252,9 @@ export const useReportStore = defineStore("reports", {
     openAttachment(attachment: any) {
       if (!this.selectedReport) return;
 
-      window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
+      window.open(
+        `${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`
+      );
     },
 
     async saveInvestigation(investigation: any) {
@@ -295,9 +293,11 @@ export const useReportStore = defineStore("reports", {
       let reportId = this.selectedReport.id;
 
       const api = useApiStore();
-      return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId }).then(() => {
-        if (this.selectedReport) this.loadReport(this.selectedReport.slug);
-      });
+      return api
+        .secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId })
+        .then(() => {
+          if (this.selectedReport) this.loadReport(this.selectedReport.slug);
+        });
     },
 
     loadLinkedUsers() {
@@ -320,9 +320,11 @@ export const useReportStore = defineStore("reports", {
     removeLinkedUser(user: any) {
       let reportId = this.selectedReport?.slug;
       const api = useApiStore();
-      return api.secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`).then(() => {
-        this.loadLinkedUsers();
-      });
+      return api
+        .secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`)
+        .then(() => {
+          this.loadLinkedUsers();
+        });
     },
     async csvExport({
       search,
@@ -336,34 +338,37 @@ export const useReportStore = defineStore("reports", {
       location: string | null;
     }) {
       this.isLoading = true;
-      try{
-      const api = useApiStore();
+      try {
+        const api = useApiStore();
 
-      let queryUrl = `${REPORTS_URL}/csv-export?`;
+        let queryUrl = `${REPORTS_URL}/csv-export?`;
 
-      if (!isEmpty(search)) queryUrl += `search=${search}&`;
-      if (!isNil(status)) queryUrl += `status=${status}&`;
-      if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
-      if (!isNil(location)) queryUrl += `location=${location}&`;
+        if (!isEmpty(search)) queryUrl += `search=${search}&`;
+        if (!isNil(status)) queryUrl += `status=${status}&`;
+        if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
+        if (!isNil(location)) queryUrl += `location=${location}&`;
 
-      api.secureCall("get", queryUrl).then((resp) => {
-        this.csvContent = resp.csvContent;
-      });
-      const blob = new Blob([this.csvContent], { type: "text/csv" })
-      const link = document.createElement("a")
-      link.href = URL.createObjectURL(blob)
-      link.setAttribute("download", `recoveries_${new Date().toISOString()}.csv`)
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-    }catch(err){
-      console.log(err)
-    }finally{
-      this.isLoading = false;
-    }
-    },}
+        api.secureCall("get", queryUrl).then((resp) => {
+          this.csvContent = resp.csvContent;
+        });
+        if (this.csvContent && this.csvContent != "") {
+          const blob = new Blob([this.csvContent], { type: "text/csv" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute("download", `Reports_${new Date().toISOString()}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.isLoading = false;
+        this.csvContent = "";
+      }
+    },
   },
-);
+});
 
 export interface Report {
   createDate?: Date;
