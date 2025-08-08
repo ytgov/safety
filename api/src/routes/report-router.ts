@@ -70,6 +70,37 @@ reportRouter.get("/", async (req: Request, res: Response) => {
   return res.json({ data: list, totalCount: count?.count });
 });
 
+reportRouter.get("/export-csv-reports", async (req: Request, res: Response) => {
+  const { search, status, urgency, location } = req.query;
+
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const listQuery = function (q: Knex.QueryBuilder) {
+    if (!isNil(search)) q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+    if (!isNil(status)) q.where("status_code", status);
+    if (!isNil(urgency)) q.where("urgency_code", urgency);
+    if (!isNil(location)) q.where("location_code", location);
+    return q;
+  };
+
+  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery);
+
+  const locations = await knex("locations");
+  const types = await knex("incident_types");
+  const statuses = await knex("incident_statuses");
+  const access = await knex("incident_users_view").where({ user_email: req.user.email });
+
+  for (const item of list) {
+    item.location = locations.find((l: any) => l.code === item.location_code);
+    item.type = types.find((t: any) => t.id === item.incident_type_id);
+    item.status = statuses.find((s: any) => s.code === item.status_code);
+    item.access = access.filter((a: any) => a.incident_id === item.id) ?? [];
+  }
+
+  return res.json({ data: list});
+});
+
 reportRouter.get("/my-reports", async (req: Request, res: Response) => {
   const list = await db.getByReportingEmail(req.user.email);
   return res.json({ data: list });
