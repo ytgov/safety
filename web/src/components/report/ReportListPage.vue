@@ -120,6 +120,15 @@ async function reload() {
   });
 }
 
+async function csvExportClick() {
+  await csvExport({
+    search: search.value,
+    status: status.value,
+    urgency: urgency.value,
+    location: location.value,
+  })
+}
+
 function updatePage(newPage) {
   if (isLoading.value) return;
   page.value = newPage;
@@ -131,13 +140,5 @@ function formatDate(input) {
 
 function openReport(event, { item }) {
   router.push(`/reports/${item.slug}`);
-}
-async function csvExportClick() {
-  await csvExport({
-    search: search.value,
-    status: status.value,
-    urgency: urgency.value,
-    location: location.value,
-  })
 }
 </script>

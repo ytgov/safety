@@ -117,7 +117,7 @@
           <v-btn class="mb-0" color="info" @click="addTaskClick">Add Hazard</v-btn>
           <v-spacer />
 
-          <v-btn class="mb-0" color="warning" @click="completeClick">Complete Inspection</v-btn>
+          <v-btn class="mb-0" color="warning" @click="openConfirmationDialogAndGoToInspectionsPage">Complete Inspection</v-btn>
         </div>
         <InspectionActionList class="mt-5" @showAction="doShowActionEdit"></InspectionActionList>
 
@@ -148,7 +148,7 @@ import { useInterfaceStore } from "@/store/InterfaceStore";
 import { useDepartmentStore } from "@/store/DepartmentStore";
 import { useHazardStore } from "@/store/HazardStore";
 
-import ConfirmDialog from "../ConfirmDialog.vue";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { requiredRule } from "@/utils/validation";
 import ActionDialog from "../action/ActionDialog.vue";
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
@@ -251,7 +251,7 @@ function doShowActionEdit(action) {
   showActionEdit.value = true;
 }
 
-function completeClick() {
+function openConfirmationDialogAndGoToInspectionsPage() {
   confirmDialog.value.show(
     "Complete Inspection",
     `Please click 'Confirm' only if you have added all relevant Hazards. You cannot add additional Hazards after the Inspection has been completed.`,
