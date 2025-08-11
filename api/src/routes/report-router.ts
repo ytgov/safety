@@ -36,8 +36,9 @@ reportRouter.get("/", async (req: Request, res: Response) => {
       .length > 0;
 
   const countQuery = function (q: Knex.QueryBuilder) {
-    if (!isNil(search))
+    if (!isNil(search)){
       q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+    }
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
     if (!isNil(location)) q.where("location_code", location);
@@ -45,8 +46,9 @@ reportRouter.get("/", async (req: Request, res: Response) => {
   };
 
   const listQuery = function (q: Knex.QueryBuilder) {
-    if (!isNil(search))
+    if (!isNil(search)){
       q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+    }
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
     if (!isNil(location)) q.where("location_code", location);
@@ -81,8 +83,9 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
       .length > 0;
 
   const listQuery = function (q: Knex.QueryBuilder) {
-    if (!isNil(search))
+    if (!isNil(search)){
       q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+    }
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
     if (!isNil(location)) q.where("location_code", location);
