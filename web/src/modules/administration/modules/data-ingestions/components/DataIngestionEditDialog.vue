@@ -65,13 +65,15 @@
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
+import { computed, onMounted, ref } from "vue";
 
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [boolean] }>();
+
+const isLoading = ref(false);
 
 const userStore = useUserStore();
 const dataIngestionStore = useDataIngestionSourceAdminStore();
@@ -113,11 +115,16 @@ function resetAndClose() {
 }
 
 async function handleSave() {
+  if (isLoading.value) return;
+  isLoading.value = true;
   try {
     await userStore.loadCurrentUser();
-    await dataIngestionStore.addDataIngestion(user.value?.id);
+    const userId = user.value?.id;
+    await dataIngestionStore.addDataIngestion(userId);
   } catch (err) {
     console.error("save failed", err);
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

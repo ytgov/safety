@@ -51,7 +51,7 @@ export const useDataIngestionSourceAdminStore = defineStore("dataIngestionSource
     unselectDataIngestionFile() {
       this.selectedDataIngestionFile = undefined;
     },
-    async addDataIngestion(userId: number | null | undefined) {
+    async addDataIngestion(userId: number | undefined) {
       if (this.isLoading) return;
 
       if (isNil(userId)) {
