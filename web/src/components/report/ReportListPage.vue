@@ -96,7 +96,6 @@ const headers = [
   { title: "Urgency", value: "urgency_code" },
   { title: "Identified", value: "created_at" },
   { title: "Location", value: "location.name" },
-  { title: "Assignee", value: "assigned_to" },
 ];
 
 const reportStore = useReportStore();

@@ -199,7 +199,6 @@ export class IncidentService {
       { title: "Urgency", value: "urgency_code" },
       { title: "Identified", value: "created_at" },
       { title: "Location", value: "location.name" },
-      { title: "Assignee", value: "assigned_to" },
     ];
     const headerTitles = headers.map((header) => header.title);
     const rows = reports.map((report) => {
@@ -217,8 +216,6 @@ export class IncidentService {
             return report.created_at;
           case "Location":
             return report.location?.name;
-          //case "Assignee":
-          //return report.assigned_to
           default:
             return "";
         }

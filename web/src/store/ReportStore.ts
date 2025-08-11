@@ -173,6 +173,49 @@ export const useReportStore = defineStore("reports", {
         this.isLoading = false;
       });
     },
+    
+    async csvExport({
+      search,
+      status,
+      urgency,
+      location,
+    }: {
+      search: string | null;
+      status: string | null;
+      urgency: string | null;
+      location: string | null;
+    }) {
+      if (this.isLoading) return;
+      this.isLoading = true;
+      try {
+        const api = useApiStore();
+
+        let queryUrl = `${REPORTS_URL}/csv-export?`;
+
+        if (!isEmpty(search)) queryUrl += `search=${search}&`;
+        if (!isNil(status)) queryUrl += `status=${status}&`;
+        if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
+        if (!isNil(location)) queryUrl += `location=${location}&`;
+
+        const response = await api.secureCall("get", queryUrl);
+        this.csvContent = response?.csvContent ?? "";
+
+        if (this.csvContent && this.csvContent != "") {
+          const blob = new Blob([this.csvContent], { type: "text/csv" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute("download", `Reports_${new Date().toISOString()}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (err) {
+        console.log(err);
+      } finally {
+        this.isLoading = false;
+        this.csvContent = "";
+      }
+    },
 
     getStoredReports() {
       let storedReports = localStorage.getItem("reports") ?? "[]";
@@ -326,47 +369,7 @@ export const useReportStore = defineStore("reports", {
           this.loadLinkedUsers();
         });
     },
-    async csvExport({
-      search,
-      status,
-      urgency,
-      location,
-    }: {
-      search: string | null;
-      status: string | null;
-      urgency: string | null;
-      location: string | null;
-    }) {
-      this.isLoading = true;
-      try {
-        const api = useApiStore();
 
-        let queryUrl = `${REPORTS_URL}/csv-export?`;
-
-        if (!isEmpty(search)) queryUrl += `search=${search}&`;
-        if (!isNil(status)) queryUrl += `status=${status}&`;
-        if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
-        if (!isNil(location)) queryUrl += `location=${location}&`;
-
-        api.secureCall("get", queryUrl).then((resp) => {
-          this.csvContent = resp.csvContent;
-        });
-        if (this.csvContent && this.csvContent != "") {
-          const blob = new Blob([this.csvContent], { type: "text/csv" });
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.setAttribute("download", `Reports_${new Date().toISOString()}.csv`);
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
-      } catch (err) {
-        console.log(err);
-      } finally {
-        this.isLoading = false;
-        this.csvContent = "";
-      }
-    },
   },
 });
 
