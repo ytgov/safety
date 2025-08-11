@@ -191,7 +191,7 @@ export class IncidentService {
     return db("incidents").where({ id }).update(item);
   }
 
-  csvExport(reports: Incident[]): string {
+  generateIncidentsCsvString(reports: Incident[]): string {
     const headers = [
       { title: "Id", value: "identifier" },
       { title: "Description", value: "description" },

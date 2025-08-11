@@ -103,7 +103,7 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
     item.access = access.filter((a: any) => a.incident_id === item.id) ?? [];
   }
 
-  const csvContent = db.csvExport(list);
+  const csvContent = db.generateIncidentsCsvString(list);
 
   return res.json({ csvContent: csvContent });
 });
