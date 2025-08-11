@@ -69,6 +69,7 @@ import { computed, onMounted, ref } from "vue";
 
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
+import { useNotificationStore } from "@/store/NotificationStore";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [boolean] }>();
@@ -77,6 +78,7 @@ const isLoading = ref(false);
 
 const userStore = useUserStore();
 const dataIngestionStore = useDataIngestionSourceAdminStore();
+const notificationStore = useNotificationStore();
 
 const { user } = storeToRefs(userStore);
 const { dataIngestionSources, selectedDataIngestionSourceId, selectedDataIngestionFile } =
@@ -121,8 +123,12 @@ async function handleSave() {
     await userStore.loadCurrentUser();
     const userId = user.value?.id;
     await dataIngestionStore.addDataIngestion(userId);
-  } catch (err) {
-    console.error("save failed", err);
+  } catch (error: any) {
+    console.error("save failed: ${error}", error);
+    notificationStore.notify({
+      text: error.message || "Upload failed. Please try again.",
+      variant: "error",
+    });
   } finally {
     isLoading.value = false;
   }
