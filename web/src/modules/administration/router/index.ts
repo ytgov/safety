@@ -25,7 +25,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "administration/injest-data",
     component: () =>
-      import("@/modules/administration/modules/injest-data/views/DataIngestionList.vue"),
+      import("@/modules/administration/modules/data-ingestions/views/DataIngestionList.vue"),
     meta: {
       requireSystemAdmin: true,
     },

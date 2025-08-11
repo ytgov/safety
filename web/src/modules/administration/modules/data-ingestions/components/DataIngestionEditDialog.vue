@@ -66,7 +66,6 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
 import { computed, onMounted } from "vue";
-import { isNil } from "lodash";
 
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
