@@ -2,7 +2,9 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
 import { ATTACHMENT_URL, LOCATION_URL, OFFLINEREPORTS_URL, REPORTS_URL } from "@/urls";
 import { isEmpty, isNil } from "lodash";
+import { useNotificationStore } from "./NotificationStore";
 
+const notificationStore = useNotificationStore();
 export const useReportStore = defineStore("reports", {
   state: () => ({
     myReports: [] as Incident[],
@@ -200,7 +202,7 @@ export const useReportStore = defineStore("reports", {
         const response = await api.secureCall("get", queryUrl);
         this.csvContent = response?.csvContent ?? "";
 
-        if (this.csvContent && this.csvContent != "") {
+        if (this.csvContent != "") {
           const blob = new Blob([this.csvContent], { type: "text/csv" });
           const link = document.createElement("a");
           link.href = URL.createObjectURL(blob);
@@ -208,9 +210,26 @@ export const useReportStore = defineStore("reports", {
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
+
+          notificationStore.notify({
+            text: "Csv exported successfully",
+            variant: "success",
+          });
         }
-      } catch (err) {
+        else{
+          notificationStore.notify({
+            text: "Empty report list",
+            variant: "warning",
+            icon: "mdi-alert-circle",
+            status_code: 422,
+          });
+        }
+      } catch (err: any) {
         console.log(err);
+        notificationStore.notify({
+          text: err.message || "Export failed. Please try again.",
+          variant: "error",
+        });
       } finally {
         this.isLoading = false;
         this.csvContent = "";
