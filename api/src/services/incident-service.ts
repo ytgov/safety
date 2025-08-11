@@ -205,7 +205,7 @@ export class IncidentService {
       return headerTitles.map((headerTitle) => {
         switch (headerTitle) {
           case "Id":
-            return report.id;
+            return report.identifier;
           case "Description":
             return report.description;
           case "Status":
