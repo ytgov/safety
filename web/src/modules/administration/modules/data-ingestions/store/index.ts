@@ -3,6 +3,7 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useNotificationStore } from "@/store/NotificationStore";
 import { useApiStore } from "@/store/ApiStore";
 import { DATA_INGESTION_URL, DATA_INGESTION_SOURCE_URL } from "@/urls";
+import { isNil } from "lodash";
 
 interface AdminState {
   dataIngestionSources: Array<DataIngestionSource>;
@@ -10,6 +11,7 @@ interface AdminState {
   selectedDataIngestionFile: File | undefined;
   isLoading: boolean;
 }
+const notificationStore = useNotificationStore();
 
 export const useDataIngestionSourceAdminStore = defineStore("dataIngestionSourceAdmin", {
   state: (): AdminState => ({
@@ -49,42 +51,54 @@ export const useDataIngestionSourceAdminStore = defineStore("dataIngestionSource
     unselectDataIngestionFile() {
       this.selectedDataIngestionFile = undefined;
     },
-    async addDataIngestion(userId: number) {
-      const api = useApiStore();
-      const notify = useNotificationStore();
+    async addDataIngestion(userId: number | undefined) {
+      if (this.isLoading) return;
 
-      // Guards
-      if (!this.selectedDataIngestionSourceId) {
-        return notify.notify({
-          text: "Please select a data ingestion source first",
-          variant: "error",
+      if (isNil(userId)) {
+        notificationStore.notify({
+          text: "You must be logged in to do this.",
+          variant: "warning",
+          icon: "mdi-alert-circle",
+          status_code: 401,
         });
-      }
-      if (!this.selectedDataIngestionFile) {
-        return notify.notify({ text: "Please choose a CSV file to upload", variant: "error" });
+        return;
       }
 
+      if (isNil(this.selectedDataIngestionSourceId) || isNil(this.selectedDataIngestionFile)) {
+        notificationStore.notify({
+          text: "Please select a data source and upload a file.",
+          variant: "warning",
+          icon: "mdi-alert-circle",
+          status_code: 422,
+        });
+        return;
+      }
+
+      const api = useApiStore();
       this.isLoading = true;
+
       try {
         const form = new FormData();
         form.append("csvFile", this.selectedDataIngestionFile);
-        form.append("source_id", this.selectedDataIngestionSourceId.toString());
-        form.append("user_id", userId.toString());
+        form.append("sourceId", this.selectedDataIngestionSourceId.toString());
+        form.append("userId", userId.toString());
 
         const result = await api.secureUpload("post", DATA_INGESTION_URL, form);
 
         if (result.error) {
-          notify.notify({ text: String(result.error), variant: "error" });
+          notificationStore.notify({ text: String(result.error), variant: "error" });
         } else {
-          notify.notify({ text: "Data Ingestion File added successfully", variant: "success" });
+          notificationStore.notify({
+            text: "Data Ingestion File added successfully",
+            variant: "success",
+          });
           this.unselectDataIngestionSourceId();
           this.unselectDataIngestionFile();
         }
-
         return result;
       } catch (err: any) {
         console.error("Data ingestion failed", err);
-        notify.notify({
+        notificationStore.notify({
           text: err.message || "Upload failed. Please try again.",
           variant: "error",
         });

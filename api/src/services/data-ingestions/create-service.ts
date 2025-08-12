@@ -11,38 +11,54 @@ import {
 } from "@/data/models";
 import BaseService from "@/services/base-service";
 import { InsertableDate, ExstractISODate } from "@/utils/formatters";
+import { UserService, DataIngestionSourceService } from "@/services";
 
 export class CreateService extends BaseService {
-  constructor(private csvBuffer: Buffer, private source_id: number, private user_id: number) {
+  constructor(
+    private csvBuffer: Buffer,
+    private sourceId: number,
+    private userId: number
+  ) {
     super();
   }
 
   async perform(): Promise<void> {
+    const users = new UserService();
+    const dataIngestionSource = new DataIngestionSourceService();
+    if (isNil(this.csvBuffer)) throw new Error("Missing file");
+    if (isNil(this.userId)) throw new Error("Missing user_id");
+    if (isNil(this.sourceId)) throw new Error("Missing source_id");
+
+    if (isNil(await users.getById(Number(this.userId)))) {
+      throw new Error("Invalid user_id");
+    }
+
+    if (isNil(await dataIngestionSource.getById(Number(this.sourceId)))) {
+      throw new Error("Invalid source_id");
+    }
+
     const csvText = this.csvBuffer.toString("utf-8");
 
-    const source = await this.getSourceOrThrow(this.source_id);
+    const source = await this.getSourceOrThrow(this.sourceId);
     const rows = this.parseAndValidateCsv(source, csvText);
 
-    await this.clearDataIngestions(source, rows);
-    const mappings = await db("data_ingestion_mappings").where({ source_id: this.source_id });
-    const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.user_id));
+    const identifiers = rows
+      .map((row) => row[source.identifier_column_name])
+      .filter((id): id is string => Boolean(id));
+
+    const mappings = await db("data_ingestion_mappings").where({ source_id: this.sourceId });
+    const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.userId));
     await db.transaction(async (trx) => {
+      if (identifiers.length > 0) {
+        await trx("data_ingestions")
+          .where({ source_id: source.id })
+          .whereIn("identifier", identifiers)
+          .delete();
+      }
       for (const row of transformed) {
         await trx("data_ingestions").insert(row);
       }
-
-      //trx.batchInsert("data_ingestions", transformed, 10);
     });
-  }
-
-  async clearDataIngestions(source: DataIngestionSource, rows: Record<string, string>[]): Promise<void> {
-    const identifiers = rows.map((row) => row[source.identifier_column_name]).filter((id): id is string => Boolean(id));
-
-    if (identifiers.length === 0) {
-      return;
-    }
-
-    await db("data_ingestions").where({ source_id: source.id }).whereIn("identifier", identifiers).delete();
   }
 
   private async getSourceOrThrow(source_id: number): Promise<DataIngestionSource> {
@@ -51,7 +67,10 @@ export class CreateService extends BaseService {
     return source;
   }
 
-  private parseAndValidateCsv(source: DataIngestionSource, csvText: string): Record<string, string>[] {
+  private parseAndValidateCsv(
+    source: DataIngestionSource,
+    csvText: string
+  ): Record<string, string>[] {
     const lines = csvText.split(/\r?\n/);
     const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name));
     if (headerIndex < 0) {
@@ -67,7 +86,9 @@ export class CreateService extends BaseService {
     });
 
     if (meta.fields?.length !== source.column_count) {
-      throw new Error(`Invalid data format for Data Source "${source.source_name}": wrong number of columns`);
+      throw new Error(
+        `Invalid data format for Data Source "${source.source_name}": wrong number of columns`
+      );
     }
     const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
     if (validData.length === 0) {
@@ -96,7 +117,8 @@ export class CreateService extends BaseService {
 
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
       const raw = row[source_attribute];
-      if (raw == undefined) throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
+      if (raw == undefined)
+        throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
 
       if (
         source.source_name === DataIngestionSourceNames.RL6 &&

@@ -2,7 +2,9 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
 import { ATTACHMENT_URL, LOCATION_URL, OFFLINEREPORTS_URL, REPORTS_URL } from "@/urls";
 import { isEmpty, isNil } from "lodash";
+import { useNotificationStore } from "./NotificationStore";
 
+const notificationStore = useNotificationStore();
 export const useReportStore = defineStore("reports", {
   state: () => ({
     myReports: [] as Incident[],
@@ -14,6 +16,7 @@ export const useReportStore = defineStore("reports", {
     reports: [] as Incident[],
     totalCount: 0,
     linkedUsers: [] as any[],
+    csvContent: "",
   }),
   getters: {
     currentStep(state) {
@@ -127,7 +130,8 @@ export const useReportStore = defineStore("reports", {
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
       formData.append("additional_people", (report.additional_people ?? []).join(","));
-      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
+      if (report.supervisor_alt_email)
+        formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -158,7 +162,8 @@ export const useReportStore = defineStore("reports", {
       formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
-      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
+      if (report.supervisor_alt_email)
+        formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -169,6 +174,66 @@ export const useReportStore = defineStore("reports", {
       return api.upload("post", `${OFFLINEREPORTS_URL}`, formData).finally(() => {
         this.isLoading = false;
       });
+    },
+    
+    async csvExport({
+      search,
+      status,
+      urgency,
+      location,
+    }: {
+      search: string | null;
+      status: string | null;
+      urgency: string | null;
+      location: string | null;
+    }) {
+      if (this.isLoading) return;
+      this.isLoading = true;
+      try {
+        const api = useApiStore();
+
+        let queryUrl = `${REPORTS_URL}/csv-export?`;
+
+        if (!isEmpty(search)) queryUrl += `search=${search}&`;
+        if (!isNil(status)) queryUrl += `status=${status}&`;
+        if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
+        if (!isNil(location)) queryUrl += `location=${location}&`;
+
+        const response = await api.secureCall("get", queryUrl);
+        this.csvContent = response?.csvContent ?? "";
+
+        if (this.csvContent != "") {
+          const blob = new Blob([this.csvContent], { type: "text/csv" });
+          const link = document.createElement("a");
+          link.href = URL.createObjectURL(blob);
+          link.setAttribute("download", `Reports_${new Date().toISOString()}.csv`);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+
+          notificationStore.notify({
+            text: "Csv exported successfully",
+            variant: "success",
+          });
+        }
+        else{
+          notificationStore.notify({
+            text: "Empty report list",
+            variant: "warning",
+            icon: "mdi-alert-circle",
+            status_code: 422,
+          });
+        }
+      } catch (err: any) {
+        console.log(err);
+        notificationStore.notify({
+          text: err.message || "Export failed. Please try again.",
+          variant: "error",
+        });
+      } finally {
+        this.isLoading = false;
+        this.csvContent = "";
+      }
     },
 
     getStoredReports() {
@@ -185,7 +250,7 @@ export const useReportStore = defineStore("reports", {
         additional_description: this.selectedReport.additional_description,
         urgency_code: this.selectedReport.urgency_code,
         incident_type_id: this.selectedReport.incident_type_id,
-        hs_recommendations: this.selectedReport.hs_recommendations
+        hs_recommendations: this.selectedReport.hs_recommendations,
       };
 
       const api = useApiStore();
@@ -249,7 +314,9 @@ export const useReportStore = defineStore("reports", {
     openAttachment(attachment: any) {
       if (!this.selectedReport) return;
 
-      window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
+      window.open(
+        `${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`
+      );
     },
 
     async saveInvestigation(investigation: any) {
@@ -288,9 +355,11 @@ export const useReportStore = defineStore("reports", {
       let reportId = this.selectedReport.id;
 
       const api = useApiStore();
-      return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId }).then(() => {
-        if (this.selectedReport) this.loadReport(this.selectedReport.slug);
-      });
+      return api
+        .secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId })
+        .then(() => {
+          if (this.selectedReport) this.loadReport(this.selectedReport.slug);
+        });
     },
 
     loadLinkedUsers() {
@@ -313,10 +382,13 @@ export const useReportStore = defineStore("reports", {
     removeLinkedUser(user: any) {
       let reportId = this.selectedReport?.slug;
       const api = useApiStore();
-      return api.secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`).then(() => {
-        this.loadLinkedUsers();
-      });
+      return api
+        .secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`)
+        .then(() => {
+          this.loadLinkedUsers();
+        });
     },
+
   },
 });
 
