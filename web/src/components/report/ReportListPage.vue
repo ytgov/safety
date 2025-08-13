@@ -11,17 +11,28 @@
   <v-card class="default mb-5">
     <v-card-text class="pt-5">
       <v-row>
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="4">
           <v-text-field v-model="search" label="Search" outlined dense clearable prepend-inner-icon="mdi-magnify" />
         </v-col>
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="2">
           <IncidentStatusSelect v-model="status" label="Status" clearable />
         </v-col>
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="2">
           <HazardUrgencySelect v-model="urgency" label="Urgency" clearable />
         </v-col>
         <v-col cols="12" md="3">
           <LocationSelect v-model="location" label="Location" clearable />
+        </v-col>
+        <v-col cols="12" md="auto" class="d-flex justify-end">
+          <v-btn
+            icon="mdi-table-arrow-down"
+            class="my-0"
+            size="50"
+            title="Export to CSV"
+            variant="tonal"
+            color="primary"
+            @click="csvExportClick"
+        ></v-btn>
         </v-col>
       </v-row>
 
@@ -85,11 +96,10 @@ const headers = [
   { title: "Urgency", value: "urgency_code" },
   { title: "Identified", value: "created_at" },
   { title: "Location", value: "location.name" },
-  { title: "Assignee", value: "assigned_to" },
 ];
 
 const reportStore = useReportStore();
-const { loadReports } = reportStore;
+const { loadReports, csvExport } = reportStore;
 const { reports, totalCount, isLoading } = storeToRefs(reportStore);
 
 reload();
@@ -107,6 +117,15 @@ async function reload() {
     urgency: urgency.value,
     location: location.value,
   });
+}
+
+async function csvExportClick() {
+  await csvExport({
+    search: search.value,
+    status: status.value,
+    urgency: urgency.value,
+    location: location.value,
+  })
 }
 
 function updatePage(newPage) {

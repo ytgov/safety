@@ -1,9 +1,21 @@
 <template>
-  <v-dialog v-model="internalVisible" persistent max-width="700">
+  <v-dialog
+    :model-value="modelValue"
+    persistent
+    max-width="700"
+  >
     <v-card>
-      <v-toolbar color="primary" variant="dark" title="Upload Data File">
+      <v-toolbar
+        color="primary"
+        variant="dark"
+        title="Upload Data File"
+      >
         <v-spacer></v-spacer>
-        <v-btn icon @click="handleClose" color="white">
+        <v-btn
+          icon
+          @click="resetAndClose"
+          color="white"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -16,7 +28,8 @@
           item-value="id"
           label="Data Source"
           dense
-          outlined />
+          outlined
+        />
         <v-file-input
           v-model="selectedFile"
           label="Upload File"
@@ -27,13 +40,24 @@
           hide-details
           prepend-icon=""
           prepend-inner-icon="mdi-upload"
-          class="mb-2" />
+          class="mb-2"
+        />
       </v-card-text>
 
       <v-card-actions class="mx-4 mb-2">
-        <v-btn color="primary" variant="flat" @click="handleSave">Upload</v-btn>
+        <v-btn
+          color="primary"
+          variant="flat"
+          @click="handleSave"
+          >Upload</v-btn
+        >
         <v-spacer></v-spacer>
-        <v-btn color="yg_sun" variant="outlined" @click="handleClose">Close</v-btn>
+        <v-btn
+          color="yg_sun"
+          variant="outlined"
+          @click="resetAndClose"
+          >Close</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
@@ -41,16 +65,16 @@
 
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, onMounted } from "vue";
-import { isNil } from "lodash";
+import { computed, onMounted, ref } from "vue";
 
 import { useUserStore } from "@/store/UserStore";
 import { useDataIngestionSourceAdminStore } from "../store";
 import { useNotificationStore } from "@/store/NotificationStore";
-import { useRouter } from "vue-router";
 
 const props = defineProps<{ modelValue: boolean }>();
 const emit = defineEmits<{ "update:modelValue": [boolean] }>();
+
+const isLoading = ref(false);
 
 const userStore = useUserStore();
 const dataIngestionStore = useDataIngestionSourceAdminStore();
@@ -60,7 +84,7 @@ const { user } = storeToRefs(userStore);
 const { dataIngestionSources, selectedDataIngestionSourceId, selectedDataIngestionFile } =
   storeToRefs(dataIngestionStore);
 
-const internalVisible = computed<boolean>({
+const modelValue = computed<boolean>({
   get: () => props.modelValue,
   set: (modelValue) => emit("update:modelValue", modelValue),
 });
@@ -68,7 +92,9 @@ const internalVisible = computed<boolean>({
 const selectedId = computed<number | undefined>({
   get: () => selectedDataIngestionSourceId.value,
   set: (source_id) => {
-    if (source_id != null) dataIngestionStore.selectDataIngestionSourceId(source_id);
+    if (source_id != null) {
+      dataIngestionStore.selectDataIngestionSourceId(source_id);
+    }
   },
 });
 
@@ -84,39 +110,27 @@ onMounted(() => {
   dataIngestionStore.getAllDataIngestionSources();
 });
 
-function handleClose() {
+function resetAndClose() {
   dataIngestionStore.unselectDataIngestionSourceId();
   dataIngestionStore.unselectDataIngestionFile();
-  internalVisible.value = false;
+  modelValue.value = false;
 }
 
 async function handleSave() {
+  if (isLoading.value) return;
+  isLoading.value = true;
   try {
     await userStore.loadCurrentUser();
-
-    if (isNil(user.value?.id)) {
-      notificationStore.notify({
-        text: "You must be logged in to do this.",
-        variant: "warning",
-        icon: "mdi-alert-circle",
-        status_code: 401,
-      });
-      return;
-    }
-
-    if (isNil(selectedId.value) || isNil(selectedFile.value)) {
-      notificationStore.notify({
-        text: "Please select a data source and upload a file.",
-        variant: "warning",
-        icon: "mdi-alert-circle",
-        status_code: 400,
-      });
-      return;
-    }
-
-    await dataIngestionStore.addDataIngestion(user.value.id);
-  } catch (err) {
-    console.error("save failed", err);
+    const userId = user.value?.id;
+    await dataIngestionStore.addDataIngestion(userId);
+  } catch (error: any) {
+    console.error("save failed: ${error}", error);
+    notificationStore.notify({
+      text: error.message || "Upload failed. Please try again.",
+      variant: "error",
+    });
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

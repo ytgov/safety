@@ -1,13 +1,9 @@
 import express, { Request, Response } from "express";
+import { isNil } from "lodash";
 
 import { db } from "@/data/db-client";
 import { RequireAdmin } from "../middleware";
-import {
-  CreateService as DataIngestionCreateService,
-  DataIngestionSourceService,
-  UserService,
-} from "@/services";
-import { isNil } from "lodash";
+import { CreateService as DataIngestionCreateService } from "@/services";
 
 export const dataIngestionRouter = express.Router();
 
@@ -17,30 +13,20 @@ dataIngestionRouter.get("/", async (req: Request, res: Response) => {
 });
 
 dataIngestionRouter.post("/", async (req: Request, res: Response) => {
-  const users = new UserService();
-  const dataIngestionSource = new DataIngestionSourceService();
-  const { source_id, user_id } = req.body;
-
-  if (isNil(req.files?.csvFile)) return res.status(400).json({ error: "Missing file" });
-  if (isNil(user_id)) return res.status(422).json({ error: "Missing user_id" });
-  if (isNil(source_id)) return res.status(422).json({ error: "Missing source_id" });
-
-  if (isNil(users.getById(Number(user_id)))) {
-    return res.status(422).json({ error: "Invalid user_id" });
+  const { sourceId, userId } = req.body;
+  const uploaded = Array.isArray(req.files?.csvFile) ? req.files!.csvFile[0] : req.files?.csvFile;
+  if (isNil(uploaded)) {
+    return res.status(422).json({ error: "No file uploaded" });
   }
-
-  if (isNil(dataIngestionSource.getById(Number(source_id)))) {
-    return res.status(422).json({ error: "Invalid source_id" });
-  }
-
-  const uploaded = Array.isArray(req.files.csvFile) ? req.files.csvFile[0] : req.files.csvFile;
 
   try {
-    await DataIngestionCreateService.perform(uploaded.data, Number(source_id), Number(user_id));
+    await DataIngestionCreateService.perform(uploaded.data, Number(sourceId), Number(userId));
     return res.json({ success: true });
   } catch (err: any) {
     console.error(" DataIngestionService Error:", err);
-    return res.status(500).json({ error: err.message });
+    return res.status(422).json({
+      message: `Assessment deletion failed: ${err}`,
+    });
   }
 });
 

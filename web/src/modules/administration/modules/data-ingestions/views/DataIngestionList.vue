@@ -26,13 +26,13 @@
     </v-btn>
   </div>
 
-  <DataIngestionEditor v-model="showEditor" />
+  <DataIngestionEditDialog v-model="showEditor" />
 </template>
 <script lang="ts">
-import DataIngestionEditor from "@/modules/administration/modules/injest-data/components/DataIngestionEditor.vue";
+import DataIngestionEditDialog from "@/modules/administration/modules/data-ingestions/components/DataIngestionEditDialog.vue";
 
 export default {
-  components: { DataIngestionEditor },
+  components: { DataIngestionEditDialog },
   data: () => ({
     showEditor: false,
     headers: [
