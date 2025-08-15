@@ -30,6 +30,7 @@ export interface Incident {
   slug: string;
   identifier?: string;
   inspection_location_id?: number;
+  source?: string;
 
   attachments?: any[];
   steps?: IncidentStep[];
