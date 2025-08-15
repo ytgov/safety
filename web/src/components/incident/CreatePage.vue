@@ -47,7 +47,7 @@
               style="width: 60px; height: 40px"
               hide-details />
             <div>
-              <strong>No Loss Incident</strong><br />
+              <strong>No Loss Incident (near miss)</strong><br />
               Something has happened. No damage or injury occurred, but could have
             </div>
           </v-col>
