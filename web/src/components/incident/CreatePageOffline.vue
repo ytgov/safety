@@ -5,6 +5,34 @@
     Protection of Privacy Act. It is collected and used for the purposes of hazard and incident management related to
     the <em>Workers' Safety and Compensation Act</em>.
   </p>
+
+  <v-alert type="warning" color="#fb8c0088" class="mt-3" style="font-size: 0.95rem">
+    If the incident resulted in a fatality or serious incident as per WSCA you must report immediately to your
+    supervisor and WSCB at their 24-hour phone line: 867-667-5450.
+    <v-tooltip location="top" width="600" open-delay="250">
+      <template #activator="{ props }">
+        <v-icon color="primary" class="cursor-pointer" v-bind="props">mdi-information</v-icon>
+      </template>
+      <strong>This includes:</strong>
+      <ul class="mx-5 my-3">
+        <li>An incident that results in serious injury to or the death of a worker</li>
+        <li>An incident or injury that results in a worker's admission to a hospital as an inpatient</li>
+        <li>
+          A major structural failure or collapse of a bridge, building, crane, excavation, hoist, mine, mining
+          development, temporary construction support system, tower or any other like structure
+        </li>
+        <li>A major release of a hazardous substance</li>
+        <li>
+          An explosion or fire that has the potential to cause serious injury to or the death of a worker or other
+          person
+        </li>
+        <li>
+          An incident, injury or death that is required to be reported by the regulations or by order of the board
+        </li>
+      </ul>
+    </v-tooltip>
+  </v-alert>
+
   <v-overlay v-model="isLoading" class="align-center justify-center">
     <div class="text-center">
       <v-progress-circular indeterminate size="64" class="mb-5" color="#f3b228" width="6"></v-progress-circular>
