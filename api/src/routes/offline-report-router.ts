@@ -99,6 +99,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       location_detail,
       slug: generateSlug(),
       identifier: await generateIdentifier(trx),
+      source: "offline",
     } as Incident;
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");

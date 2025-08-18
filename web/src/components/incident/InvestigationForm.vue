@@ -168,18 +168,8 @@
               </v-tooltip>
             </div>
 
-            <v-checkbox
-              v-for="option in eventOptions.filter((o) => o.value != 'serious')"
-              v-model="events"
-              :value="option.value"
-              :label="option.title"
-              hide-details
-              return-object
-              density="compact">
-            </v-checkbox>
-
             <v-alert v-if="showWCBLink" type="warning" class="mt-5">
-              Events of this type should also be reported to WSCB via the
+              Events of this type must also be reported to WSCB via the
               <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
               <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank" style="text-decoration: underline"
                 >https://www.wcb.yk.ca/web-0063/f-0036
@@ -194,6 +184,11 @@
                 style="text-decoration: underline"
                 >https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx
               </a>
+            </v-alert>
+
+            <v-alert v-if="showSeriousLink" type="warning" class="mt-5">
+              Event of this type must be reported immediately to your supervisor and WSCB at their 24-hour phone line:
+              867-667-5450.
             </v-alert>
           </v-card-text>
         </v-window-item>
@@ -399,12 +394,12 @@ const hasAllRequiredCollections = computed(() => {
 const events = ref([]);
 const eventOptions = computed(() => {
   const baseOptions = [
-    // { title: "Injury - First aid", value: "first_aid", required: true },
-    //{ title: "Injury - Medical aid", value: "medical_aid", required: true },
-    //{ title: "Damage", value: "damage", required: true },
-    //{ title: "Service Loss", value: "service_loss", required: true },
-    //{ title: "Environmental impact", value: "environmental", required: true },
-    //{ title: "Serious Incident (as per WSCA)", value: "serious", required: true },
+    { title: "Injury - First aid", value: "first_aid", required: true },
+    { title: "Injury - Medical aid", value: "medical_aid", required: true },
+    { title: "Damage", value: "damage", required: true },
+    { title: "Service Loss", value: "service_loss", required: true },
+    { title: "Environmental impact", value: "environmental", required: true },
+    { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
   ];
 
   if (props.incident_type_description.startsWith("No Loss Incident"))
@@ -418,12 +413,17 @@ const hasAllRequiredEvents = computed(() => {
 });
 
 const showWCBLink = computed(() => {
-  const linkItems = ["medical_aid", "serious"];
+  const linkItems = ["medical_aid"];
   return events.value.filter((e) => linkItems.includes(e)).length > 0;
 });
 
 const showDamageLink = computed(() => {
   const linkItems = ["damage"];
+  return events.value.filter((e) => linkItems.includes(e)).length > 0;
+});
+
+const showSeriousLink = computed(() => {
+  const linkItems = ["serious"];
   return events.value.filter((e) => linkItems.includes(e)).length > 0;
 });
 

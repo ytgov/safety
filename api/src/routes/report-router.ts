@@ -291,6 +291,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       location_detail,
       slug: generateSlug(),
       identifier: await generateIdentifier(trx),
+      source: "online"
     } as Incident;
 
     const insertedIncidents = await trx("incidents").insert(incident).returning("*");
