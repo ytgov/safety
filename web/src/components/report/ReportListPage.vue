@@ -20,19 +20,16 @@
         <v-col cols="12" md="2">
           <HazardUrgencySelect v-model="urgency" label="Urgency" clearable />
         </v-col>
-        <v-col cols="12" md="3">
+        <v-col cols="12" md="4" class="d-flex">
           <LocationSelect v-model="location" label="Location" clearable />
-        </v-col>
-        <v-col cols="12" md="auto" class="d-flex justify-end">
           <v-btn
             icon="mdi-table-arrow-down"
-            class="my-0"
+            class="my-0 ml-3"
             size="50"
             title="Export to CSV"
-            variant="tonal"
+            variant="flat"
             color="primary"
-            @click="csvExportClick"
-        ></v-btn>
+            @click="csvExportClick"></v-btn>
         </v-col>
       </v-row>
 
@@ -125,7 +122,7 @@ async function csvExportClick() {
     status: status.value,
     urgency: urgency.value,
     location: location.value,
-  })
+  });
 }
 
 function updatePage(newPage) {
