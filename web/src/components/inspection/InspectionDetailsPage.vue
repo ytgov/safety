@@ -7,6 +7,10 @@
     ]" />
 
   <div v-if="selectedReport">
+    <div v-if="canUseActions" class="float-right">
+      <InspectionMenu :inspection-id="selectedReport.id" />
+    </div>
+
     <h1 class="text-h4 mb-2">{{ selectedReport.incident_type_description }} Details</h1>
     <div class="my-3" style="clear: both"></div>
 
@@ -112,6 +116,8 @@ import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue
 
 import { useInspectionStore } from "@/store/InspectionStore";
 import { useUserStore } from "@/store/UserStore";
+import OperationMenu from "../incident/OperationMenu.vue";
+import InspectionMenu from "./InspectionMenu.vue";
 
 const inspectionStore = useInspectionStore();
 const { initialize, loadReport, updateReport, openAttachment } = inspectionStore;
