@@ -31,7 +31,14 @@
       </v-col>
       <v-col cols="12">
         <v-label>Notes</v-label>
-        <v-textarea v-model="props.action.notes" :readonly="!isNil(props.action.complete_date)" rows="3" hide-details />
+        <div class="d-flex">
+          <v-textarea
+            v-model="props.action.notes"
+            :readonly="!isNil(props.action.complete_date)"
+            rows="3"
+            hide-details />
+          <v-btn class="ml-3 mt-auto" size="small" color="primary" @click="saveNotes"> Save</v-btn>
+        </div>
       </v-col>
       <v-col v-if="!isNil(props.action.complete_name)" cols="12">
         <v-label>Completed</v-label>
@@ -108,7 +115,7 @@ const userStore = useUserStore();
 const { isSystemAdmin } = storeToRefs(userStore);
 
 const actionStore = useActionStore();
-const { deleteAction, completeAction, revertAction, hazardAction } = actionStore;
+const { deleteAction, completeAction, revertAction, hazardAction, saveAction } = actionStore;
 
 onMounted(() => {
   loadCurrentStepUser();
@@ -120,6 +127,17 @@ const canComplete = computed(() => {
 
 function closeClick() {
   emit("doClose");
+}
+
+async function saveNotes() {
+  showOverlay("Saving Notes");
+  props.action.notes = props.action.notes.trim();
+  if (!props.action.notes) {
+    hideOverlay();
+    return;
+  }
+  await saveAction(props.action);
+  hideOverlay();
 }
 
 async function deleteClick() {
