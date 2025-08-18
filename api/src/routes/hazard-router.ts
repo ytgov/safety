@@ -35,8 +35,8 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
     countQuery.where("location_code", location);
   }
   if (!isNil(category)) {
-    listQuery.whereILike("categories", `%${category}%`);
-    countQuery.whereILike("categories", `%${category}%`);
+    listQuery.whereRaw(`"categories" like '%${category}%'`);
+    countQuery.whereRaw(`"categories" like '%${category}%'`);
   }
 
   const count = await countQuery.count("* as count").first();

@@ -26,7 +26,9 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
-      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE LOWER("user_email") = ?)`, [
+        email.toLowerCase(),
+      ])
       .whereNot("incident_types.name", "inspection")
       .modify(where)
       .count("* as count")
@@ -46,7 +48,9 @@ export class IncidentService {
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .innerJoin("locations", "incidents.location_code", "locations.code")
-      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE LOWER("user_email") = ?)`, [
+        email.toLowerCase(),
+      ])
       .whereNot("incident_types.name", "inspection")
       .select<Incident>(
         "incidents.*",
@@ -110,7 +114,6 @@ export class IncidentService {
 
   async getByReportingEmail(email: string): Promise<Incident[]> {
     return db<Incident>("incidents")
-      .whereILike("incident_users_view.user_email", email.toLowerCase())
       .where("incident_users_view.reason", "reporter")
       .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])
       .whereNot("incident_types.name", "inspection")
@@ -118,6 +121,7 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
+      .whereRaw(`LOWER("incident_users_view"."user_email") = '${email.toLowerCase()}'`)
       .select(
         "incidents.*",
         "incident_types.name as incident_type_name",
@@ -129,7 +133,6 @@ export class IncidentService {
 
   async getBySupervisorEmail(email: string): Promise<Incident[]> {
     return db<Incident>("incidents")
-      .whereILike("incident_users_view.user_email", email.toLowerCase())
       .where("incident_users_view.reason", "supervisor")
       .whereNot("incident_types.name", "inspection")
       .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])
@@ -137,6 +140,7 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
+      .whereRaw(`LOWER("incident_users_view"."user_email") = '${email.toLowerCase()}'`)
       .select(
         "incidents.*",
         "incident_types.name as incident_type_name",
