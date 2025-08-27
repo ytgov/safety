@@ -52,6 +52,7 @@
               <v-label class="mb-1" style="white-space: inherit">Location</v-label>
               <InspectionLocationSelector
                 v-model="report.inspection_location_id"
+                :disabled="isNil(report.department_code)"
                 :department="report.department_code"
                 :readonly="!isNil(selectedReport)"
                 :rules="[requiredRule]" />
@@ -117,7 +118,9 @@
           <v-btn class="mb-0" color="info" @click="addTaskClick">Add Hazard</v-btn>
           <v-spacer />
 
-          <v-btn class="mb-0" color="warning" @click="openConfirmationDialogAndGoToInspectionsPage">Complete Inspection</v-btn>
+          <v-btn class="mb-0" color="warning" @click="openConfirmationDialogAndGoToInspectionsPage"
+            >Complete Inspection</v-btn
+          >
         </div>
         <InspectionActionList class="mt-5" @showAction="doShowActionEdit"></InspectionActionList>
 
