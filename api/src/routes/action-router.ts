@@ -139,7 +139,7 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     incident_id,
     hazard_id,
     created_at: InsertableDate(DateTime.utc().toISO()),
-    description: `${incident.incident_type_description.replace(/\(.*\)/g, "")} ${description}`,
+    description: `${incident.incident_type_description.replace(/\(.*\)/g, "")}: ${description}`,
     notes,
     action_type_code: ActionTypes.USER_GENERATED.code,
     sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,

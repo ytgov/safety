@@ -5,6 +5,8 @@
         <v-card-text>
           <h3>{{ currentStep.title }}</h3>
 
+          <p>Select any that apply.</p>
+
           <div class="d-flex">
             <v-checkbox v-model="action.categories" value="Chemical" hide-details density="compact" label="Chemical" />
             <v-tooltip location="bottom right" width="600" open-delay="250">

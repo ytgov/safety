@@ -1,9 +1,6 @@
 <template>
   <h1 class="text-h4">Inspection</h1>
-  <p class="text-body-2">
-    When you perform an inspection, enter the Inspection Details, then click "Start Inspection". Once the inpection is
-    created, you can add identified Hazards to this inspection, upload a document or just mark it complete.
-  </p>
+  <p class="text-body-2">After you conduct an inspection in the workplace, report the details here.</p>
 
   <v-form class="mt-6" v-model="isValid">
     <v-card class="default mb-5">
@@ -70,12 +67,12 @@
             multiple></v-file-input>
 
           <p>
-            If you have attachments associated with this Inspection, they need to be uploaded before you click "Start
+            If you have attachments associated with this Inspection, they need to be uploaded before you click "Report
             Inspection".
           </p>
 
           <div v-if="!selectedReport || !selectedReport.slug" class="d-flex">
-            <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Start Inspection</v-btn>
+            <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Report Inspection</v-btn>
           </div>
         </v-col>
       </v-row>

@@ -382,9 +382,8 @@ const collections = ref([]);
 const collectionOptions = [
   { title: "Photos and/or sketching of scene", value: "photo", required: true },
   { title: "Samples/ tests (noise, material etc.)", value: "sample", required: true },
-  { title: "Witnesses identified and statement collected", value: "statement", required: true },
+  { title: "Witness statement collected and interviewed", value: "statement", required: true },
   { title: "Documents (SWPS, JHSC meeting minutes, inspection reports etc.)", value: "documents", required: true },
-  { title: "Witnesses interviewed", value: "interview", required: true },
   { title: "Other, Please explain below", value: "other", required: false },
 ];
 const hasAllRequiredCollections = computed(() => {

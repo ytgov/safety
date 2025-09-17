@@ -10,10 +10,9 @@
       <v-card-text>
         <h3>Committee Review</h3>
         <p class="mb-5">
-          Depending on circumstances of the {{ incident_type_description }}, you may decide to request a review by a
-          safety committee for your department. Please select the appropriate committee to continue.
+          You may decide to request a review by a safety committee for your department. Please select the appropriate
+          committee to continue.
         </p>
-        <p class="mb-5">This will add an additional step to the workflow. Please select the committee below.</p>
 
         <CommitteeSelect v-model="selectedCommittee" label="Safety Committee" />
 

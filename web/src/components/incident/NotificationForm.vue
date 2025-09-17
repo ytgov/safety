@@ -10,14 +10,10 @@
       <v-card-text>
         <h3>Notifications</h3>
         <p class="mb-5">
-          Depending on circumstances of the {{ incident_type_description }}, you may decide to notify the linked users
-          so they have the opportunity to review this information before notifying the employee that their submission
-          has been completed.
+          You may decide to notify the linked users (if any) so they have the opportunity to review this information
+          before notifying the reporting employee.
         </p>
-        <p class="mb-5">
-          You may do that by selecting the people blow and hitting "Notify Above". Alternatively, you may elect to just
-          "Notify Employee and Complete Step".
-        </p>
+        <p class="mb-5">Alternatively, you may elect to just Notify Reporting Employee and Complete Step.</p>
 
         <v-checkbox
           v-for="user in linkedUsers"

@@ -24,7 +24,7 @@
 
       <v-btn v-if="hasRole('Inspector')" color="info" to="/inspection" size="large" block>
         <v-icon class="mr-4">mdi-magnify-scan</v-icon>
-        Start Inspection
+        Report Inspection
       </v-btn>
 
       <div v-if="!isAuthenticated && !isOffline" @click="loginClick" class="my-4 cursor-pointer">

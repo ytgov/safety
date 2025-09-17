@@ -154,11 +154,11 @@
             <v-row class="pa-5 pt-2 pb-6">
               <v-col cols="12" md="12">
                 <div v-if="isSystemAdmin">
-                  <v-label>Override incident type</v-label>
+                  <v-label>Override event type</v-label>
                   <v-select v-model="selectedReport.incident_type_id" :items="incidentTypeOptions" />
                 </div>
 
-                <v-label class="mb-1" style="white-space: inherit">Urgency</v-label>
+                <v-label class="mb-1" style="white-space: inherit">Urgency for supervisor attention</v-label>
                 <v-btn-toggle
                   v-model="selectedReport.urgency_code"
                   mandatory
@@ -166,14 +166,14 @@
                   class="mb-4"
                   :border="true"
                   style="width: 100%">
-                  <v-btn :readonly="!canEdit" color="green" value="Low" style="width: 25%" class="my-0">Low</v-btn>
-                  <v-btn :readonly="!canEdit" color="yellow" value="Medium" style="width: 25%" class="my-0"
+                  <v-btn :readonly="!canEdit" color="green" value="Low" style="width: 33%" class="my-0">Low</v-btn>
+                  <v-btn :readonly="!canEdit" color="yellow" value="Medium" style="width: 34%" class="my-0"
                     >Medium</v-btn
                   >
-                  <v-btn :readonly="!canEdit" color="#ff4500" value="High" style="width: 25%" class="my-0">High</v-btn>
-                  <v-btn :readonly="!canEdit" color="red" value="Critical" style="width: 25%" class="my-0"
+                  <v-btn :readonly="!canEdit" color="#ff4500" value="High" style="width: 33%" class="my-0">High</v-btn>
+                  <!-- <v-btn :readonly="!canEdit" color="red" value="Critical" style="width: 25%" class="my-0"
                     >Critical</v-btn
-                  >
+                  > -->
                 </v-btn-toggle>
 
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
