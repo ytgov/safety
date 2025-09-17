@@ -30,7 +30,7 @@
         <v-text-field :model-value="action.title" readonly hide-details append-inner-icon="mdi-lock" />
       </v-col>
       <v-col cols="12">
-        <v-label>Notes</v-label>
+        <v-label>Control plan progress</v-label>
         <div class="d-flex">
           <v-textarea
             v-model="props.action.notes"
@@ -62,7 +62,7 @@
         ><v-icon class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn
       >
       <v-btn v-else :disabled="!canComplete" color="success" @click="completeClick"
-        ><v-icon class="mr-2">mdi-check</v-icon> Mark Complete</v-btn
+        ><v-icon class="mr-2">mdi-check</v-icon> Control in place</v-btn
       >
       <v-spacer />
 

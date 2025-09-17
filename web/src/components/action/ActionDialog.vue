@@ -2,7 +2,7 @@
   <v-dialog width="700px" persistent @keydown.esc="closeClick">
     <v-card>
       <v-toolbar color="primary" density="comfortable">
-        <v-toolbar-title class="text-white" style="">{{ action.description }}</v-toolbar-title>
+        <v-toolbar-title class="text-white" style="">Control Plan</v-toolbar-title>
         <v-toolbar-items>
           <v-btn icon="mdi-close" @click="closeClick"></v-btn>
         </v-toolbar-items>

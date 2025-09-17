@@ -158,8 +158,8 @@ export class IncidentService {
     return db("incidents").where({ id }).update(item);
   }
 
-  generateIncidentsCsvString(reports: Incident[]): string {
-    const headers = [
+  generateIncidentsCsvString(reports: Incident[], showSupervisor: boolean): string {
+    let headers = [
       { title: "Id", value: "identifier" },
       { title: "Description", value: "description" },
       { title: "Status", value: "status" },
@@ -167,6 +167,9 @@ export class IncidentService {
       { title: "Identified", value: "created_at" },
       { title: "Location", value: "location.name" },
     ];
+
+    if (showSupervisor) headers.push({ title: "Supervisor", value: "supervisor_email" });
+
     const headerTitles = headers.map((header) => header.title);
     const rows = reports.map((report) => {
       return headerTitles.map((headerTitle) => {
@@ -183,6 +186,8 @@ export class IncidentService {
             return report.created_at;
           case "Location":
             return report.location?.name;
+          case "Supervisor":
+            return showSupervisor ? report.supervisor_email : "";
           default:
             return "";
         }
