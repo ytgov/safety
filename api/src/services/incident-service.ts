@@ -58,12 +58,12 @@ export class IncidentService {
         "incident_types.description as incident_type_description",
         "incident_statuses.name as status_name",
         "departments.name as department_name",
-        "locations.name as location_name"
+        db.raw(`CONCAT("locations"."name", ': ', "locations"."community") as location_name`)
       )
       .first();
 
     if (!item) return item;
-
+    ``;
     item.attachments = await db("incident_attachments")
       .where({ incident_id: item.id })
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
@@ -90,7 +90,11 @@ export class IncidentService {
         .where({ "hazards.id": hazard.hazard_id })
         .innerJoin("hazard_types", "hazards.hazard_type_id", "hazard_types.id")
         .innerJoin("locations", "hazards.location_code", "locations.code")
-        .select("hazards.*", "hazard_types.name as hazard_type_name", "locations.name as location_name")
+        .select(
+          "hazards.*",
+          "hazard_types.name as hazard_type_name",
+          db.raw(`CONCAT("locations"."name", ': ', "locations"."community") as location_name`)
+        )
         .first();
     }
 

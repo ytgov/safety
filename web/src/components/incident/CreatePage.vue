@@ -109,9 +109,17 @@
             <v-autocomplete
               v-model="report.location_code"
               :items="locations"
-              item-title="name"
+              :item-title="makeLocationTitle"
               item-value="code"
-              :rules="[requiredRule]" />
+              :rules="[requiredRule]">
+              <template #item="{ item, props }">
+                <v-list-item
+                  v-bind="props"
+                  :title="item.raw.name"
+                  :subtitle="`Community: ${item.raw.community}`"></v-list-item>
+              </template>
+              <template #selection="{ item }"> {{ makeLocationTitle(item.raw) }} </template>
+            </v-autocomplete>
           </v-col>
           <v-col cols="12" md="12" class="py-0">
             <v-label class="mb-1" style="white-space: inherit"
@@ -218,5 +226,9 @@ async function saveReport() {
 function handleSupervisorSelect(value) {
   if (value) report.value.supervisor_email = value.email;
   else report.value.supervisor_email = null;
+}
+
+function makeLocationTitle(item) {
+  return `${item.name}: ${item.community}`;
 }
 </script>

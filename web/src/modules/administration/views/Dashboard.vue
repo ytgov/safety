@@ -31,7 +31,7 @@
       </v-card>
     </v-col>
     <v-col cols="12" md="4" v-if="user">
-      <v-card elevation="3" color="#F2760C66" to="">
+      <v-card elevation="3" color="#F2760C66" to="/administration/locations">
         <v-card-text style="text-align: right">
           <v-icon
             class="float-left"

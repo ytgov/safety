@@ -12,10 +12,10 @@ locationRouter.get("/", async (_req: Request, res: Response) => {
 });
 
 locationRouter.post("/", checkJwt, loadUser, RequireAdmin, async (req: Request, res: Response) => {
-  const { code, name, description } = req.body;
+  const { code, name, description, community } = req.body;
 
   try {
-    const list = await knex("locations").insert({ code, name, description });
+    const list = await knex("locations").insert({ code, name, description, community });
 
     res.json({ data: list });
   } catch (err) {
@@ -25,10 +25,10 @@ locationRouter.post("/", checkJwt, loadUser, RequireAdmin, async (req: Request, 
 
 locationRouter.put("/:code", async (req: Request, res: Response) => {
   const { code } = req.params;
-  const { name, description } = req.body;
+  const { name, description, community } = req.body;
 
   try {
-    const list = await knex("locations").where({ code }).update({ name, description });
+    const list = await knex("locations").where({ code }).update({ name, description, community });
     res.json({ data: list });
   } catch (err) {
     return res.status(400).json({ error: err });
