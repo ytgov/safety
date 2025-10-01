@@ -165,7 +165,6 @@ export class IncidentService {
   }
 
   generateIncidentsCsvString(reports: Incident[], showSupervisor: boolean): string {
-      { title: "Id", value: "identifier" },
     if (showSupervisor) {
       const data = reports.map((report) => ({
         Id: report.identifier,
