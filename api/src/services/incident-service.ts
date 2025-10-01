@@ -2,6 +2,8 @@ import { Incident } from "../data/models";
 import { db } from "../data/db-client";
 import { Knex } from "knex";
 import { isArray } from "lodash";
+import { unparse } from "papaparse";
+import { FormatDate } from "@/utils/formatters";
 
 export class IncidentService {
   async getAll(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<Incident[]> {
@@ -58,7 +60,7 @@ export class IncidentService {
         "incident_types.description as incident_type_description",
         "incident_statuses.name as status_name",
         "departments.name as department_name",
-        db.raw(`CONCAT("locations"."name", ': ', "locations"."community") as location_name`)
+        db.raw(`CONCAT(CONCAT("locations"."name", ': '), "locations"."community") as location_name`)
       )
       .first();
 
@@ -93,7 +95,7 @@ export class IncidentService {
         .select(
           "hazards.*",
           "hazard_types.name as hazard_type_name",
-          db.raw(`CONCAT("locations"."name", ': ', "locations"."community") as location_name`)
+          db.raw(`CONCAT(CONCAT("locations"."name", ': '), "locations"."community") as location_name`)
         )
         .first();
     }
@@ -163,43 +165,30 @@ export class IncidentService {
   }
 
   generateIncidentsCsvString(reports: Incident[], showSupervisor: boolean): string {
-    let headers = [
       { title: "Id", value: "identifier" },
-      { title: "Description", value: "description" },
-      { title: "Status", value: "status" },
-      { title: "Urgency", value: "urgency_code" },
-      { title: "Identified", value: "created_at" },
-      { title: "Location", value: "location.name" },
-    ];
+    if (showSupervisor) {
+      const data = reports.map((report) => ({
+        Id: report.identifier,
+        Description: report.description,
+        Status: report.status?.name,
+        Urgency: report.urgency_code,
+        Identified: report.created_at ? FormatDate(report.created_at as Date) : "",
+        Location: report.location?.name,
+        Supervisor: report.supervisor_email || "",
+      }));
 
-    if (showSupervisor) headers.push({ title: "Supervisor", value: "supervisor_email" });
+      return unparse(data, { skipEmptyLines: true });
+    } else {
+      const data = reports.map((report) => ({
+        Id: report.identifier,
+        Description: report.description,
+        Status: report.status?.name,
+        Urgency: report.urgency_code,
+        Identified: report.created_at ? FormatDate(report.created_at as Date) : "",
+        Location: report.location?.name,
+      }));
 
-    const headerTitles = headers.map((header) => header.title);
-    const rows = reports.map((report) => {
-      return headerTitles.map((headerTitle) => {
-        switch (headerTitle) {
-          case "Id":
-            return report.identifier;
-          case "Description":
-            return report.description;
-          case "Status":
-            return report.status?.name;
-          case "Urgency":
-            return report.urgency_code;
-          case "Identified":
-            return report.created_at;
-          case "Location":
-            return report.location?.name;
-          case "Supervisor":
-            return showSupervisor ? report.supervisor_email : "";
-          default:
-            return "";
-        }
-      });
-    });
-
-    const csvContent = [headerTitles.join(","), ...rows.map((row) => row.join(","))].join("\n");
-
-    return csvContent;
+      return unparse(data);
+    }
   }
 }
