@@ -52,8 +52,6 @@ export const useLocationAdminStore = defineStore("locationAdmin", {
       await api
         .secureCall("put", `${LOCATION_URL}/${this.selectedLocation.code}`, this.selectedLocation)
         .then(async (resp) => {
-          //this.locations = resp.data;
-
           this.unselectLocation();
         })
         .finally(() => {
@@ -81,6 +79,7 @@ export const useLocationAdminStore = defineStore("locationAdmin", {
 export interface Location {
   code: string;
   name: string;
+  community: string;
   description: string;
 }
 

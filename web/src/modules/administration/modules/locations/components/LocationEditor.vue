@@ -8,6 +8,7 @@
       <v-card-text>
         <v-text-field v-model="selectedLocation.code" readonly dense outlined label="Code" append-inner-icon="mdi-lock" />
         <v-text-field v-model="selectedLocation.name" dense outlined label="Name" />
+        <v-text-field v-model="selectedLocation.community" dense outlined label="Community" />
         <v-text-field v-model="selectedLocation.description" dense outlined label="Description" />
       </v-card-text>
       <v-card-actions class="mx-4 mb-2">

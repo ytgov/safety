@@ -51,6 +51,7 @@ export default {
   data: () => ({
     headers: [
       { title: "Code", key: "code" },
+      { title: "Community", key: "community" },
       { title: "Name", key: "name" },
       { title: "Descripiton", key: "description" },
     ],
