@@ -9,7 +9,7 @@
     <v-list>
       <v-list-item
         v-if="isInvestigation"
-        title="Begin Investigation"
+        title="Report Investigation"
         :subtitle="currentStep.step_title"
         @click="showInvestigationDialog = true">
         <template #prepend>

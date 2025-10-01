@@ -84,7 +84,6 @@ export const useReportStore = defineStore("reports", {
 
     async loadUrgency() {
       this.urgencies = [
-        { code: "Critical", name: "Critical" },
         { code: "High", name: "High" },
         { code: "Medium", name: "Medium" },
         { code: "Low", name: "Low" },
@@ -130,8 +129,7 @@ export const useReportStore = defineStore("reports", {
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
       formData.append("additional_people", (report.additional_people ?? []).join(","));
-      if (report.supervisor_alt_email)
-        formData.append("supervisor_alt_email", report.supervisor_alt_email);
+      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -162,8 +160,7 @@ export const useReportStore = defineStore("reports", {
       formData.append("location_detail", report.location_detail ?? "");
       formData.append("description", report.description);
       formData.append("supervisor_email", report.supervisor_email);
-      if (report.supervisor_alt_email)
-        formData.append("supervisor_alt_email", report.supervisor_alt_email);
+      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
       formData.append("on_behalf", report.on_behalf);
       formData.append("on_behalf_email", report.on_behalf_email);
 
@@ -175,7 +172,7 @@ export const useReportStore = defineStore("reports", {
         this.isLoading = false;
       });
     },
-    
+
     async csvExport({
       search,
       status,
@@ -215,8 +212,7 @@ export const useReportStore = defineStore("reports", {
             text: "Csv exported successfully",
             variant: "success",
           });
-        }
-        else{
+        } else {
           notificationStore.notify({
             text: "Empty report list",
             variant: "warning",
@@ -314,9 +310,7 @@ export const useReportStore = defineStore("reports", {
     openAttachment(attachment: any) {
       if (!this.selectedReport) return;
 
-      window.open(
-        `${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`
-      );
+      window.open(`${ATTACHMENT_URL}/incident/${this.selectedReport.id}/attachment/${attachment.id}`);
     },
 
     async saveInvestigation(investigation: any) {
@@ -355,11 +349,9 @@ export const useReportStore = defineStore("reports", {
       let reportId = this.selectedReport.id;
 
       const api = useApiStore();
-      return api
-        .secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId })
-        .then(() => {
-          if (this.selectedReport) this.loadReport(this.selectedReport.slug);
-        });
+      return api.secureCall("post", `${REPORTS_URL}/${reportId}/send-committee-request`, { committeeId }).then(() => {
+        if (this.selectedReport) this.loadReport(this.selectedReport.slug);
+      });
     },
 
     loadLinkedUsers() {
@@ -382,13 +374,10 @@ export const useReportStore = defineStore("reports", {
     removeLinkedUser(user: any) {
       let reportId = this.selectedReport?.slug;
       const api = useApiStore();
-      return api
-        .secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`)
-        .then(() => {
-          this.loadLinkedUsers();
-        });
+      return api.secureCall("delete", `${REPORTS_URL}/${reportId}/linked-users/${user.id}`).then(() => {
+        this.loadLinkedUsers();
+      });
     },
-
   },
 });
 

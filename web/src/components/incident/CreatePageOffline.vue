@@ -104,7 +104,7 @@
               </v-col>
 
               <v-col cols="12" sm="6">
-                <v-label class="mb-1" style="white-space: inherit">Urgency level</v-label>
+                <v-label class="mb-1" style="white-space: inherit">Urgency for supervisor attention</v-label>
                 <v-select v-model="report.urgency" :items="urgencies" item-title="name" item-value="code"></v-select>
               </v-col>
             </v-row>

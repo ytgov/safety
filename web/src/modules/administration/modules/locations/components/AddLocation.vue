@@ -16,6 +16,7 @@
           <v-card-text class="pt-5">
             <v-text-field v-model="chosenOne.code" dense outlined label="Code" />
             <v-text-field v-model="chosenOne.name" dense outlined label="Name" />
+            <v-text-field v-model="chosenOne.community" dense outlined label="Community" />
             <v-text-field v-model="chosenOne.description" dense outlined label="Description" />
 
             <v-btn
