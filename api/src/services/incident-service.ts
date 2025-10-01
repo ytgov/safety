@@ -60,7 +60,7 @@ export class IncidentService {
         "incident_types.description as incident_type_description",
         "incident_statuses.name as status_name",
         "departments.name as department_name",
-        db.raw(`CONCAT(CONCAT("locations"."name", ': '), "locations"."community") as location_name`)
+        db.raw(`CONCAT(CONCAT("locations"."name", ': '), "locations"."community") as "location_name"`)
       )
       .first();
 
@@ -95,7 +95,7 @@ export class IncidentService {
         .select(
           "hazards.*",
           "hazard_types.name as hazard_type_name",
-          db.raw(`CONCAT(CONCAT("locations"."name", ': '), "locations"."community") as location_name`)
+          db.raw(`CONCAT(CONCAT("locations"."name", ': '), "locations"."community") as "location_name"`)
         )
         .first();
     }
