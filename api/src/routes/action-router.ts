@@ -189,7 +189,7 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
   const incident = await knex("incidents").where({ id: action.incident_id }).first();
 
   if (incident && !isEmpty(actor_user_email)) {
-    const actorUser = await knex("users").where({ email: actor_user_email }).first();
+    const actorUser = await knex("users").where("email", actor_user_email).first();
     if (actorUser) actor_user_id = actorUser.id;
 
     if (action.actor_user_email != actor_user_email) {

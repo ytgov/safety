@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { db as knex } from "../data/db-client";
 import { InsertableDate } from "../utils/formatters";
 import { isArray, isEmpty, isNil } from "lodash";
-import { Action, ActionStatuses, HazardStatuses } from "../data/models";
+import { ActionStatuses, HazardStatuses } from "../data/models";
 import { DateTime } from "luxon";
 
 export const hazardRouter = express.Router();
@@ -113,7 +113,7 @@ hazardRouter.put("/:id/action", async (req: Request, res: Response) => {
     });
 
   if (!isEmpty(actor_user_email)) {
-    const actorUser = await knex("users").where({ email: actor_user_email }).first();
+    const actorUser = await knex("users").where("email", actor_user_email).first();
     if (actorUser) actor_user_id = actorUser.id;
   }
 
