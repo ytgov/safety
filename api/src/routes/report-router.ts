@@ -452,7 +452,10 @@ reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Resp
 reportRouter.get("/:slug/linked-users", async (req: Request, res: Response) => {
   const { slug } = req.params;
 
-  const incident = await db.getBySlug(slug, req.user.email);
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const incident = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
 
   if (incident) {
     const list = await knex("incident_users").where({ incident_id: incident.id });
@@ -465,7 +468,10 @@ reportRouter.get("/:slug/linked-users", async (req: Request, res: Response) => {
 reportRouter.post("/:slug/linked-users", async (req: Request, res: Response) => {
   const { slug } = req.params;
 
-  const incident = await db.getBySlug(slug, req.user.email);
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const incident = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
 
   if (incident) {
     await knex("incident_users").insert(req.body);
@@ -483,7 +489,10 @@ reportRouter.post("/:slug/linked-users", async (req: Request, res: Response) => 
 reportRouter.delete("/:slug/linked-users/:id", async (req: Request, res: Response) => {
   const { slug, id } = req.params;
 
-  const incident = await db.getBySlug(slug, req.user.email);
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+
+  const incident = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
 
   if (incident) {
     const list = await knex("incident_users").where({ id }).delete();
