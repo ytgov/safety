@@ -169,7 +169,7 @@
             </div>
 
             <v-alert v-if="showWCBLink" type="warning" class="mt-5">
-              Events of this type must also be reported to WSCB via the
+              Events of this type must also be reported within 72 hours to WSCB via the
               <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
               <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank" style="text-decoration: underline"
                 >https://www.wcb.yk.ca/web-0063/f-0036
