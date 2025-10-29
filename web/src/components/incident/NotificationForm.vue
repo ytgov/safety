@@ -10,10 +10,12 @@
       <v-card-text>
         <h3>Notifications</h3>
         <p class="mb-5">
-          You may decide to notify the linked users (if any) so they have the opportunity to review this information
-          before notifying the reporting employee.
+          If you added any linked users, they will appear below. You can notify them that the control is in place.
         </p>
-        <p class="mb-5">Alternatively, you may elect to just Notify Reporting Employee and Complete Step.</p>
+        <p class="mb-5">
+          If you didn't add anyone, or you decide not to notify them, you can just select "Notify Employee and Complete
+          Step".
+        </p>
 
         <v-checkbox
           v-for="user in linkedUsers"
