@@ -146,7 +146,7 @@ export class IncidentService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
-      .whereRaw(`LOWER("incident_users_view"."user_email") = '${email.toLowerCase()}'`)
+      .whereRaw(`LOWER("incident_users_view"."user_email") = '${email.toLowerCase()}'`) // limit to supervisor only
       .select(
         "incidents.*",
         "incident_types.name as incident_type_name",
