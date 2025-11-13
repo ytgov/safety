@@ -34,10 +34,10 @@
         <div class="d-flex">
           <v-textarea
             v-model="props.action.notes"
-            :readonly="!isNil(props.action.complete_date)"
+            :readonly="!isNil(props.action.complete_date) || isReadonly"
             rows="3"
             hide-details />
-          <v-btn class="ml-3 mt-auto" size="small" color="primary" @click="saveNotes"> Save</v-btn>
+          <v-btn v-if="!isReadonly" class="ml-3 mt-auto" size="small" color="primary" @click="saveNotes"> Save</v-btn>
         </div>
       </v-col>
       <v-col v-if="!isNil(props.action.complete_name)" cols="12">
@@ -57,7 +57,7 @@
       </v-col>
     </v-row>
 
-    <div class="d-flex mt-5">
+    <div v-if="!isReadonly" class="d-flex mt-5">
       <v-btn v-if="!isNil(props.action.complete_date)" color="info" @click="revertClick"
         ><v-icon class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn
       >
@@ -104,7 +104,7 @@ import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import ActionAssignmentDialog from "./ActionAssignmentDialog.vue";
 
-const props = defineProps(["action"]);
+const props = defineProps(["action", "readonly"]);
 const emit = defineEmits(["doClose"]);
 const directorySelectorField = ref(null);
 
@@ -123,6 +123,10 @@ onMounted(() => {
 
 const canComplete = computed(() => {
   return !isNil(props.action.control);
+});
+
+const isReadonly = computed(() => {
+  return props.readonly == true;
 });
 
 function closeClick() {

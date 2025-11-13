@@ -132,6 +132,7 @@
                 v-model="showActionEdit"
                 :action="actionToEdit"
                 :hazard-id="actionToEdit?.hazard_id"
+                :readonly="isCommittee"
                 @doClose="actionReload"></ActionDialog>
 
               <HazardAssessmentForm
@@ -381,7 +382,7 @@ function formatDate(input) {
 }
 
 function doShowActionEdit(action) {
-  if (isSupervisor.value || isSystemAdmin.value) {
+  if (isSupervisor.value || isSystemAdmin.value || isCommittee.value) {
     actionToEdit.value = action;
     showActionEdit.value = true;
     return;
