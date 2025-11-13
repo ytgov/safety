@@ -55,7 +55,7 @@ const { actions } = storeToRefs(actionStore);
 loadActions({ page: 1, perPage: 15, search: null, review: null, status: "Dashboard" });
 
 function makeTitle(input: Action) {
-  return input.description;
+  return `${input.incident_identifier ? input.incident_identifier + " : " : ""}${input.description}`;
 }
 
 function makeSubtitle(input: Action) {

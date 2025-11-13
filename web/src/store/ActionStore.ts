@@ -182,6 +182,7 @@ export interface Action {
   status?: ActionStatus;
   actor_display_name?: string;
   incident_slug?: string;
+  incident_identifier?: string;
   incident_type_id?: number;
 }
 
