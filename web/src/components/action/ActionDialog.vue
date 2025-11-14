@@ -17,7 +17,7 @@
 
       <v-card-text v-else>
         <div class="bg-white" style="border: 1px #ddd solid; border-radius: 4px">
-          <ActionCompleteForm :action="action" @do-close="closeClick" />
+          <ActionCompleteForm :action="action" :readonly="readonly" @do-close="closeClick" />
         </div>
 
         <div v-if="hazardId" class="mt-5">
@@ -58,7 +58,7 @@ import { ref, defineProps, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { isNil, isNumber } from "lodash";
 
-const props = defineProps(["action", "hazardId"]);
+const props = defineProps(["action", "hazardId", "readonly"]);
 
 const emit = defineEmits(["doClose"]);
 

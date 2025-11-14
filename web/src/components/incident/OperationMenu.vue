@@ -26,21 +26,21 @@
         </template>
       </v-list-item>
       <v-list-item
+        v-if="isCommittee"
+        title="Request Committee Review"
+        subtitle="Co-Chair Notification"
+        @click="showCommitteeDialog = true">
+        <template #prepend>
+          <v-icon color="warning">mdi-account-group</v-icon>
+        </template>
+      </v-list-item>
+      <v-list-item
         v-if="isNotification"
         title="Send Notifications"
         :subtitle="currentStep.step_title"
         @click="showNotificationDialog = true">
         <template #prepend>
           <v-icon color="green">mdi-email</v-icon>
-        </template>
-      </v-list-item>
-      <v-list-item
-        v-if="isCommittee"
-        title="Request Committee Review"
-        :subtitle="currentStep.step_title"
-        @click="showCommitteeDialog = true">
-        <template #prepend>
-          <v-icon color="warning">mdi-account-group</v-icon>
         </template>
       </v-list-item>
 
