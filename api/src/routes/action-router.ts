@@ -33,20 +33,21 @@ actionRouter.get("/", async (req: Request, res: Response) => {
   const pageNum = parseInt(page as string) || 1;
   const perPageNum = parseInt(perPage as string) || 10;
 
-  const isAdmin = req.user.roles.filter((r: any) => r.name == "System Admin").length > 0;
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
 
   const countQuery = function (q: Knex.QueryBuilder) {
-    if (!isNil(search)) q.whereRaw(`LOWER("description") like '%${search.toString().toLowerCase()}%'`);
+    if (!isNil(search)) q.whereRaw(`LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) {
       if (status == "Dashboard") {
-        q.whereIn("status_code", [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
+        q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
       } else {
-        q.where("status_code", status);
+        q.where(`actions.status_code`, status);
       }
     }
     if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`));
-    if (isAdmin && status == "Dashboard") q.where("actor_user_email", req.user.email);
-    else if (!isAdmin) q.where("actor_user_email", req.user.email);
+    if (userIsAdmin && status == "Dashboard") q.where(`actions.actor_user_email`, req.user.email);
+    else if (!userIsAdmin) q.where(`actions.actor_user_email`, req.user.email);
 
     return q;
   };
@@ -61,16 +62,16 @@ actionRouter.get("/", async (req: Request, res: Response) => {
       }
     }
     if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`));
-    if (isAdmin && status == "Dashboard") q.where(`actions.actor_user_email`, req.user.email);
-    else if (!isAdmin) q.where(`actions.actor_user_email`, req.user.email);
+    if (userIsAdmin && status == "Dashboard") q.where(`actions.actor_user_email`, req.user.email);
+    else if (!userIsAdmin) q.where(`actions.actor_user_email`, req.user.email);
 
     q.limit(perPageNum);
     q.offset((pageNum - 1) * perPageNum);
     return q;
   };
 
-  const list = await db.getAll(req.user.email, listQuery);
-  const count = await db.getCount(req.user.email, countQuery);
+  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery);
+  const count = await db.getCount(userIsAdmin ? "System Admin" : req.user.email, countQuery);
 
   const types = await knex("action_types");
   const statuses = await knex("action_statuses");

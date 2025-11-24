@@ -20,7 +20,14 @@ export class ActionService {
       .orderBy("actions.created_at", "desc");
   }
   async getCount(email: string, where: (query: Knex.QueryBuilder) => Knex.QueryBuilder): Promise<{ count: number }> {
-    return db<Action>("actions").modify(where).count("* as count").first();
+    return db<Action>("actions")
+      .modify(where)
+      .leftJoin("incidents", "actions.incident_id", "incidents.id")
+      .whereRaw(`"actions"."incident_id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [
+        email,
+      ])
+      .count("* as count")
+      .first();
   }
 
   async getBySlug(slug: string, email: string): Promise<Action | undefined> {
