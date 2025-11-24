@@ -52,7 +52,7 @@ actionRouter.get("/", async (req: Request, res: Response) => {
   };
 
   const listQuery = function (q: Knex.QueryBuilder) {
-    if (!isNil(search)) q.whereRaw(`LOWER(actions.description) like '%${search.toString().toLowerCase()}%'`);
+    if (!isNil(search)) q.whereRaw(`LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) {
       if (status == "Dashboard") {
         q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
