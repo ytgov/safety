@@ -14,7 +14,7 @@
         </v-card-item>
         <v-card-text>
           <p class="text-body-1 mb-5 mt-5">
-            Your submission has been received and you will recieve email notifications regarding the status of this
+            Your submission has been received and you will receive email notifications regarding the status of this
             submission.
           </p>
           <p class="text-body-1 mb-5 mt-5">
