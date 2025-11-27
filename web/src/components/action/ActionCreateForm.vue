@@ -286,7 +286,7 @@ function closeClick() {
 }
 
 async function saveClick() {
-  props.action.status_code = "Ready";
+  props.action.status_code = "In Progress";
   props.action.urgency_code = riskPriority.value;
   emit("save");
 }

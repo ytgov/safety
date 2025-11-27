@@ -5,10 +5,10 @@
 <script setup lang="ts">
 class IncidentStatuses {
   static OPEN = { code: "Open", name: "Open" };
-  static READY = { code: "Ready", name: "Ready" };
+  static IN_PROGRESS = { code: "In Progress", name: "In Progress" };
   static COMPLETE = { code: "Complete", name: "Complete" };
   static BLOCKED = { code: "Blocked", name: "Blocked" };
 }
 
-const statusOptions = [IncidentStatuses.OPEN, IncidentStatuses.READY, IncidentStatuses.COMPLETE];
+const statusOptions = [IncidentStatuses.OPEN, IncidentStatuses.IN_PROGRESS, IncidentStatuses.COMPLETE];
 </script>
