@@ -127,6 +127,11 @@ function formatDate(input) {
 }
 
 function openItem(event, { item }) {
+  if (item.incident_type_id == 6) {
+    router.push(`/inspections/${item.incident_slug}?action=${item.slug}`);
+    return;
+  }
+
   router.push(`/reports/${item.incident_slug}?action=${item.slug}`);
 }
 </script>
