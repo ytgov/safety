@@ -39,7 +39,7 @@
         </template>
         <template #item.status="{ item }">
           <v-chip v-if="item.status.name == 'Complete'" color="success" small>{{ item.status.name }}</v-chip>
-          <v-chip v-else-if="item.status.name == 'Ready'" color="info" small>{{ item.status.name }}</v-chip>
+          <v-chip v-else-if="item.status.name == 'In Progress'" color="info" small>{{ item.status.name }}</v-chip>
           <v-chip v-else color="error" small>{{ item.status.name }}</v-chip>
         </template>
         <template #item.hazard_review="{ item }">
@@ -127,6 +127,11 @@ function formatDate(input) {
 }
 
 function openItem(event, { item }) {
+  if (item.incident_type_id == 6) {
+    router.push(`/inspections/${item.incident_slug}?action=${item.slug}`);
+    return;
+  }
+
   router.push(`/reports/${item.incident_slug}?action=${item.slug}`);
 }
 </script>
