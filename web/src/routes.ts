@@ -116,9 +116,6 @@ export const router = createRouter({
 });
 
 router.beforeEach(async (to) => {
-  //document.title = `${APPLICATION_NAME} ${to.meta.title ? " - " + to.meta.title : ""}`
-  console.log("BEFORE", to.meta.requiresAuth, to.meta.requireSystemAdmin);
-
   if (to.meta.requiresAuth === false) {
     console.log("route allowed - no auth required");
     return true;

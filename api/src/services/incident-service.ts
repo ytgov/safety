@@ -71,7 +71,7 @@ export class IncidentService {
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
 
     item.steps = await db("incident_steps").where({ incident_id: item.id }).orderBy("order");
-    item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
+    const allActions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
     item.investigation = await db("investigations").where({ incident_id: item.id }).first();
     item.access = await db("incident_users_view").where({
       incident_id: item.id,
@@ -100,7 +100,7 @@ export class IncidentService {
         .first();
     }
 
-    for (let action of item.actions) {
+    for (let action of allActions) {
       if (action.actor_role_type_id) {
         action.actor_display_name = (
           await db("role_types").where({ id: action.actor_role_type_id }).first()
@@ -112,8 +112,11 @@ export class IncidentService {
       }
 
       action.categories = action.categories ?? [];
-      if (!isArray(action.categories)) action.categories = action.categories.split(",").filter((c) => c);
+      if (!isArray(action.categories)) action.categories = action.categories.split(",").filter((c: string) => c);
     }
+
+    item.actions = allActions.filter((a) => a.is_committee_task !== 1);
+    item.committee_actions = allActions.filter((a) => a.is_committee_task === 1);
 
     return item;
   }

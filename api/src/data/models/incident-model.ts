@@ -35,6 +35,7 @@ export interface Incident {
   attachments?: any[];
   steps?: IncidentStep[];
   actions?: Action[];
+  committee_actions?: Action[];
   hazards?: IncidentHazard[];
   investigation?: Investigation;
   location?: Location;

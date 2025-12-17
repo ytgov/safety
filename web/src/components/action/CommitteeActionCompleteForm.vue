@@ -29,6 +29,34 @@
         <v-label>Task description</v-label>
         <v-text-field :model-value="action.title" readonly hide-details append-inner-icon="mdi-lock" />
       </v-col>
+
+      <v-col cols="12">
+        <v-label>Supervisor review</v-label>
+        <v-select
+          v-model="action.committee_supervisor_response"
+          :readonly="!isSupervisor"
+          :append-inner-icon="isSupervisor ? '' : 'mdi-lock'"
+          :items="[
+            'Supervisor accepts HSC recommendation as is',
+            'Supervisor provides and alternative recommendation',
+            'Supervisor rejects HSC recommendation. (If so, provide rationale below)',
+          ]"
+          hide-details />
+        <div
+          v-if="
+            action.committee_supervisor_response ==
+            'Supervisor rejects HSC recommendation. (If so, provide rationale below)'
+          "
+          class="mt-5">
+          <v-label>Rationale</v-label>
+          <v-textarea
+            v-model="action.committee_task_rationale"
+            :readonly="!isSupervisor"
+            :append-inner-icon="isSupervisor ? '' : 'mdi-lock'"
+            hide-details />
+        </div>
+      </v-col>
+
       <v-col cols="12">
         <v-label>Control plan progress</v-label>
         <div class="d-flex">
@@ -58,38 +86,25 @@
     </v-row>
 
     <div v-if="!isReadonly" class="d-flex mt-5">
-      <v-btn v-if="!isNil(props.action.complete_date)" color="info" @click="revertClick"
+      <v-btn v-if="!isNil(props.action.complete_date) && canAct" color="info" @click="revertClick"
         ><v-icon class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn
       >
-      <v-btn v-else :disabled="!canComplete" color="success" @click="completeClick"
+      <v-btn v-else :disabled="!canComplete || !canAct" color="success" @click="completeClick"
         ><v-icon class="mr-2">mdi-check</v-icon> Control in place</v-btn
       >
       <v-spacer />
 
       <ActionAssignmentDialog :action="action" @do-close="closeClick" />
     </div>
-    <div v-if="isSystemAdmin" class="d-flex mt-5">
-      <div v-if="props.action.hazard_review == 0" class="ml-8">
-        <v-label>Is this a Hazard?</v-label><br />
-        <v-btn
-          class="my-0 ml-2"
-          color="success"
-          size="x-small"
-          title="Yes, create a Hazard"
-          @click="hazardClick"
-          icon="mdi-check"></v-btn>
-        <v-btn
-          class="my-0 float-right mr-4"
-          color="warning"
-          size="x-small"
-          title="Don't create a Hazard"
-          icon="mdi-close"
-          @click="notHazardClick"></v-btn>
-      </div>
 
-      <v-spacer />
-      <v-btn color="warning" @click="deleteClick" class="mt-3"><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn>
-    </div>
+    <v-spacer />
+    <v-btn
+      v-if="(props.action.is_committee_task && isCommittee) || isSystemAdmin"
+      color="warning"
+      @click="deleteClick"
+      class="mt-3"
+      ><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn
+    >
   </div>
 </template>
 
@@ -100,6 +115,7 @@ import { DateTime } from "luxon";
 import { isNil } from "lodash";
 
 import { useActionStore } from "@/store/ActionStore";
+import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import ActionAssignmentDialog from "./ActionAssignmentDialog.vue";
@@ -107,6 +123,9 @@ import ActionAssignmentDialog from "./ActionAssignmentDialog.vue";
 const props = defineProps(["action", "readonly"]);
 const emit = defineEmits(["doClose"]);
 const directorySelectorField = ref(null);
+
+const reportStore = useReportStore();
+const { selectedReport, currentStep } = storeToRefs(reportStore);
 
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
@@ -127,6 +146,20 @@ const canComplete = computed(() => {
 
 const isReadonly = computed(() => {
   return props.readonly == true;
+});
+
+const isCommittee = computed(() => {
+  const relevantReasons = ["committee"];
+  return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
+});
+
+const isSupervisor = computed(() => {
+  const relevantReasons = ["supervisor"];
+  return selectedReport.value.access.filter((a) => relevantReasons.includes(a.reason)).length > 0;
+});
+
+const canAct = computed(() => {
+  return currentStep.value?.step_title == "Committee Review" ? false : true;
 });
 
 function closeClick() {

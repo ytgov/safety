@@ -117,7 +117,7 @@
             </v-card-text>
           </v-card>
 
-          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin || isAction || isCommittee">
+          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin || isAction || isCommittee || isReporter">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
@@ -142,6 +142,29 @@
                 :hazard-report="selectedReport"
                 @complete="actionReload"
                 @close="showHazardDialog = false" />
+            </v-card-text>
+          </v-card>
+
+          <v-card class="default mb-5" v-if="hasCommitteeReview">
+            <v-card-item class="py-4 px-6 mb-2 bg-sun">
+              <div style="width: 100%" class="d-flex">
+                <h4 class="text-h6">Committee Control Plan</h4>
+              </div>
+            </v-card-item>
+            <v-card-text class="pt-2">
+              <CommitteeActionList @showAction="doShowActionEdit"></CommitteeActionList>
+
+              <v-btn v-if="canAddReviewTask" class="mb-0" size="small" color="info" @click="addReviewTaskClick"
+                >Add Task</v-btn
+              >
+
+              <CommitteeAssessmentForm
+                v-model="showReviewDialog"
+                :incident-id="selectedReport.id"
+                :incident_type_description="selectedReport.incident_type_description"
+                :hazard-report="selectedReport"
+                @complete="actionReload"
+                @close="showReviewDialog = false" />
             </v-card-text>
           </v-card>
         </v-col>
@@ -198,10 +221,10 @@
                   >
                   <v-textarea
                     v-model="selectedReport.hs_recommendations"
-                    :readonly="!((canEdit || isCommittee) && currentStep.step_title == 'Committee Review')"
                     :append-inner-icon="
                       (canEdit || isCommittee) && currentStep.step_title == 'Committee Review' ? '' : 'mdi-lock'
                     "
+                    readonly
                     hint="Please do not include names or personal identifiers"
                     persistent-hint />
                 </div>
@@ -214,7 +237,7 @@
           </v-card>
 
           <InvestigationCard
-            v-if="selectedReport.investigation && (isSupervisor || isSystemAdmin || isCommittee)"
+            v-if="selectedReport.investigation && (isSupervisor || isSystemAdmin || isCommittee || isReporter)"
             :investigation="selectedReport.investigation"></InvestigationCard>
         </v-col>
       </v-row>
@@ -234,9 +257,11 @@ const { smAndDown } = useDisplay();
 
 import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
+import CommitteeActionList from "@/components/action/CommitteeActionList.vue";
 import ActionDialog from "@/components/action/ActionDialog.vue";
 import InvestigationCard from "./InvestigationCard.vue";
 import HazardAssessmentForm from "./HazardAssessmentForm.vue";
+import CommitteeAssessmentForm from "./CommitteeAssessmentForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
@@ -270,6 +295,7 @@ await loadReport(reportId);
 
 const showActionEdit = ref(false);
 const showHazardDialog = ref(false);
+const showReviewDialog = ref(false);
 const actionToEdit = ref(null);
 
 const userStore = useUserStore();
@@ -298,12 +324,40 @@ const isActionOnly = computed(() => {
   return reasons.length == 1 && reasons[0] == "action";
 });
 
+const hasCommitteeReview = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+
+  const reviewStep = selectedReport.value.steps.find((step) => {
+    return step.step_title.includes("Committee Review");
+  });
+
+  return !isNil(reviewStep);
+});
+
+const isReview = computed(() => {
+  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+
+  const reviewStep = selectedReport.value.steps.find((step) => {
+    return step.step_title.includes("Committee Review");
+  });
+
+  return !isNil(reviewStep);
+});
+
 const canAddTask = computed(() => {
   if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
   if (!(isSupervisor.value || isSystemAdmin.value)) return false;
   if (selectedReport.value.incident_type_description != "Hazard") return false;
 
   return currentStep.value.step_title == "Control the Hazard";
+});
+
+const canAddReviewTask = computed(() => {
+  if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
+  if (selectedReport.value.incident_type_description == "Hazard") return false;
+  if (!(isCommittee.value || isSystemAdmin.value)) return false;
+
+  return currentStep.value.step_title == "Committee Review";
 });
 
 onMounted(() => {
@@ -409,6 +463,10 @@ function openAttachmentClick(attachment) {
 
 function addTaskClick() {
   showHazardDialog.value = true;
+}
+
+function addReviewTaskClick() {
+  showReviewDialog.value = true;
 }
 </script>
 
