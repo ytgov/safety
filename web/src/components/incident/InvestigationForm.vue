@@ -668,6 +668,7 @@ async function save() {
     actor_display_name: user.display_name,
     urgency_code,
     hazard_type_id,
+    is_committee_task: 0,
   });
   for (let item of factors) {
     items.push({
@@ -678,6 +679,7 @@ async function save() {
       actor_display_name: user.display_name,
       urgency_code,
       hazard_type_id,
+      is_committee_task: 0,
     });
   }
   for (let item of causes.value) {
@@ -689,6 +691,7 @@ async function save() {
       actor_display_name: user.display_name,
       urgency_code,
       hazard_type_id,
+      is_committee_task: 0,
     });
   }
 

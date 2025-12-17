@@ -125,6 +125,7 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     control,
     categories,
     title,
+    is_committee_task,
   } = req.body;
 
   const incident = await knex("incidents")
@@ -154,6 +155,7 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     control,
     categories: newCategories.join(","),
     title,
+    is_committee_task: is_committee_task ?? 0,
   } as Action;
 
   await knex("actions").insert(action);
@@ -181,6 +183,9 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
     control,
     categories,
     title,
+    committee_supervisor_response,
+    committee_task_rationale,
+    comments,
   } = req.body;
   let { actor_user_id } = req.body;
 
@@ -216,6 +221,9 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
       control,
       categories: newCategories.join(","),
       title,
+      committee_supervisor_response,
+      committee_task_rationale,
+      comments,
     });
 
   await updateActionHazards(action, status_code, urgency_code, control);

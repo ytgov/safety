@@ -26,6 +26,11 @@ export interface Action {
   categories?: string | string[];
   title?: string | null;
 
+  is_committee_task?: number;
+  committee_supervisor_response?: string;
+  committee_task_rationale?: string;
+  comments?: string;
+
   type?: ActionType;
   status?: ActionStatus;
   actor_display_name?: string;

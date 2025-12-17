@@ -561,7 +561,7 @@ reportRouter.post("/:id/send-committee-request", async (req: Request, res: Respo
 
   const incidentSteps = await knex("incident_steps").where({ incident_id: id }).orderBy("order");
 
-  const notificationStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Employee Notification");
+  const implementedStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Controls Implemented");
   const requestStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Committee Review");
 
   if (!isNil(requestStep)) return res.status(400).send("Step already exists");
@@ -569,13 +569,15 @@ reportRouter.post("/:id/send-committee-request", async (req: Request, res: Respo
   const newStep = {
     incident_id: id,
     step_title: "Committee Review",
-    order: notificationStep.order,
+    order: implementedStep.order,
     activate_date: new Date(),
   };
 
-  await knex("incident_steps")
-    .where({ id: notificationStep.id })
-    .update({ order: notificationStep.order + 1 });
+  await knex.raw(`UPDATE "incident_steps" SET "order" = "order" + 1 WHERE "incident_id" = ? AND "order" >= ?`, [
+    id,
+    implementedStep.order,
+  ]);
+
   await knex("incident_steps").insert(newStep);
 
   for (const user of committeeUsers) {
