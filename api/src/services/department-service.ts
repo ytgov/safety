@@ -1,11 +1,10 @@
 import { Department } from "../data/models";
 import { db } from "../data/db-client";
-import { DirectoryService } from "./directory-service";
+import { UnifiedDirectoryService } from "./unified-directory-service";
 
 export class DepartmentService {
   async determineDepartment(userEmail: string, supervisorEmail: string, location_code: string): Promise<Department> {
-    const directory = new DirectoryService();
-    await directory.connect();
+    const directory = new UnifiedDirectoryService();
 
     const userResults = await directory.searchByEmail(userEmail);
     const superResults = await directory.searchByEmail(supervisorEmail);

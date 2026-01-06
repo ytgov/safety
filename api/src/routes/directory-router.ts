@@ -1,25 +1,19 @@
 import express, { Request, Response } from "express";
-import { DirectoryService, YESNETService } from "../services";
+import { UnifiedDirectoryService } from "../services";
 import { db as knex } from "../data/db-client";
-import e from "express";
 
 export const directoryRouter = express.Router();
 
-const directoryService = new DirectoryService();
-const yesnetService = new YESNETService();
+const unifiedDirectory = new UnifiedDirectoryService();
 
 directoryRouter.post(
   "/search-directory",
   async (req: Request, res: Response) => {
     let { terms } = req.body;
 
-    await directoryService.connect();
-    let results = await directoryService.search(terms);
+    const results = await unifiedDirectory.search(terms);
 
-    await yesnetService.connect();
-    let yesnetResults = await yesnetService.search(terms);
-
-    return res.json({ data: [...results, ...yesnetResults] });
+    return res.json({ data: results });
   }
 );
 
@@ -29,11 +23,9 @@ directoryRouter.post(
     let { terms } = req.body;
     terms = terms.toLowerCase();
 
-    await directoryService.connect();
-    let data = await directoryService.search(terms);
-
-    await yesnetService.connect();
-    let yesnetResults = await yesnetService.search(terms);
+    const results = await unifiedDirectory.search(terms);
+    let data = results.slice();
+    let yesnetResults: any[] = [];
 
     const parts = terms.split(" ");
 
@@ -84,7 +76,6 @@ directoryRouter.post(
   async (req: Request, res: Response) => {
     let { terms } = req.body;
 
-    await directoryService.connect();
     const allUsers = await knex("users").where({ email: terms });
 
     if (allUsers.length == 1) {
@@ -109,7 +100,7 @@ directoryRouter.post(
       });
     }
 
-    const data = await directoryService.searchByEmail(terms);
+    const data = await unifiedDirectory.searchByEmail(terms);
 
     if (data.length > 0) {
       data.map(

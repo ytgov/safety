@@ -1,9 +1,14 @@
 import express, { Request, Response } from "express";
-import { isArray, isNil, orderBy } from "lodash";
+import { isArray, isNil } from "lodash";
 
 import { Knex } from "knex";
 import { db as knex } from "../data/db-client";
-import { DepartmentService, DirectoryService, EmailService, IncidentService } from "../services";
+import {
+  DepartmentService,
+  UnifiedDirectoryService,
+  EmailService,
+  IncidentService,
+} from "../services";
 import {
   Action,
   ActionStatuses,
@@ -23,7 +28,7 @@ import { generateIdentifier, generateSlug } from "../utils/generateSlug";
 export const reportRouter = express.Router();
 const db = new IncidentService();
 const emailService = new EmailService();
-const directoryService = new DirectoryService();
+const directoryService = new UnifiedDirectoryService();
 
 reportRouter.get("/", async (req: Request, res: Response) => {
   const { page, perPage, search, status, urgency, location } = req.query;
@@ -32,14 +37,18 @@ reportRouter.get("/", async (req: Request, res: Response) => {
   const perPageNum = parseInt(perPage as string) || 10;
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+    (req.user.roles = req.user.roles || []).filter(
+      (role: UserRole) => role.name === "System Admin"
+    ).length > 0;
 
   const countQuery = function (q: Knex.QueryBuilder) {
     if (!isNil(search)) {
       q.whereRaw(
         `(LOWER("incidents"."description") like '%${search
           .toString()
-          .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search.toString().toLowerCase()}%')`
+          .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search
+          .toString()
+          .toLowerCase()}%')`
       );
     }
     if (!isNil(status)) q.where("status_code", status);
@@ -53,7 +62,9 @@ reportRouter.get("/", async (req: Request, res: Response) => {
       q.whereRaw(
         `(LOWER("incidents"."description") like '%${search
           .toString()
-          .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search.toString().toLowerCase()}%')`
+          .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search
+          .toString()
+          .toLowerCase()}%')`
       );
     }
     if (!isNil(status)) q.where("status_code", status);
@@ -64,13 +75,21 @@ reportRouter.get("/", async (req: Request, res: Response) => {
     return q;
   };
 
-  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery);
-  const count = await db.getCount(userIsAdmin ? "System Admin" : req.user.email, countQuery);
+  const list = await db.getAll(
+    userIsAdmin ? "System Admin" : req.user.email,
+    listQuery
+  );
+  const count = await db.getCount(
+    userIsAdmin ? "System Admin" : req.user.email,
+    countQuery
+  );
 
   const locations = await knex("locations");
   const types = await knex("incident_types");
   const statuses = await knex("incident_statuses");
-  const access = await knex("incident_users_view").where({ user_email: req.user.email });
+  const access = await knex("incident_users_view").where({
+    user_email: req.user.email,
+  });
 
   for (const item of list) {
     item.location = locations.find((l: any) => l.code === item.location_code);
@@ -86,13 +105,19 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
   const { search, status, urgency, location } = req.query;
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+    (req.user.roles = req.user.roles || []).filter(
+      (role: UserRole) => role.name === "System Admin"
+    ).length > 0;
 
   const userHasRole = (req.user.roles = req.user.roles || []).length > 0;
 
   const listQuery = function (q: Knex.QueryBuilder) {
     if (!isNil(search)) {
-      q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
+      q.whereRaw(
+        `LOWER("incidents"."description") like '%${search
+          .toString()
+          .toLowerCase()}%'`
+      );
     }
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
@@ -100,12 +125,17 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
     return q;
   };
 
-  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery);
+  const list = await db.getAll(
+    userIsAdmin ? "System Admin" : req.user.email,
+    listQuery
+  );
 
   const locations = await knex("locations");
   const types = await knex("incident_types");
   const statuses = await knex("incident_statuses");
-  const access = await knex("incident_users_view").where({ user_email: req.user.email });
+  const access = await knex("incident_users_view").where({
+    user_email: req.user.email,
+  });
 
   for (const item of list) {
     item.location = locations.find((l: any) => l.code === item.location_code);
@@ -124,18 +154,25 @@ reportRouter.get("/my-reports", async (req: Request, res: Response) => {
   return res.json({ data: list });
 });
 
-reportRouter.get("/my-supervisor-reports", async (req: Request, res: Response) => {
-  const list = await db.getBySupervisorEmail(req.user.email);
-  return res.json({ data: list });
-});
+reportRouter.get(
+  "/my-supervisor-reports",
+  async (req: Request, res: Response) => {
+    const list = await db.getBySupervisorEmail(req.user.email);
+    return res.json({ data: list });
+  }
+);
 
 reportRouter.get("/role/:role", async (req: Request, res: Response) => {
   const { role } = req.params;
   const roleArray = (role ?? "").split(",");
 
   const userRoles = (req.user.roles = req.user.roles || []);
-  const matchingRoles = userRoles.filter((r: UserRole) => roleArray.includes(r.name ?? ""));
-  const matchingDepartments = matchingRoles.map((r: UserRole) => r.department_code);
+  const matchingRoles = userRoles.filter((r: UserRole) =>
+    roleArray.includes(r.name ?? "")
+  );
+  const matchingDepartments = matchingRoles.map(
+    (r: UserRole) => r.department_code
+  );
 
   const query = function (query: Knex.QueryBuilder) {
     query.whereIn("department_code", matchingDepartments);
@@ -152,9 +189,14 @@ reportRouter.get("/:slug", async (req: Request, res: Response) => {
   const { slug } = req.params;
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+    (req.user.roles = req.user.roles || []).filter(
+      (role: UserRole) => role.name === "System Admin"
+    ).length > 0;
 
-  const data = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
+  const data = await db.getBySlug(
+    slug,
+    userIsAdmin ? "System Admin" : req.user.email
+  );
 
   if (!data) return res.status(404).send();
 
@@ -173,9 +215,14 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
   } = req.body;
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+    (req.user.roles = req.user.roles || []).filter(
+      (role: UserRole) => role.name === "System Admin"
+    ).length > 0;
 
-  const data = await db.getById(id, userIsAdmin ? "System Admin" : req.user.email);
+  const data = await db.getById(
+    id,
+    userIsAdmin ? "System Admin" : req.user.email
+  );
   if (!data) return res.status(404).send();
 
   await knex("incidents").where({ id }).update({
@@ -187,7 +234,10 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
     hs_recommendations,
   });
 
-  return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
+  return res.json({
+    data: {},
+    messages: [{ variant: "success", text: "Incident Saved" }],
+  });
 });
 
 reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
@@ -199,9 +249,15 @@ reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
   investigation_data.completed_by_ud = req.user.id;
   const jsonString = JSON.stringify(investigation_data);
 
-  await knex("investigations").insert({ incident_id: id, investigation_data: jsonString });
+  await knex("investigations").insert({
+    incident_id: id,
+    investigation_data: jsonString,
+  });
 
-  return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Saved" }] });
+  return res.json({
+    data: {},
+    messages: [{ variant: "success", text: "Incident Saved" }],
+  });
 });
 
 reportRouter.delete("/:id", async (req: Request, res: Response) => {
@@ -210,12 +266,16 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
   const trx = await knex.transaction();
 
   try {
-    const linkedHazards = await trx("incident_hazards").where({ incident_id: id });
+    const linkedHazards = await trx("incident_hazards").where({
+      incident_id: id,
+    });
     await trx("incident_hazards").where({ incident_id: id }).delete();
 
     for (const link of linkedHazards) {
       await trx("actions").where({ hazard_id: link.hazard_id }).delete();
-      await trx("hazard_attachments").where({ hazard_id: link.hazard_id }).delete();
+      await trx("hazard_attachments")
+        .where({ hazard_id: link.hazard_id })
+        .delete();
       await trx("hazards").where({ id: link.hazard_id }).delete();
     }
 
@@ -227,7 +287,10 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
     await trx("incidents").where({ id }).delete();
 
     trx.commit();
-    return res.json({ data: {}, messages: [{ variant: "success", text: "Incident Removed" }] });
+    return res.json({
+      data: {},
+      messages: [{ variant: "success", text: "Incident Removed" }],
+    });
   } catch (error) {
     console.log("ERROR IN TRANSACTION", error);
     trx.rollback();
@@ -256,9 +319,13 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     additional_people,
   } = req.body;
 
-  const reporting_person_email = on_behalf == "Yes" ? on_behalf_email : req.user.email;
+  const reporting_person_email =
+    on_behalf == "Yes" ? on_behalf_email : req.user.email;
 
-  const defaultIncidentType = await knex("incident_types").where({ name: eventType }).select("id").first();
+  const defaultIncidentType = await knex("incident_types")
+    .where({ name: eventType })
+    .select("id")
+    .first();
   const department = await new DepartmentService().determineDepartment(
     reporting_person_email,
     supervisor_email,
@@ -266,11 +333,17 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   );
 
   await directoryService.connect();
-  const directorySubmitter = await directoryService.searchByEmail(reporting_person_email);
-  const directorySupervisor = await directoryService.searchByEmail(supervisor_email);
+  const directorySubmitter = await directoryService.searchByEmail(
+    reporting_person_email
+  );
+  const directorySupervisor = await directoryService.searchByEmail(
+    supervisor_email
+  );
 
   const employeeName =
-    directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : reporting_person_email;
+    directorySubmitter && directorySubmitter[0]
+      ? directorySubmitter[0].display_name
+      : reporting_person_email;
 
   const trx = await knex.transaction();
 
@@ -295,7 +368,9 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       source: "online",
     } as Incident;
 
-    const insertedIncidents = await trx("incidents").insert(incident).returning("*");
+    const insertedIncidents = await trx("incidents")
+      .insert(incident)
+      .returning("*");
     let insertedIncidentId = insertedIncidents[0].id;
 
     let peopleArray = additional_people ?? [];
@@ -317,9 +392,20 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     let steps = new Array<string>();
 
     if (eventType == "hazard") {
-      steps = ["Hazard Identified", "Assessment of Hazard", "Control the Hazard", "Employee Notification"];
+      steps = [
+        "Hazard Identified",
+        "Assessment of Hazard",
+        "Control the Hazard",
+        "Employee Notification",
+      ];
     } else {
-      steps = ["Incident Reported", "Investigation", "Control Plan", "Controls Implemented", "Employee Notification"];
+      steps = [
+        "Incident Reported",
+        "Investigation",
+        "Control Plan",
+        "Controls Implemented",
+        "Employee Notification",
+      ];
     }
 
     for (let i = 1; i <= steps.length; i++) {
@@ -363,7 +449,10 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     if (directorySubmitter && directorySubmitter.length > 0) {
       await emailService.sendIncidentEmployeeNotification(
-        { fullName: directorySubmitter[0].display_name, email: reporting_person_email },
+        {
+          fullName: directorySubmitter[0].display_name,
+          email: reporting_person_email,
+        },
         employeeName,
         insertedIncidents[0]
       );
@@ -379,7 +468,10 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     if (directorySupervisor && directorySupervisor.length > 0) {
       await emailService.sendIncidentSupervisorNotification(
-        { fullName: directorySupervisor[0].display_name, email: supervisor_email },
+        {
+          fullName: directorySupervisor[0].display_name,
+          email: supervisor_email,
+        },
         employeeName,
         insertedIncidents[0]
       );
@@ -395,208 +487,315 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   return res.status(400).json({ data: {} });
 });
 
-reportRouter.put("/:id/step/:step_id/:operation", async (req: Request, res: Response) => {
-  const { id, step_id, operation } = req.params;
+reportRouter.put(
+  "/:id/step/:step_id/:operation",
+  async (req: Request, res: Response) => {
+    const { id, step_id, operation } = req.params;
 
-  const step = await knex("incident_steps").where({ incident_id: id, id: step_id }).first();
+    const step = await knex("incident_steps")
+      .where({ incident_id: id, id: step_id })
+      .first();
 
-  if (step) {
-    if (operation == "complete") {
-      await knex("incident_steps")
-        .where({ incident_id: id, id: step_id })
-        .update({
-          complete_name: req.user.display_name,
-          complete_date: InsertableDate(DateTime.utc().toISO()),
-          complete_user_id: req.user.id,
-        });
+    if (step) {
+      if (operation == "complete") {
+        await knex("incident_steps")
+          .where({ incident_id: id, id: step_id })
+          .update({
+            complete_name: req.user.display_name,
+            complete_date: InsertableDate(DateTime.utc().toISO()),
+            complete_user_id: req.user.id,
+          });
 
-      // send email to supervisor if the CommitteeReview step is complete.
-      if (step.step_title == "Committee Review") {
-        const incident = await knex("incidents").where({ id }).first();
+        // send email to supervisor if the CommitteeReview step is complete.
+        if (step.step_title == "Committee Review") {
+          const incident = await knex("incidents").where({ id }).first();
 
-        await emailService.sendIncidentReviewCompleteNotification(
-          { fullName: incident.supervisor_email, email: incident.supervisor_email },
-          incident
-        );
-      }
-    } else if (operation == "revert") {
-      await knex("incident_steps").where({ incident_id: id, id: step_id }).update({
-        complete_name: null,
-        complete_date: null,
-        complete_user_id: null,
-      });
+          await emailService.sendIncidentReviewCompleteNotification(
+            {
+              fullName: incident.supervisor_email,
+              email: incident.supervisor_email,
+            },
+            incident
+          );
+        }
+      } else if (operation == "revert") {
+        await knex("incident_steps")
+          .where({ incident_id: id, id: step_id })
+          .update({
+            complete_name: null,
+            complete_date: null,
+            complete_user_id: null,
+          });
 
-      if (step.step_title == "Investigation") {
-        await knex("actions").where({ incident_id: id }).delete();
-        await knex("investigations").where({ incident_id: id }).delete();
+        if (step.step_title == "Investigation") {
+          await knex("actions").where({ incident_id: id }).delete();
+          await knex("investigations").where({ incident_id: id }).delete();
 
-        const linkedHazards = await knex("incident_hazards").where({ incident_id: id });
-        await knex("incident_hazards").where({ incident_id: id }).delete();
+          const linkedHazards = await knex("incident_hazards").where({
+            incident_id: id,
+          });
+          await knex("incident_hazards").where({ incident_id: id }).delete();
 
-        for (const link of linkedHazards) {
-          await knex("hazard_attachments").where({ hazard_id: link.hazard_id }).delete();
-          await knex("hazards").where({ id: link.hazard_id }).delete();
+          for (const link of linkedHazards) {
+            await knex("hazard_attachments")
+              .where({ hazard_id: link.hazard_id })
+              .delete();
+            await knex("hazards").where({ id: link.hazard_id }).delete();
+          }
         }
       }
     }
+
+    const allSteps = await knex("incident_steps").where({ incident_id: id });
+    let allComplete = true;
+
+    for (const step of allSteps) {
+      if (!step.complete_date) allComplete = false;
+    }
+
+    if (allComplete) {
+      await knex("incidents")
+        .where({ id })
+        .update({ status_code: IncidentStatuses.CLOSED.code });
+    } else {
+      await knex("incidents")
+        .where({ id })
+        .update({ status_code: IncidentStatuses.IN_PROGRESS.code });
+    }
+
+    return res.json({ data: {} });
   }
-
-  const allSteps = await knex("incident_steps").where({ incident_id: id });
-  let allComplete = true;
-
-  for (const step of allSteps) {
-    if (!step.complete_date) allComplete = false;
-  }
-
-  if (allComplete) {
-    await knex("incidents").where({ id }).update({ status_code: IncidentStatuses.CLOSED.code });
-  } else {
-    await knex("incidents").where({ id }).update({ status_code: IncidentStatuses.IN_PROGRESS.code });
-  }
-
-  return res.json({ data: {} });
-});
+);
 
 reportRouter.get("/:slug/linked-users", async (req: Request, res: Response) => {
   const { slug } = req.params;
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
+    (req.user.roles = req.user.roles || []).filter(
+      (role: UserRole) => role.name === "System Admin"
+    ).length > 0;
 
-  const incident = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
-
-  if (incident) {
-    const list = await knex("incident_users").where({ incident_id: incident.id });
-    return res.json({ data: list });
-  }
-
-  res.json({ data: [] });
-});
-
-reportRouter.post("/:slug/linked-users", async (req: Request, res: Response) => {
-  const { slug } = req.params;
-
-  const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
-
-  const incident = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
-
-  if (incident) {
-    await knex("incident_users").insert(req.body);
-
-    const recipient = req.body.user_email;
-    const directorySubmitter = await directoryService.searchByEmail(recipient);
-    const employeeName = directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : recipient;
-    await emailService.sendIncidentInviteNotification({ fullName: employeeName, email: recipient }, incident);
-    return res.json({ data: {} });
-  }
-
-  res.json({ data: [] });
-});
-
-reportRouter.delete("/:slug/linked-users/:id", async (req: Request, res: Response) => {
-  const { slug, id } = req.params;
-
-  const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin").length > 0;
-
-  const incident = await db.getBySlug(slug, userIsAdmin ? "System Admin" : req.user.email);
-
-  if (incident) {
-    const list = await knex("incident_users").where({ id }).delete();
-    return res.json({ data: list });
-  }
-
-  res.json({ data: [] });
-});
-
-reportRouter.post("/:id/send-notification", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { recipients } = req.body;
-
-  const incident = await knex("incidents").where({ id }).first();
-  if (!incident) return res.status(404).send();
-
-  const recipientList = recipients.split(/[\s,;]+/).filter(Boolean);
-
-  for (const recipient of recipientList) {
-    const directorySubmitter = await directoryService.searchByEmail(recipient);
-    const employeeName = directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : recipient;
-
-    await emailService.sendIncidentInviteNotification({ fullName: employeeName, email: recipient }, incident);
-  }
-
-  return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
-});
-
-reportRouter.post("/:id/send-employee-notification", async (req: Request, res: Response) => {
-  const { id } = req.params;
-
-  const incident = await knex("incidents").where({ id }).first();
-  if (!incident) return res.status(404).send();
-
-  const directorySubmitter = await directoryService.searchByEmail(incident.reporting_person_email);
-  const employeeName =
-    directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : incident.reporting_person_email;
-
-  await emailService.sendIncidentCompleteEmployeeNotification(
-    { fullName: employeeName, email: incident.reporting_person_email },
-    incident
+  const incident = await db.getBySlug(
+    slug,
+    userIsAdmin ? "System Admin" : req.user.email
   );
 
-  return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
-});
-
-reportRouter.post("/:id/send-committee-request", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { committeeId } = req.body;
-
-  const incident = await knex("incidents").where({ id }).first();
-  if (!incident) return res.status(404).send();
-
-  const committee = await knex("committees").where({ id: committeeId }).first();
-  if (!committee) return res.status(404).send();
-
-  const committeeUsers = await knex("committee_users").where({ committee_id: committeeId });
-
-  const incidentSteps = await knex("incident_steps").where({ incident_id: id }).orderBy("order");
-
-  const notificationStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Employee Notification");
-  const requestStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Committee Review");
-
-  if (!isNil(requestStep)) return res.status(400).send("Step already exists");
-
-  const newStep = {
-    incident_id: id,
-    step_title: "Committee Review",
-    order: notificationStep.order,
-    activate_date: new Date(),
-  };
-
-  await knex("incident_steps")
-    .where({ id: notificationStep.id })
-    .update({ order: notificationStep.order + 1 });
-  await knex("incident_steps").insert(newStep);
-
-  for (const user of committeeUsers) {
-    const userRecord = await knex("users").where({ id: user.user_id }).first();
-
-    if (!userRecord) continue;
-
-    await knex("incident_users").insert({
-      user_email: userRecord.email,
-      incident_id: id,
-      reason: "committee",
+  if (incident) {
+    const list = await knex("incident_users").where({
+      incident_id: incident.id,
     });
-
-    await emailService.sendIncidentInviteNotification(
-      { fullName: userRecord.display_name, email: userRecord.email },
-      incident
-    );
+    return res.json({ data: list });
   }
 
-  return res.json({ data: {}, messages: [{ variant: "success", text: "Email Sent" }] });
+  res.json({ data: [] });
 });
+
+reportRouter.post(
+  "/:slug/linked-users",
+  async (req: Request, res: Response) => {
+    const { slug } = req.params;
+
+    const userIsAdmin =
+      (req.user.roles = req.user.roles || []).filter(
+        (role: UserRole) => role.name === "System Admin"
+      ).length > 0;
+
+    const incident = await db.getBySlug(
+      slug,
+      userIsAdmin ? "System Admin" : req.user.email
+    );
+
+    if (incident) {
+      await knex("incident_users").insert(req.body);
+
+      const recipient = req.body.user_email;
+      const directorySubmitter = await directoryService.searchByEmail(
+        recipient
+      );
+      const employeeName =
+        directorySubmitter && directorySubmitter[0]
+          ? directorySubmitter[0].display_name
+          : recipient;
+      await emailService.sendIncidentInviteNotification(
+        { fullName: employeeName, email: recipient },
+        incident
+      );
+      return res.json({ data: {} });
+    }
+
+    res.json({ data: [] });
+  }
+);
+
+reportRouter.delete(
+  "/:slug/linked-users/:id",
+  async (req: Request, res: Response) => {
+    const { slug, id } = req.params;
+
+    const userIsAdmin =
+      (req.user.roles = req.user.roles || []).filter(
+        (role: UserRole) => role.name === "System Admin"
+      ).length > 0;
+
+    const incident = await db.getBySlug(
+      slug,
+      userIsAdmin ? "System Admin" : req.user.email
+    );
+
+    if (incident) {
+      const list = await knex("incident_users").where({ id }).delete();
+      return res.json({ data: list });
+    }
+
+    res.json({ data: [] });
+  }
+);
+
+reportRouter.post(
+  "/:id/send-notification",
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { recipients } = req.body;
+
+    const incident = await knex("incidents").where({ id }).first();
+    if (!incident) return res.status(404).send();
+
+    const recipientList = recipients.split(/[\s,;]+/).filter(Boolean);
+
+    for (const recipient of recipientList) {
+      const directorySubmitter = await directoryService.searchByEmail(
+        recipient
+      );
+      const employeeName =
+        directorySubmitter && directorySubmitter[0]
+          ? directorySubmitter[0].display_name
+          : recipient;
+
+      await emailService.sendIncidentInviteNotification(
+        { fullName: employeeName, email: recipient },
+        incident
+      );
+    }
+
+    return res.json({
+      data: {},
+      messages: [{ variant: "success", text: "Email Sent" }],
+    });
+  }
+);
+
+reportRouter.post(
+  "/:id/send-employee-notification",
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const incident = await knex("incidents").where({ id }).first();
+    if (!incident) return res.status(404).send();
+
+    const directorySubmitter = await directoryService.searchByEmail(
+      incident.reporting_person_email
+    );
+    const employeeName =
+      directorySubmitter && directorySubmitter[0]
+        ? directorySubmitter[0].display_name
+        : incident.reporting_person_email;
+
+    await emailService.sendIncidentCompleteEmployeeNotification(
+      { fullName: employeeName, email: incident.reporting_person_email },
+      incident
+    );
+
+    return res.json({
+      data: {},
+      messages: [{ variant: "success", text: "Email Sent" }],
+    });
+  }
+);
+
+reportRouter.post(
+  "/:id/send-committee-request",
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+    const { committeeId } = req.body;
+
+    const incident = await knex("incidents").where({ id }).first();
+    if (!incident) return res.status(404).send();
+
+    const committee = await knex("committees")
+      .where({ id: committeeId })
+      .first();
+    if (!committee) return res.status(404).send();
+
+    const committeeUsers = await knex("committee_users").where({
+      committee_id: committeeId,
+    });
+
+    const incidentSteps = await knex("incident_steps")
+      .where({ incident_id: id })
+      .orderBy("order");
+
+    const implementedStep = incidentSteps.find(
+      (step: IncidentStep) => step.step_title == "Controls Implemented"
+    );
+    const requestStep = incidentSteps.find(
+      (step: IncidentStep) => step.step_title == "Committee Review"
+    );
+
+    if (!isNil(requestStep)) return res.status(400).send("Step already exists");
+
+    const newStep = {
+      incident_id: id,
+      step_title: "Committee Review",
+      order: implementedStep.order,
+      activate_date: new Date(),
+    };
+
+    console.log("H1");
+
+    const stepsToIncrement = await knex("incident_steps")
+      .where({ incident_id: id })
+      .andWhere("order", ">=", implementedStep.order)
+      .orderBy("order", "desc");
+
+    for (const step of stepsToIncrement) {
+      await knex("incident_steps")
+        .where({ incident_id: id, id: step.id })
+        .update({
+          order: step.order + 1,
+        });
+    }
+
+    console.log("H2");
+
+    await knex("incident_steps").insert(newStep);
+
+    console.log("H3");
+
+    for (const user of committeeUsers) {
+      const userRecord = await knex("users")
+        .where({ id: user.user_id })
+        .first();
+
+      if (!userRecord) continue;
+
+      await knex("incident_users").insert({
+        user_email: userRecord.email,
+        incident_id: id,
+        reason: "committee",
+      });
+
+      await emailService.sendIncidentInviteNotification(
+        { fullName: userRecord.display_name, email: userRecord.email },
+        incident
+      );
+    }
+
+    return res.json({
+      data: {},
+      messages: [{ variant: "success", text: "Email Sent" }],
+    });
+  }
+);
 
 export async function updateActionHazards(
   action: Action,
@@ -606,19 +805,25 @@ export async function updateActionHazards(
 ) {
   let hazardStatus = HazardStatuses.OPEN.code;
 
-  if (status_code == ActionStatuses.IN_PROGRESS.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
-  if (status_code == ActionStatuses.COMPLETE.code) hazardStatus = HazardStatuses.REMEDIATED.code;
+  if (status_code == ActionStatuses.IN_PROGRESS.code)
+    hazardStatus = HazardStatuses.IN_PROGRESS.code;
+  if (status_code == ActionStatuses.COMPLETE.code)
+    hazardStatus = HazardStatuses.REMEDIATED.code;
 
   const hazards = await knex("hazards").where({ id: action.hazard_id });
 
   for (const hazard of hazards) {
-    await knex("hazards").where({ id: hazard.id }).update({ urgency_code, status_code: hazardStatus, control });
+    await knex("hazards")
+      .where({ id: hazard.id })
+      .update({ urgency_code, status_code: hazardStatus, control });
   }
 }
 
 export async function updateIncidentStatus(action: Action, user: User) {
   if (action.incident_id) {
-    const allActions = await knex("actions").where({ incident_id: action.incident_id });
+    const allActions = await knex("actions").where({
+      incident_id: action.incident_id,
+    });
 
     let allComplete = true;
     let allReady = true;
@@ -632,7 +837,9 @@ export async function updateIncidentStatus(action: Action, user: User) {
       if (act.status_code != ActionStatuses.COMPLETE.code) allComplete = false;
     }
 
-    const steps = await knex("incident_steps").where({ incident_id: action.incident_id }).orderBy("order");
+    const steps = await knex("incident_steps")
+      .where({ incident_id: action.incident_id })
+      .orderBy("order");
     const completeStepNames = ["Controls Implemented", "Control the Hazard"];
     const readyStepNames = ["Control Plan", "Assessment of Hazard"];
 
@@ -647,11 +854,13 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_user_id: user.id,
             });
         } else if (!allComplete && step.complete_date) {
-          await knex("incident_steps").where({ incident_id: action.incident_id, id: step.id }).update({
-            complete_date: null,
-            complete_name: null,
-            complete_user_id: null,
-          });
+          await knex("incident_steps")
+            .where({ incident_id: action.incident_id, id: step.id })
+            .update({
+              complete_date: null,
+              complete_name: null,
+              complete_user_id: null,
+            });
         }
       }
 
@@ -665,11 +874,13 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_user_id: user.id,
             });
         } else if (!allReady && step.complete_date) {
-          await knex("incident_steps").where({ incident_id: action.incident_id, id: step.id }).update({
-            complete_date: null,
-            complete_name: null,
-            complete_user_id: null,
-          });
+          await knex("incident_steps")
+            .where({ incident_id: action.incident_id, id: step.id })
+            .update({
+              complete_date: null,
+              complete_name: null,
+              complete_user_id: null,
+            });
         }
       }
     }

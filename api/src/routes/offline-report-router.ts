@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { isArray } from "lodash";
 
 import { db as knex } from "../data/db-client";
-import { DepartmentService, DirectoryService, EmailService, IncidentService, UserService } from "../services";
+import { DepartmentService, UnifiedDirectoryService, EmailService, IncidentService, UserService } from "../services";
 import {
   Hazard,
   HazardStatuses,
@@ -22,7 +22,7 @@ import { DateTime } from "luxon";
 export const offlineReportRouter = express.Router();
 const db = new IncidentService();
 const emailService = new EmailService();
-const directoryService = new DirectoryService();
+const directoryService = new UnifiedDirectoryService();
 const userService = new UserService();
 
 offlineReportRouter.post("/", async (req: Request, res: Response) => {
