@@ -19,9 +19,13 @@ console.log(`LOADING ${NODE_ENV} CONFIG FROM ${path}`);
 
 export const API_PORT = process.env.API_PORT || "3000";
 // TODO: Remove this value once it's setup in the environment
-export const FRONTEND_URL = process.env.FRONTEND_URL || "https://safety.gov.yk.ca";
+export const FRONTEND_URL =
+  process.env.FRONTEND_URL || "https://safety.gov.yk.ca";
 export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || "";
-export const AUTH0_DOMAIN = (`${process.env.AUTH0_DOMAIN}` || "").replace(/\/$/, "");
+export const AUTH0_DOMAIN = (`${process.env.AUTH0_DOMAIN}` || "").replace(
+  /\/$/,
+  ""
+);
 export const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
 
 export const DB_USER = process.env.DB_USER || "postgres";
@@ -35,7 +39,13 @@ export const API_GATEWAY_KEY = process.env.API_GATEWAY_KEY || "";
 
 export const DB_CONFIG = {
   client: DB_CLIENT,
-  connection: { host: DB_HOST, user: DB_USER, password: DB_PASS, database: DB_NAME, port: DB_PORT },
+  connection: {
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASS,
+    database: DB_NAME,
+    port: DB_PORT,
+  },
   pool: { min: 0, reapIntervalMillis: 600000 },
 };
 
@@ -81,3 +91,7 @@ export const DB_USER_TABLE = process.env.DB_USER_TABLE || "";
 export const AD_CLIENT_ID = "15a9a9d8-2dcd-4cd8-965e-e2a7d044c7de"; // process.env.AD_CLIENT_ID || "";
 export const AD_CLIENT_SECRET = process.env.AD_CLIENT_SECRET || "";
 export const AD_TENANT_ID = process.env.AD_TENANT_ID || "";
+
+export const YESNET_CLIENT_ID = process.env.YESNET_CLIENT_ID || ""; // process.env.AD_CLIENT_ID || "";
+export const YESNET_CLIENT_SECRET = process.env.YESNET_CLIENT_SECRET || "";
+export const YESNET_TENANT_ID = process.env.YESNET_TENANT_ID || "";
