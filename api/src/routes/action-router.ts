@@ -40,7 +40,7 @@ actionRouter.get("/", async (req: Request, res: Response) => {
     if (!isNil(search)) q.whereRaw(`LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) {
       if (status == "Dashboard") {
-        q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
+        q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.IN_PROGRESS.code]);
       } else {
         q.where(`actions.status_code`, status);
       }
@@ -56,7 +56,7 @@ actionRouter.get("/", async (req: Request, res: Response) => {
     if (!isNil(search)) q.whereRaw(`LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) {
       if (status == "Dashboard") {
-        q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.READY.code]);
+        q.whereIn(`actions.status_code`, [ActionStatuses.OPEN.code, ActionStatuses.IN_PROGRESS.code]);
       } else {
         q.where(`actions.status_code`, status);
       }
@@ -256,7 +256,7 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
       complete_date: null,
       complete_name: null,
       complete_user_id: null,
-      status_code: ActionStatuses.READY.code,
+      status_code: ActionStatuses.IN_PROGRESS.code,
     });
 
     await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code, null);
@@ -299,7 +299,7 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
       complete_date: null,
       complete_name: null,
       complete_user_id: null,
-      status_code: ActionStatuses.READY.code,
+      status_code: ActionStatuses.IN_PROGRESS.code,
       control: null,
       hazard_review,
       hazard_id,

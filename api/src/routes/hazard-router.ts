@@ -96,7 +96,7 @@ hazardRouter.put("/:id/action", async (req: Request, res: Response) => {
 
   let hazardStatus = HazardStatuses.OPEN.code;
 
-  if (status_code == ActionStatuses.READY.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
+  if (status_code == ActionStatuses.IN_PROGRESS.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
   if (status_code == ActionStatuses.COMPLETE.code) hazardStatus = HazardStatuses.REMEDIATED.code;
 
   await knex("hazards").where({ id: hazard.id }).update({ urgency_code, status_code: hazardStatus });

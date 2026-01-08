@@ -8,3 +8,5 @@ export * from "./inspection-service";
 export * from "./report-service";
 export * from "./role-service";
 export * from "./user-service";
+export * from "./yesnet-service";
+export * from "./unified-directory-service";
