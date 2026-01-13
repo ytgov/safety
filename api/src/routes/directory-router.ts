@@ -67,7 +67,7 @@ directoryRouter.post(
       });
     }
 
-    return res.json({ combinedData });
+    return res.json({ data: combinedData });
   }
 );
 
