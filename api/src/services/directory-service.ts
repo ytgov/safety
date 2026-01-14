@@ -19,12 +19,19 @@ export class DirectoryService {
     let body = `client_id=${AD_CLIENT_ID}&scope=${AD_SCOPE}&client_secret=${AD_CLIENT_SECRET}&grant_type=client_credentials`;
 
     return axios
-      .post(`https://login.microsoftonline.com/${AD_TENANT_ID}/oauth2/v2.0/token`, body, {
-        headers: { "Content-type": "application/x-www-form-urlencoded" },
-      })
+      .post(
+        `https://login.microsoftonline.com/${AD_TENANT_ID}/oauth2/v2.0/token`,
+        body,
+        {
+          headers: { "Content-type": "application/x-www-form-urlencoded" },
+        }
+      )
       .then((resp) => {
         this.token = resp.data.access_token;
-        this.authHeader = { Authorization: `Bearer ${this.token}`, ConsistencyLevel: "eventual" };
+        this.authHeader = {
+          Authorization: `Bearer ${this.token}`,
+          ConsistencyLevel: "eventual",
+        };
         this.connected = true;
         this.validUntil = moment().add(resp.data.expires_in, "seconds");
       })
@@ -60,7 +67,9 @@ export class DirectoryService {
 
       return axios
         .get<AzureADUserGetResponse>(
-          `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(" AND ")} ${selectStmt}`,
+          `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
+            " AND "
+          )} ${selectStmt}`,
           { headers: this.authHeader }
         )
         .then((resp) => {
@@ -69,15 +78,34 @@ export class DirectoryService {
 
             for (let dir of resp.data.value) {
               // get rid of results for external people like contractors
-              if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue;
-              if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue;
-              if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue;
-              if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue;
+              if (
+                dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")
+              )
+                continue;
+              if (
+                dir.userPrincipalName
+                  .toLowerCase()
+                  .endsWith("-susp@ynet.gov.yk.ca")
+              )
+                continue;
+              if (dir.userPrincipalName.toLowerCase().startsWith("admin"))
+                continue;
+              if ((dir.jobTitle || "").toLowerCase() == "yg contractor")
+                continue;
               if (isNil(dir.mail)) continue;
 
-              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) {
+              if (
+                dir.userPrincipalName
+                  .toLowerCase()
+                  .endsWith("yukongovernment.onmicrosoft.com")
+              ) {
                 if (dir.otherMails && dir.otherMails.length > 0) {
-                  dir.mail = dir.otherMails.find((m) => m.toLowerCase().endsWith("@wcb.yk.ca")) ?? dir.mail;
+                  dir.mail =
+                    dir.otherMails.find((m) =>
+                      m.toLowerCase().endsWith("@wcb.yk.ca")
+                    ) ?? dir.mail;
+
+                  if (dir.mail.includes("yukonhospitals")) continue;
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
@@ -86,9 +114,16 @@ export class DirectoryService {
                 } else continue;
               }
 
-              if (dir.mail.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
+              if (
+                dir.mail
+                  .toLowerCase()
+                  .endsWith("yukongovernment.onmicrosoft.com")
+              )
+                continue;
 
-              let long_name = `${dir.givenName} ${dir.surname} (${dir.userPrincipalName
+              let long_name = `${dir.givenName} ${
+                dir.surname
+              } (${dir.userPrincipalName
                 .toLowerCase()
                 .replace("@ynet.gov.yk.ca", "")})`;
               let title = "Unknown title";
@@ -106,7 +141,9 @@ export class DirectoryService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName.toLowerCase().replace("@ynet.gov.yk.ca", ""),
+                ynet_id: dir.userPrincipalName
+                  .toLowerCase()
+                  .replace("@ynet.gov.yk.ca", ""),
                 email: dir.mail,
                 long_name,
                 title,
@@ -146,7 +183,9 @@ export class DirectoryService {
 
       return axios
         .get<AzureADUserGetResponse>(
-          `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(" AND ")} ${selectStmt}`,
+          `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
+            " AND "
+          )} ${selectStmt}`,
           { headers: this.authHeader }
         )
         .then((resp) => {
@@ -155,15 +194,32 @@ export class DirectoryService {
 
             for (let dir of resp.data.value) {
               // get rid of results for external people like contractors
-              if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue;
-              if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue;
-              if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue;
-              if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue;
+              if (
+                dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")
+              )
+                continue;
+              if (
+                dir.userPrincipalName
+                  .toLowerCase()
+                  .endsWith("-susp@ynet.gov.yk.ca")
+              )
+                continue;
+              if (dir.userPrincipalName.toLowerCase().startsWith("admin"))
+                continue;
+              if ((dir.jobTitle || "").toLowerCase() == "yg contractor")
+                continue;
               if (isNil(dir.mail)) continue;
 
-              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) {
+              if (
+                dir.userPrincipalName
+                  .toLowerCase()
+                  .endsWith("yukongovernment.onmicrosoft.com")
+              ) {
                 if (dir.otherMails && dir.otherMails.length > 0) {
-                  dir.mail = dir.otherMails.find((m) => m.toLowerCase().endsWith("@wcb.yk.ca")) ?? dir.mail;
+                  dir.mail =
+                    dir.otherMails.find((m) =>
+                      m.toLowerCase().endsWith("@wcb.yk.ca")
+                    ) ?? dir.mail;
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
@@ -172,9 +228,16 @@ export class DirectoryService {
                 } else continue;
               }
 
-              if (dir.mail.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue;
+              if (
+                dir.mail
+                  .toLowerCase()
+                  .endsWith("yukongovernment.onmicrosoft.com")
+              )
+                continue;
 
-              let long_name = `${dir.givenName} ${dir.surname} (${dir.userPrincipalName
+              let long_name = `${dir.givenName} ${
+                dir.surname
+              } (${dir.userPrincipalName
                 .toLowerCase()
                 .replace("@ynet.gov.yk.ca", "")})`;
               let title = "Unknown title";
@@ -192,7 +255,9 @@ export class DirectoryService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName.toLowerCase().replace("@ynet.gov.yk.ca", ""),
+                ynet_id: dir.userPrincipalName
+                  .toLowerCase()
+                  .replace("@ynet.gov.yk.ca", ""),
                 email: dir.mail,
                 long_name,
                 title,
