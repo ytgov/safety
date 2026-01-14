@@ -1,18 +1,8 @@
 <template>
   <div>
-    <v-autocomplete
-      :label="`${label} ${searchLocation}`"
-      v-model="model"
-      v-model:search="search"
-      :items="items"
-      :loading="isLoading"
-      prepend-inner-icon="mdi-magnify"
-      item-value="id"
-      item-title="long_name"
-      hide-no-data
-      outlined
-      clearable
-      return-object>
+    <v-autocomplete :label="`${label} ${searchLocation}`" v-model="model" v-model:search="search" :items="items"
+      :loading="isLoading" prepend-inner-icon="mdi-magnify" item-value="id" item-title="long_name" hide-no-data outlined
+      clearable return-object>
       <template #no-data>
         <div class="mx-4 text-caption">
           <strong>No matches found?</strong>
@@ -35,8 +25,7 @@
               <v-icon class="mr-2">mdi-account-check</v-icon>
               {{ actionName }}
             </v-btn>
-            <v-btn @click="clear" color="secondary" class="ml-4 mb-0 mt-4" small>Clear</v-btn></v-col
-          >
+            <v-btn @click="clear" color="secondary" class="ml-4 mb-0 mt-4" small>Clear</v-btn></v-col>
         </v-row>
       </v-card-text>
     </v-card>
@@ -46,6 +35,7 @@
 <script>
 import { mapActions } from "pinia";
 import { useUserAdminStore } from "../store";
+import { isNil } from "lodash";
 
 export default {
   name: "EmployeeLookup",
@@ -105,6 +95,11 @@ export default {
   watch: {
     search(val) {
       clearTimeout(this.timerId);
+
+      if (isNil(val) || val.includes("(") || val.includes(":") || val.trim().length < 2) {
+        this.items = [];
+        return;
+      }
 
       // delay new call 500ms
       this.timerId = setTimeout(() => {
