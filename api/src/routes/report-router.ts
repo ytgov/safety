@@ -38,7 +38,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin"
+      (role: UserRole) => role.name === "System Admin",
     ).length > 0;
 
   const countQuery = function (q: Knex.QueryBuilder) {
@@ -48,7 +48,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
           .toString()
           .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search
           .toString()
-          .toLowerCase()}%')`
+          .toLowerCase()}%')`,
       );
     }
     if (!isNil(status)) q.where("status_code", status);
@@ -64,7 +64,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
           .toString()
           .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search
           .toString()
-          .toLowerCase()}%')`
+          .toLowerCase()}%')`,
       );
     }
     if (!isNil(status)) q.where("status_code", status);
@@ -77,11 +77,11 @@ reportRouter.get("/", async (req: Request, res: Response) => {
 
   const list = await db.getAll(
     userIsAdmin ? "System Admin" : req.user.email,
-    listQuery
+    listQuery,
   );
   const count = await db.getCount(
     userIsAdmin ? "System Admin" : req.user.email,
-    countQuery
+    countQuery,
   );
 
   const locations = await knex("locations");
@@ -106,7 +106,7 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin"
+      (role: UserRole) => role.name === "System Admin",
     ).length > 0;
 
   const userHasRole = (req.user.roles = req.user.roles || []).length > 0;
@@ -116,7 +116,7 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
       q.whereRaw(
         `LOWER("incidents"."description") like '%${search
           .toString()
-          .toLowerCase()}%'`
+          .toLowerCase()}%'`,
       );
     }
     if (!isNil(status)) q.where("status_code", status);
@@ -127,7 +127,7 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
 
   const list = await db.getAll(
     userIsAdmin ? "System Admin" : req.user.email,
-    listQuery
+    listQuery,
   );
 
   const locations = await knex("locations");
@@ -159,7 +159,7 @@ reportRouter.get(
   async (req: Request, res: Response) => {
     const list = await db.getBySupervisorEmail(req.user.email);
     return res.json({ data: list });
-  }
+  },
 );
 
 reportRouter.get("/role/:role", async (req: Request, res: Response) => {
@@ -168,10 +168,10 @@ reportRouter.get("/role/:role", async (req: Request, res: Response) => {
 
   const userRoles = (req.user.roles = req.user.roles || []);
   const matchingRoles = userRoles.filter((r: UserRole) =>
-    roleArray.includes(r.name ?? "")
+    roleArray.includes(r.name ?? ""),
   );
   const matchingDepartments = matchingRoles.map(
-    (r: UserRole) => r.department_code
+    (r: UserRole) => r.department_code,
   );
 
   const query = function (query: Knex.QueryBuilder) {
@@ -190,12 +190,12 @@ reportRouter.get("/:slug", async (req: Request, res: Response) => {
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin"
+      (role: UserRole) => role.name === "System Admin",
     ).length > 0;
 
   const data = await db.getBySlug(
     slug,
-    userIsAdmin ? "System Admin" : req.user.email
+    userIsAdmin ? "System Admin" : req.user.email,
   );
 
   if (!data) return res.status(404).send();
@@ -216,12 +216,12 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin"
+      (role: UserRole) => role.name === "System Admin",
     ).length > 0;
 
   const data = await db.getById(
     id,
-    userIsAdmin ? "System Admin" : req.user.email
+    userIsAdmin ? "System Admin" : req.user.email,
   );
   if (!data) return res.status(404).send();
 
@@ -329,16 +329,15 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   const department = await new DepartmentService().determineDepartment(
     reporting_person_email,
     supervisor_email,
-    location_code
+    location_code,
   );
 
   await directoryService.connect();
   const directorySubmitter = await directoryService.searchByEmail(
-    reporting_person_email
+    reporting_person_email,
   );
-  const directorySupervisor = await directoryService.searchByEmail(
-    supervisor_email
-  );
+  const directorySupervisor =
+    await directoryService.searchByEmail(supervisor_email);
 
   const employeeName =
     directorySubmitter && directorySubmitter[0]
@@ -454,14 +453,14 @@ reportRouter.post("/", async (req: Request, res: Response) => {
           email: reporting_person_email,
         },
         employeeName,
-        insertedIncidents[0]
+        insertedIncidents[0],
       );
 
       if (req.user.email != reporting_person_email) {
         await emailService.sendIncidentReporterNotification(
           { fullName: req.user.display_name, email: req.user.email },
           employeeName,
-          insertedIncidents[0]
+          insertedIncidents[0],
         );
       }
     }
@@ -473,7 +472,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
           email: supervisor_email,
         },
         employeeName,
-        insertedIncidents[0]
+        insertedIncidents[0],
       );
     }
 
@@ -515,7 +514,7 @@ reportRouter.put(
               fullName: incident.supervisor_email,
               email: incident.supervisor_email,
             },
-            incident
+            incident,
           );
         }
       } else if (operation == "revert") {
@@ -564,7 +563,7 @@ reportRouter.put(
     }
 
     return res.json({ data: {} });
-  }
+  },
 );
 
 reportRouter.get("/:slug/linked-users", async (req: Request, res: Response) => {
@@ -572,12 +571,12 @@ reportRouter.get("/:slug/linked-users", async (req: Request, res: Response) => {
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin"
+      (role: UserRole) => role.name === "System Admin",
     ).length > 0;
 
   const incident = await db.getBySlug(
     slug,
-    userIsAdmin ? "System Admin" : req.user.email
+    userIsAdmin ? "System Admin" : req.user.email,
   );
 
   if (incident) {
@@ -597,34 +596,33 @@ reportRouter.post(
 
     const userIsAdmin =
       (req.user.roles = req.user.roles || []).filter(
-        (role: UserRole) => role.name === "System Admin"
+        (role: UserRole) => role.name === "System Admin",
       ).length > 0;
 
     const incident = await db.getBySlug(
       slug,
-      userIsAdmin ? "System Admin" : req.user.email
+      userIsAdmin ? "System Admin" : req.user.email,
     );
 
     if (incident) {
       await knex("incident_users").insert(req.body);
 
       const recipient = req.body.user_email;
-      const directorySubmitter = await directoryService.searchByEmail(
-        recipient
-      );
+      const directorySubmitter =
+        await directoryService.searchByEmail(recipient);
       const employeeName =
         directorySubmitter && directorySubmitter[0]
           ? directorySubmitter[0].display_name
           : recipient;
       await emailService.sendIncidentInviteNotification(
         { fullName: employeeName, email: recipient },
-        incident
+        incident,
       );
       return res.json({ data: {} });
     }
 
     res.json({ data: [] });
-  }
+  },
 );
 
 reportRouter.delete(
@@ -634,12 +632,12 @@ reportRouter.delete(
 
     const userIsAdmin =
       (req.user.roles = req.user.roles || []).filter(
-        (role: UserRole) => role.name === "System Admin"
+        (role: UserRole) => role.name === "System Admin",
       ).length > 0;
 
     const incident = await db.getBySlug(
       slug,
-      userIsAdmin ? "System Admin" : req.user.email
+      userIsAdmin ? "System Admin" : req.user.email,
     );
 
     if (incident) {
@@ -648,7 +646,7 @@ reportRouter.delete(
     }
 
     res.json({ data: [] });
-  }
+  },
 );
 
 reportRouter.post(
@@ -663,9 +661,8 @@ reportRouter.post(
     const recipientList = recipients.split(/[\s,;]+/).filter(Boolean);
 
     for (const recipient of recipientList) {
-      const directorySubmitter = await directoryService.searchByEmail(
-        recipient
-      );
+      const directorySubmitter =
+        await directoryService.searchByEmail(recipient);
       const employeeName =
         directorySubmitter && directorySubmitter[0]
           ? directorySubmitter[0].display_name
@@ -673,7 +670,7 @@ reportRouter.post(
 
       await emailService.sendIncidentInviteNotification(
         { fullName: employeeName, email: recipient },
-        incident
+        incident,
       );
     }
 
@@ -681,7 +678,7 @@ reportRouter.post(
       data: {},
       messages: [{ variant: "success", text: "Email Sent" }],
     });
-  }
+  },
 );
 
 reportRouter.post(
@@ -693,7 +690,7 @@ reportRouter.post(
     if (!incident) return res.status(404).send();
 
     const directorySubmitter = await directoryService.searchByEmail(
-      incident.reporting_person_email
+      incident.reporting_person_email,
     );
     const employeeName =
       directorySubmitter && directorySubmitter[0]
@@ -702,14 +699,14 @@ reportRouter.post(
 
     await emailService.sendIncidentCompleteEmployeeNotification(
       { fullName: employeeName, email: incident.reporting_person_email },
-      incident
+      incident,
     );
 
     return res.json({
       data: {},
       messages: [{ variant: "success", text: "Email Sent" }],
     });
-  }
+  },
 );
 
 reportRouter.post(
@@ -735,10 +732,10 @@ reportRouter.post(
       .orderBy("order");
 
     const implementedStep = incidentSteps.find(
-      (step: IncidentStep) => step.step_title == "Controls Implemented"
+      (step: IncidentStep) => step.step_title == "Controls Implemented",
     );
     const requestStep = incidentSteps.find(
-      (step: IncidentStep) => step.step_title == "Committee Review"
+      (step: IncidentStep) => step.step_title == "Committee Review",
     );
 
     if (!isNil(requestStep)) return res.status(400).send("Step already exists");
@@ -749,8 +746,6 @@ reportRouter.post(
       order: implementedStep.order,
       activate_date: new Date(),
     };
-
-    console.log("H1");
 
     const stepsToIncrement = await knex("incident_steps")
       .where({ incident_id: id })
@@ -765,26 +760,14 @@ reportRouter.post(
         });
     }
 
-    console.log("H2");
+    await knex("incident_steps").insert(newStep);
 
-  const implementedStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Controls Implemented");
-  const requestStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Committee Review");
+    for (const user of committeeUsers) {
+      const userRecord = await knex("users")
+        .where({ id: user.user_id })
+        .first();
 
-    console.log("H3");
-
-  const newStep = {
-    incident_id: id,
-    step_title: "Committee Review",
-    order: implementedStep.order,
-    activate_date: new Date(),
-  };
-
-  await knex.raw(`UPDATE "incident_steps" SET "order" = "order" + 1 WHERE "incident_id" = ? AND "order" >= ?`, [
-    id,
-    implementedStep.order,
-  ]);
-
-  await knex("incident_steps").insert(newStep);
+      if (!userRecord) continue;
 
       await knex("incident_users").insert({
         user_email: userRecord.email,
@@ -794,7 +777,7 @@ reportRouter.post(
 
       await emailService.sendIncidentInviteNotification(
         { fullName: userRecord.display_name, email: userRecord.email },
-        incident
+        incident,
       );
     }
 
@@ -802,19 +785,21 @@ reportRouter.post(
       data: {},
       messages: [{ variant: "success", text: "Email Sent" }],
     });
-  }
+  },
 );
 
 export async function updateActionHazards(
   action: Action,
   status_code: string,
   urgency_code: string,
-  control?: string | null
+  control?: string | null,
 ) {
   let hazardStatus = HazardStatuses.OPEN.code;
 
-  if (status_code == ActionStatuses.IN_PROGRESS.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
-  if (status_code == ActionStatuses.COMPLETE.code) hazardStatus = HazardStatuses.REMEDIATED.code;
+  if (status_code == ActionStatuses.IN_PROGRESS.code)
+    hazardStatus = HazardStatuses.IN_PROGRESS.code;
+  if (status_code == ActionStatuses.COMPLETE.code)
+    hazardStatus = HazardStatuses.REMEDIATED.code;
 
   const hazards = await knex("hazards").where({ id: action.hazard_id });
 
