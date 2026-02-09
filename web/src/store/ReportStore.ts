@@ -431,7 +431,9 @@ export interface Incident {
   files?: any[];
   steps?: any[];
   actions?: any[];
+  committee_actions?: any[];
   hazards?: any[];
+
 }
 
 export interface Location {

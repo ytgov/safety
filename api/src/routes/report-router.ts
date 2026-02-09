@@ -767,16 +767,24 @@ reportRouter.post(
 
     console.log("H2");
 
-    await knex("incident_steps").insert(newStep);
+  const implementedStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Controls Implemented");
+  const requestStep = incidentSteps.find((step: IncidentStep) => step.step_title == "Committee Review");
 
     console.log("H3");
 
-    for (const user of committeeUsers) {
-      const userRecord = await knex("users")
-        .where({ id: user.user_id })
-        .first();
+  const newStep = {
+    incident_id: id,
+    step_title: "Committee Review",
+    order: implementedStep.order,
+    activate_date: new Date(),
+  };
 
-      if (!userRecord) continue;
+  await knex.raw(`UPDATE "incident_steps" SET "order" = "order" + 1 WHERE "incident_id" = ? AND "order" >= ?`, [
+    id,
+    implementedStep.order,
+  ]);
+
+  await knex("incident_steps").insert(newStep);
 
       await knex("incident_users").insert({
         user_email: userRecord.email,
@@ -805,10 +813,8 @@ export async function updateActionHazards(
 ) {
   let hazardStatus = HazardStatuses.OPEN.code;
 
-  if (status_code == ActionStatuses.IN_PROGRESS.code)
-    hazardStatus = HazardStatuses.IN_PROGRESS.code;
-  if (status_code == ActionStatuses.COMPLETE.code)
-    hazardStatus = HazardStatuses.REMEDIATED.code;
+  if (status_code == ActionStatuses.IN_PROGRESS.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
+  if (status_code == ActionStatuses.COMPLETE.code) hazardStatus = HazardStatuses.REMEDIATED.code;
 
   const hazards = await knex("hazards").where({ id: action.hazard_id });
 

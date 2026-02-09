@@ -16,9 +16,12 @@
       </v-card-text>
 
       <v-card-text v-else>
-        <div class="bg-white" style="border: 1px #ddd solid; border-radius: 4px">
-          <ActionCompleteForm :action="action" :readonly="readonly" @do-close="closeClick" />
-        </div>
+        <ActionCompleteForm
+          v-if="action.is_committee_task == 0"
+          :action="action"
+          :readonly="readonly"
+          @do-close="closeClick" />
+        <CommitteeActionCompleteForm v-else :action="action" :readonly="readonly" @do-close="closeClick" />
 
         <div v-if="hazardId" class="mt-5">
           <v-label>Attachments</v-label>
@@ -65,6 +68,7 @@ const emit = defineEmits(["doClose"]);
 import { useHazardStore } from "@/store/HazardStore";
 import ActionCompleteForm from "./ActionCompleteForm.vue";
 import ActionClassifyForm from "./ActionClassifyForm.vue";
+import CommitteeActionCompleteForm from "./CommitteeActionCompleteForm.vue";
 
 const hazardStore = useHazardStore();
 const { attachments } = storeToRefs(hazardStore);
