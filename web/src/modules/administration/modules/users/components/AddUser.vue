@@ -19,15 +19,8 @@
           <v-card-text class="pt-5">
             <employee-lookup label="" actionName="Select" :select="doSelect" v-if="!chosenOne.email"></employee-lookup>
 
-            <v-text-field
-              v-model="chosenOne.display_name"
-              readonly
-              dense
-              outlined
-              label="Selected user"
-              append-icon="mdi-lock"
-              v-if="chosenOne.email"
-              append-outer-icon="mdi-close-circle"
+            <v-text-field v-model="chosenOne.display_name" readonly dense outlined label="Selected user"
+              append-icon="mdi-lock" v-if="chosenOne.email" append-outer-icon="mdi-close-circle"
               @click:append-outer="doSelect({})"></v-text-field>
 
             <v-btn color="primary" class="mt-0 mb-3" @click="doAdd" :disabled="!chosenOne.email">Add </v-btn>

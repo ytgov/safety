@@ -37,6 +37,8 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
     .get(`${AUTH0_DOMAIN}/userinfo`, { headers: { authorization: token } })
     .then(async (resp: any) => {
       if (resp.data && resp.data.sub) {
+        console.log("Userinfo response", resp.data);
+
         let email = resp.data.email;
         let first_name = resp.data.given_name;
         let last_name = resp.data.family_name;
