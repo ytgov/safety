@@ -13,58 +13,29 @@
           <v-row>
             <v-col cols="12" sm="4">
               <v-label class="mb-1" style="white-space: inherit">Date and time of inspection</v-label>
-              <DateTimeSelector
-                v-model="report.date"
-                hide-details
-                :readonly="!isNil(selectedReport)"></DateTimeSelector>
+              <DateTimeSelector v-model="report.date" hide-details :readonly="!isNil(selectedReport)">
+              </DateTimeSelector>
             </v-col>
 
-            <v-col cols="12" sm="4">
+            <v-col cols="12" sm="8">
               <v-label class="mb-1" style="white-space: inherit">Department responsible</v-label>
 
-              <v-autocomplete
-                v-model="report.department_code"
-                :items="departments"
-                item-title="name"
-                item-value="code"
-                hide-details
-                :readonly="!isNil(selectedReport)"
-                :rules="[requiredRule]"
+              <v-autocomplete v-model="report.department_code" :items="departments" item-title="name" item-value="code"
+                hide-details :readonly="!isNil(selectedReport)" :rules="[requiredRule]"
                 @update:model-value="report.inspection_location_id = null" />
-            </v-col>
-
-            <v-col cols="12" sm="4">
-              <v-label class="mb-1" style="white-space: inherit">Area</v-label>
-              <v-autocomplete
-                v-model="report.location_code"
-                :items="locations"
-                item-title="name"
-                item-value="code"
-                hide-details
-                :readonly="!isNil(selectedReport)"
-                :rules="[requiredRule]" />
             </v-col>
 
             <v-col cols="12" sm="12">
               <v-label class="mb-1" style="white-space: inherit">Location</v-label>
-              <InspectionLocationSelector
-                v-model="report.inspection_location_id"
-                :disabled="isNil(report.department_code)"
-                :department="report.department_code"
-                :readonly="!isNil(selectedReport)"
-                :rules="[requiredRule]" />
+              <InspectionLocationSelector v-model="report.inspection_location_id"
+                :disabled="isNil(report.department_code)" :department="report.department_code"
+                :readonly="!isNil(selectedReport)" :rules="[requiredRule]" />
             </v-col>
           </v-row>
 
           <v-label>Attachments</v-label>
-          <v-file-input
-            v-model="report.files"
-            prepend-icon=""
-            prepend-inner-icon="mdi-paperclip"
-            chips
-            :readonly="!isNil(selectedReport)"
-            :clearable="isNil(selectedReport)"
-            multiple></v-file-input>
+          <v-file-input v-model="report.files" prepend-icon="" prepend-inner-icon="mdi-paperclip" chips
+            :readonly="!isNil(selectedReport)" :clearable="isNil(selectedReport)" multiple></v-file-input>
 
           <p>
             If you have attachments associated with this Inspection, they need to be uploaded before you click "Report
@@ -90,15 +61,12 @@
                 <v-list-item class="pt-2 pb-2" :title="makeTitle(hazard)" :subtitle="makeSubtitle(hazard)">
                   <template #prepend>
                     <v-avatar size="small" class="mx-n2">
-                      <v-icon v-if="hazard.urgency_code == 'Critical'" color="#D90000" size="26"
-                        >mdi-alpha-c-circle</v-icon
-                      >
-                      <v-icon v-else-if="hazard.urgency_code == 'High'" color="#FF8000" size="26"
-                        >mdi-alpha-h-circle</v-icon
-                      >
-                      <v-icon v-else-if="hazard.urgency_code == 'Medium'" color="#f3b228" size="26"
-                        >mdi-alpha-m-circle</v-icon
-                      >
+                      <v-icon v-if="hazard.urgency_code == 'Critical'" color="#D90000"
+                        size="26">mdi-alpha-c-circle</v-icon>
+                      <v-icon v-else-if="hazard.urgency_code == 'High'" color="#FF8000"
+                        size="26">mdi-alpha-h-circle</v-icon>
+                      <v-icon v-else-if="hazard.urgency_code == 'Medium'" color="#f3b228"
+                        size="26">mdi-alpha-m-circle</v-icon>
                       <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
                     </v-avatar>
                   </template>
@@ -115,20 +83,15 @@
           <v-btn class="mb-0" color="info" @click="addTaskClick">Add Hazard</v-btn>
           <v-spacer />
 
-          <v-btn class="mb-0" color="warning" @click="openConfirmationDialogAndGoToInspectionsPage"
-            >Complete Inspection</v-btn
-          >
+          <v-btn class="mb-0" color="warning" @click="openConfirmationDialogAndGoToInspectionsPage">Complete
+            Inspection</v-btn>
         </div>
         <InspectionActionList class="mt-5" @showAction="doShowActionEdit"></InspectionActionList>
 
         <ActionDialog v-model="showActionEdit" :action="actionToEdit" @doClose="actionReload"></ActionDialog>
 
-        <HazardAssessmentForm
-          v-model="showHazardDialog"
-          :incident-id="selectedReport.id"
-          incident_type_description="Inspection: "
-          :hazard-report="selectedReport"
-          @complete="actionReload"
+        <HazardAssessmentForm v-model="showHazardDialog" :incident-id="selectedReport.id"
+          incident_type_description="Inspection: " :hazard-report="selectedReport" @complete="actionReload"
           @close="showHazardDialog = false" />
       </v-col>
     </v-row>
@@ -158,7 +121,7 @@ import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue
 
 const inspectionStore = useInspectionStore();
 const { initialize, addInspection, loadReport } = inspectionStore;
-const { locations, selectedReport } = storeToRefs(inspectionStore);
+const { selectedReport } = storeToRefs(inspectionStore);
 
 const interfaceStore = useInterfaceStore();
 const { showOverlay, hideOverlay } = interfaceStore;
@@ -193,7 +156,7 @@ async function reload() {
   });
 }
 
-const report = ref({ eventType: null, date: new Date(), urgency: "Medium" });
+const report = ref({ eventType: null, date: new Date(), urgency: "Medium", location_code: "WHI" });
 
 watch(
   () => report.value.location_code,
@@ -258,7 +221,7 @@ function openConfirmationDialogAndGoToInspectionsPage() {
     () => {
       router.push("/inspections");
     },
-    () => {}
+    () => { }
   );
 }
 </script>

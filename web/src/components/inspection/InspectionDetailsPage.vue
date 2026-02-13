@@ -1,10 +1,9 @@
 <template>
-  <v-breadcrumbs
-    :items="[
-      { title: 'Home', to: '/' },
-      { title: 'Inspections', to: '/inspections' },
-      { title: 'Inspection Details' },
-    ]" />
+  <v-breadcrumbs :items="[
+    { title: 'Home', to: '/' },
+    { title: 'Inspections', to: '/inspections' },
+    { title: 'Inspection Details' },
+  ]" />
 
   <div v-if="selectedReport">
     <div v-if="canUseActions" class="float-right">
@@ -27,27 +26,17 @@
               <v-row>
                 <v-col>
                   <v-label>Department</v-label>
-                  <v-text-field
-                    :value="selectedReport.department_name"
-                    append-inner-icon="mdi-lock"
+                  <v-text-field :value="selectedReport.department_name" append-inner-icon="mdi-lock"
                     readonly></v-text-field>
                 </v-col>
                 <v-col>
                   <v-label>Reported by</v-label>
-                  <v-text-field
-                    :value="selectedReport.reporting_person_email"
-                    append-inner-icon="mdi-lock"
+                  <v-text-field :value="selectedReport.reporting_person_email" append-inner-icon="mdi-lock"
                     readonly></v-text-field>
                 </v-col>
                 <v-col>
-                  <v-label class="mb-1" style="white-space: inherit">Area</v-label>
-                  <v-text-field v-model="selectedReport.location_name" readonly append-inner-icon="mdi-lock" />
-                </v-col>
-                <v-col>
                   <v-label class="mb-1" style="white-space: inherit">Location</v-label>
-                  <v-text-field
-                    :model-value="selectedReport.inspection_location_name"
-                    readonly
+                  <v-text-field :model-value="selectedReport.inspection_location_name" readonly
                     append-inner-icon="mdi-lock" />
                 </v-col>
               </v-row>
@@ -56,15 +45,10 @@
                 <v-label>Attachments</v-label>
 
                 <div class="d-flex pt-2">
-                  <v-chip
-                    color="info"
-                    variant="flat"
-                    v-for="attach of selectedReport.attachments"
-                    class="mr-3"
+                  <v-chip color="info" variant="flat" v-for="attach of selectedReport.attachments" class="mr-3"
                     @click="openAttachmentClick(attach)">
                     <v-icon class="mr-3">mdi-camera</v-icon>
-                    {{ attach.file_name }}</v-chip
-                  >
+                    {{ attach.file_name }}</v-chip>
                 </div>
               </div>
             </v-card-text>
@@ -82,19 +66,12 @@
 
               <v-btn v-if="canAddTask" class="mb-0" size="small" color="info" @click="addTaskClick">Add Hazard</v-btn>
 
-              <ActionDialog
-                v-model="showActionEdit"
-                :action="actionToEdit"
-                :hazard-id="actionToEdit?.hazard_id"
+              <ActionDialog v-model="showActionEdit" :action="actionToEdit" :hazard-id="actionToEdit?.hazard_id"
                 @doClose="actionReload"></ActionDialog>
 
-              <HazardAssessmentForm
-                v-model="showHazardDialog"
-                :incident-id="selectedReport.id"
-                :incident_type_description="selectedReport.incident_type_description"
-                :hazard-report="selectedReport"
-                @complete="actionReload"
-                @close="showHazardDialog = false" />
+              <HazardAssessmentForm v-model="showHazardDialog" :incident-id="selectedReport.id"
+                :incident_type_description="selectedReport.incident_type_description" :hazard-report="selectedReport"
+                @complete="actionReload" @close="showHazardDialog = false" />
             </v-card-text>
           </v-card>
         </v-col>

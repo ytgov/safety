@@ -158,7 +158,7 @@ const previousStep = computed(() => {
 const isCommittee = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   if (isReview.value) return false;
-  if (selectedReport.value.incident_type_description == "Hazard" && currentStep.value.order == 4) return true;
+  if (selectedReport.value.incident_type_description == "Hazard" && currentStep.value.order == 3) return true;
   if (
     (selectedReport.value.incident_type_description == "Incident" ||
       selectedReport.value.incident_type_description == "No Loss Incident (near miss)") &&

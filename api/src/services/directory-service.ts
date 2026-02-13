@@ -24,7 +24,7 @@ export class DirectoryService {
         body,
         {
           headers: { "Content-type": "application/x-www-form-urlencoded" },
-        }
+        },
       )
       .then((resp) => {
         this.token = resp.data.access_token;
@@ -57,8 +57,10 @@ export class DirectoryService {
 
         if (piece == "") continue;
 
+        piece = piece.replace(/'/g, "''");
+
         queryStmts.push(
-          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`
+          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`,
         );
       }
 
@@ -68,9 +70,9 @@ export class DirectoryService {
       return axios
         .get<AzureADUserGetResponse>(
           `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
-            " AND "
+            " AND ",
           )} ${selectStmt}`,
-          { headers: this.authHeader }
+          { headers: this.authHeader },
         )
         .then((resp) => {
           if (resp.data && resp.data.value) {
@@ -102,14 +104,14 @@ export class DirectoryService {
                 if (dir.otherMails && dir.otherMails.length > 0) {
                   dir.mail =
                     dir.otherMails.find((m) =>
-                      m.toLowerCase().endsWith("@wcb.yk.ca")
+                      m.toLowerCase().endsWith("@wcb.yk.ca"),
                     ) ?? dir.mail;
 
                   if (dir.mail.includes("yukonhospitals")) continue;
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
-                    "@YNet.gov.yk.ca"
+                    "@YNet.gov.yk.ca",
                   );
                 } else continue;
               }
@@ -176,6 +178,8 @@ export class DirectoryService {
 
       let queryStmts = new Array<string>();
 
+      terms = terms.replace(/'/g, "''");
+
       queryStmts.push(`( startsWith(mail,'${terms}') )`);
 
       const selectStmt =
@@ -184,9 +188,9 @@ export class DirectoryService {
       return axios
         .get<AzureADUserGetResponse>(
           `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
-            " AND "
+            " AND ",
           )} ${selectStmt}`,
-          { headers: this.authHeader }
+          { headers: this.authHeader },
         )
         .then((resp) => {
           if (resp.data && resp.data.value) {
@@ -218,12 +222,12 @@ export class DirectoryService {
                 if (dir.otherMails && dir.otherMails.length > 0) {
                   dir.mail =
                     dir.otherMails.find((m) =>
-                      m.toLowerCase().endsWith("@wcb.yk.ca")
+                      m.toLowerCase().endsWith("@wcb.yk.ca"),
                     ) ?? dir.mail;
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
-                    "@YNet.gov.yk.ca"
+                    "@YNet.gov.yk.ca",
                   );
                 } else continue;
               }
