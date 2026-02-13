@@ -732,11 +732,20 @@ reportRouter.post(
       .orderBy("order");
 
     const implementedStep = incidentSteps.find(
-      (step: IncidentStep) => step.step_title == "Controls Implemented",
+      (step: IncidentStep) =>
+        step.step_title == "Controls Implemented" ||
+        step.step_title == "Control the Hazard",
     );
     const requestStep = incidentSteps.find(
       (step: IncidentStep) => step.step_title == "Committee Review",
     );
+
+    if (isNil(implementedStep)) {
+      console.log("No implemented step found, cannot send to committee");
+      return res
+        .status(400)
+        .send("No implemented step found, cannot send to committee");
+    }
 
     if (!isNil(requestStep)) return res.status(400).send("Step already exists");
 
