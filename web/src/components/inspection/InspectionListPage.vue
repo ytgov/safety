@@ -19,15 +19,8 @@
         </v-col>
       </v-row>
 
-      <v-data-table-server
-        v-model:items-per-page="perPage"
-        :page="page"
-        :headers="headers"
-        :items="reports"
-        :loading="isLoading"
-        :items-length="totalCount"
-        @update:page="updatePage"
-        @click:row="openReport">
+      <v-data-table-server v-model:items-per-page="perPage" :page="page" :headers="headers" :items="reports"
+        :loading="isLoading" :items-length="totalCount" @update:page="updatePage" @click:row="openReport">
         <template #item.created_at="{ item }">
           {{ formatDate(item.created_at) }}
         </template>
@@ -56,7 +49,6 @@ const location = ref(null);
 
 const headers = [
   { title: "Date", value: "created_at" },
-  { title: "Area", value: "location.name" },
   { title: "Location", value: "inspection_location.name" },
   { title: "Inspector", value: "reporting_person_email" },
 ];

@@ -14,7 +14,7 @@
           committee to continue.
         </p>
 
-        <CommitteeSelect v-model="selectedCommittee" label="Safety Committee" />
+        <CommitteeSelect v-model="selectedCommittee" :department="department" label="Safety Committee" />
 
         <div class="d-flex">
           <v-btn color="primary" :disabled="!selectedCommittee" @click="notifyClick">Request Review</v-btn>
