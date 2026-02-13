@@ -6,9 +6,9 @@
 import { computed } from "vue";
 import { useCommitteeStore } from "@/store/CommitteeStore";
 import { storeToRefs } from "pinia";
+import { isNil } from "lodash";
 
 const props = defineProps(["department"]);
-
 
 const store = useCommitteeStore();
 const { loadCommittees } = store;
