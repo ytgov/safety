@@ -56,6 +56,7 @@
         </template>
         <template #item.status="{ item }">
           <v-chip v-if="item.status.name == 'Remediated'" color="success" small>{{ item.status.name }}</v-chip>
+          <v-chip v-if="item.status.name == 'Closed'" color="success" small>{{ item.status.name }}</v-chip>
           <v-chip v-else-if="item.status.name == 'In Progress'" color="info" small>{{ item.status.name }}</v-chip>
           <v-chip v-else color="error" small>{{ item.status.name }}</v-chip>
         </template>

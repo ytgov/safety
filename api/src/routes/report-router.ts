@@ -319,23 +319,34 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     additional_people,
   } = req.body;
 
-  const reporting_person_email =
-    on_behalf == "Yes" ? on_behalf_email : req.user.email;
+  let reporting_person_email = req.user.email;
+
+  await directoryService.connect();
+
+  if (on_behalf == "Yes") {
+    const directoryOnBehalf = await directoryService.search(on_behalf_email);
+
+    if (directoryOnBehalf && directoryOnBehalf.length == 1) {
+      reporting_person_email = directoryOnBehalf[0].email;
+    } else {
+      reporting_person_email = on_behalf_email;
+    }
+  }
 
   const defaultIncidentType = await knex("incident_types")
     .where({ name: eventType })
     .select("id")
     .first();
+
   const department = await new DepartmentService().determineDepartment(
-    reporting_person_email,
-    supervisor_email,
+    [reporting_person_email, req.user.email, supervisor_email],
     location_code,
   );
 
-  await directoryService.connect();
   const directorySubmitter = await directoryService.searchByEmail(
     reporting_person_email,
   );
+
   const directorySupervisor =
     await directoryService.searchByEmail(supervisor_email);
 

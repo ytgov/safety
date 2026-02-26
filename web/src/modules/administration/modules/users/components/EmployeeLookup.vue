@@ -2,7 +2,7 @@
   <div>
     <v-autocomplete :label="`${label} ${searchLocation}`" v-model="model" v-model:search="search" :items="items"
       :loading="isLoading" prepend-inner-icon="mdi-magnify" item-value="id" item-title="long_name" hide-no-data outlined
-      clearable return-object>
+      no-filter clearable return-object>
       <template #no-data>
         <div class="mx-4 text-caption">
           <strong>No matches found?</strong>

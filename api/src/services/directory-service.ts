@@ -65,7 +65,7 @@ export class DirectoryService {
       }
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType,accountEnabled";
 
       return axios
         .get<AzureADUserGetResponse>(
@@ -123,11 +123,15 @@ export class DirectoryService {
               )
                 continue;
 
-              let long_name = `${dir.givenName} ${
-                dir.surname
-              } (${dir.userPrincipalName
+              if (!dir.accountEnabled) continue;
+
+              const ynet_id = dir.userPrincipalName
                 .toLowerCase()
-                .replace("@ynet.gov.yk.ca", "")})`;
+                .replace("@ynet.gov.yk.ca", "");
+
+              if (ynet_id.includes("@")) continue;
+
+              let long_name = `${dir.givenName} ${dir.surname} (${ynet_id})`;
               let title = "Unknown title";
 
               if (dir.department) {
@@ -143,9 +147,7 @@ export class DirectoryService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName
-                  .toLowerCase()
-                  .replace("@ynet.gov.yk.ca", ""),
+                ynet_id,
                 email: dir.mail,
                 long_name,
                 title,
@@ -183,7 +185,7 @@ export class DirectoryService {
       queryStmts.push(`( startsWith(mail,'${terms}') )`);
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,accountEnabled";
 
       return axios
         .get<AzureADUserGetResponse>(
@@ -239,11 +241,15 @@ export class DirectoryService {
               )
                 continue;
 
-              let long_name = `${dir.givenName} ${
-                dir.surname
-              } (${dir.userPrincipalName
+              if (!dir.accountEnabled) continue;
+
+              const ynet_id = dir.userPrincipalName
                 .toLowerCase()
-                .replace("@ynet.gov.yk.ca", "")})`;
+                .replace("@ynet.gov.yk.ca", "");
+
+              if (ynet_id.includes("@")) continue;
+
+              let long_name = `${dir.givenName} ${dir.surname} (${ynet_id})`;
               let title = "Unknown title";
 
               if (dir.department) {
@@ -259,9 +265,7 @@ export class DirectoryService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName
-                  .toLowerCase()
-                  .replace("@ynet.gov.yk.ca", ""),
+                ynet_id,
                 email: dir.mail,
                 long_name,
                 title,
@@ -309,4 +313,5 @@ export interface AzureADUser {
   department: string;
   officeLocation: string;
   otherMails: string[];
+  accountEnabled: boolean;
 }

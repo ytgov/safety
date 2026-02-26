@@ -2,26 +2,12 @@
   <div>
     <v-label class="mb-1">{{ props.label }}</v-label>
     <div v-if="selectedPerson">
-      <v-text-field
-        :value="selectedPerson.long_name"
-        readonly
-        append-inner-icon="mdi-close"
+      <v-text-field :value="selectedPerson.long_name" readonly append-inner-icon="mdi-close"
         @click:append-inner="clear" />
     </div>
     <div v-else>
-      <v-autocomplete
-        v-model="model"
-        v-model:search="search"
-        :items="items"
-        :loading="isLoading"
-        item-value="id"
-        item-title="long_name"
-        append-icon="mdi-magnify"
-        auto-select-first
-        no-filter
-        outlined
-        dense
-        clearable
+      <v-autocomplete v-model="model" v-model:search="search" :items="items" :loading="isLoading" item-value="id"
+        item-title="long_name" append-icon="mdi-magnify" auto-select-first no-filter outlined dense clearable
         return-object>
         <template #no-data>
           <div class="mx-4 text-caption">
@@ -45,8 +31,7 @@
                 <v-icon class="mr-2">mdi-account-check</v-icon>
                 actionName
               </v-btn>
-              <v-btn @click="clear" color="secondary" class="ml-4 mb-0 mt-4" small>Clear</v-btn></v-col
-            >
+              <v-btn @click="clear" color="secondary" class="ml-4 mb-0 mt-4" small>Clear</v-btn></v-col>
           </v-row>
         </v-card-text>
       </v-card>
@@ -56,6 +41,7 @@
 
 <script setup lang="ts">
 import { useDirectoryStore } from "@/store/DirectoryStore";
+import { checkPrimeSync } from "crypto";
 import { ref, watch } from "vue";
 
 const props = defineProps(["label"]);

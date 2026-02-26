@@ -2,7 +2,13 @@ import express, { Request, Response } from "express";
 import { isArray } from "lodash";
 
 import { db as knex } from "../data/db-client";
-import { DepartmentService, UnifiedDirectoryService, EmailService, IncidentService, UserService } from "../services";
+import {
+  DepartmentService,
+  UnifiedDirectoryService,
+  EmailService,
+  IncidentService,
+  UserService,
+} from "../services";
 import {
   Hazard,
   HazardStatuses,
@@ -28,7 +34,15 @@ const userService = new UserService();
 offlineReportRouter.post("/", async (req: Request, res: Response) => {
   req.body.status = "Initial Report";
 
-  let { date, eventType, description, location_code, location_detail, supervisor_email, urgency } = req.body;
+  let {
+    date,
+    eventType,
+    description,
+    location_code,
+    location_detail,
+    supervisor_email,
+    urgency,
+  } = req.body;
 
   let currentUserEmail = req.body.on_behalf_email;
   let currentUserId = 1;
@@ -66,20 +80,30 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
 
   const reporting_person_email = req.body.email;
 
-  const defaultHazardType = await knex("hazard_types").orderBy("id").select("id").first();
-  const defaultIncidentType = await knex("incident_types").where({ name: eventType }).select("id").first();
+  const defaultHazardType = await knex("hazard_types")
+    .orderBy("id")
+    .select("id")
+    .first();
+  const defaultIncidentType = await knex("incident_types")
+    .where({ name: eventType })
+    .select("id")
+    .first();
   const department = await new DepartmentService().determineDepartment(
-    reporting_person_email,
-    supervisor_email,
-    location_code
+    [reporting_person_email, supervisor_email],
+    location_code,
   );
 
   await directoryService.connect();
-  const directorySubmitter = await directoryService.searchByEmail(reporting_person_email);
-  const directorySupervisor = await directoryService.searchByEmail(supervisor_email);
+  const directorySubmitter = await directoryService.searchByEmail(
+    reporting_person_email,
+  );
+  const directorySupervisor =
+    await directoryService.searchByEmail(supervisor_email);
 
   const employeeName =
-    directorySubmitter && directorySubmitter[0] ? directorySubmitter[0].display_name : reporting_person_email;
+    directorySubmitter && directorySubmitter[0]
+      ? directorySubmitter[0].display_name
+      : reporting_person_email;
 
   const trx = await knex.transaction();
 
@@ -102,15 +126,28 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       source: "offline",
     } as Incident;
 
-    const insertedIncidents = await trx("incidents").insert(incident).returning("*");
+    const insertedIncidents = await trx("incidents")
+      .insert(incident)
+      .returning("*");
     let insertedIncidentId = insertedIncidents[0].id;
 
     let steps = new Array<string>();
 
     if (eventType == "hazard") {
-      steps = ["Hazard Identified", "Assessment of Hazard", "Control the Hazard", "Employee Notification"];
+      steps = [
+        "Hazard Identified",
+        "Assessment of Hazard",
+        "Control the Hazard",
+        "Employee Notification",
+      ];
     } else {
-      steps = ["Incident Reported", "Investigation", "Control Plan", "Controls Implemented", "Employee Notification"];
+      steps = [
+        "Incident Reported",
+        "Investigation",
+        "Control Plan",
+        "Controls Implemented",
+        "Employee Notification",
+      ];
     }
 
     for (let i = 1; i <= steps.length; i++) {
@@ -134,25 +171,31 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
 
     if (directorySubmitter && directorySubmitter.length > 0) {
       await emailService.sendIncidentEmployeeNotification(
-        { fullName: directorySubmitter[0].display_name, email: reporting_person_email },
+        {
+          fullName: directorySubmitter[0].display_name,
+          email: reporting_person_email,
+        },
         employeeName,
-        insertedIncidents[0]
+        insertedIncidents[0],
       );
 
       if (currentUserEmail != reporting_person_email) {
         await emailService.sendIncidentReporterNotification(
           { fullName: currentUserName, email: currentUserEmail },
           employeeName,
-          insertedIncidents[0]
+          insertedIncidents[0],
         );
       }
     }
 
     if (directorySupervisor && directorySupervisor.length > 0) {
       await emailService.sendIncidentSupervisorNotification(
-        { fullName: directorySupervisor[0].display_name, email: supervisor_email },
+        {
+          fullName: directorySupervisor[0].display_name,
+          email: supervisor_email,
+        },
         employeeName,
-        insertedIncidents[0]
+        insertedIncidents[0],
       );
     }
 

@@ -63,7 +63,17 @@ export class UnifiedDirectoryService {
       this.yesnetService.searchByEmail(email),
     ]);
 
-    return [...directoryResults, ...yesnetResults];
+    const emailResults = [...directoryResults, ...yesnetResults];
+    return emailResults;
+
+    if (emailResults.length > 0) return emailResults;
+
+    const [directorySearchResults, yesnetSearchResults] = await Promise.all([
+      this.directoryService.search(email),
+      this.yesnetService.search(email),
+    ]);
+
+    return [...directorySearchResults, ...yesnetSearchResults];
   }
 
   /**

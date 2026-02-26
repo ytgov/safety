@@ -14,7 +14,7 @@ directoryRouter.post(
     const results = await unifiedDirectory.search(terms);
 
     return res.json({ data: results });
-  }
+  },
 );
 
 directoryRouter.post(
@@ -33,16 +33,16 @@ directoryRouter.post(
 
     for (const part of parts) {
       allUsersQuery.whereRaw(
-        `(LOWER("email") LIKE '${part}%' OR LOWER("first_name") LIKE '${part}%' OR LOWER("last_name") LIKE '${part}%')`
+        `(LOWER("email") LIKE '${part}%' OR LOWER("first_name") LIKE '${part}%' OR LOWER("last_name") LIKE '${part}%')`,
       );
     }
 
     let allUsers = await allUsersQuery;
     data.map(
-      (d: any) => (d.user_id = allUsers.find((u) => u.email == d.email)?.id)
+      (d: any) => (d.user_id = allUsers.find((u) => u.email == d.email)?.id),
     );
     yesnetResults.map(
-      (d: any) => (d.user_id = allUsers.find((u) => u.email == d.email)?.id)
+      (d: any) => (d.user_id = allUsers.find((u) => u.email == d.email)?.id),
     );
 
     const combinedData = [...data, ...yesnetResults];
@@ -68,7 +68,7 @@ directoryRouter.post(
     }
 
     return res.json({ data: combinedData });
-  }
+  },
 );
 
 directoryRouter.post(
@@ -104,7 +104,7 @@ directoryRouter.post(
 
     if (data.length > 0) {
       data.map(
-        (d: any) => (d.user_id = allUsers.find((u) => u.email == d.email)?.id)
+        (d: any) => (d.user_id = allUsers.find((u) => u.email == d.email)?.id),
       );
     } else {
       const nonDirectoryUser = allUsers.find((u) => u.email == terms);
@@ -127,5 +127,5 @@ directoryRouter.post(
     }
 
     return res.json({ data });
-  }
+  },
 );

@@ -1,6 +1,6 @@
 import axios from "axios";
 import moment from "moment";
-import { isNil } from "lodash";
+import { isNaN, isNil, isNumber } from "lodash";
 
 import {
   YESNET_CLIENT_ID,
@@ -71,7 +71,7 @@ export class YESNETService {
       }
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType,accountEnabled";
 
       return axios
         .get<AzureADUserGetResponse>(
@@ -127,11 +127,18 @@ export class YESNETService {
               )
                 continue;
 
+              if (!dir.accountEnabled) continue;
+              if (dir.jobTitle == "Student") continue;
+
+              const yesnet_id = dir.userPrincipalName
+                .toLowerCase()
+                .replace("@yesnet.yk.ca", "");
+
+              if (!isNaN(Number(yesnet_id))) continue;
+
               let long_name = `${dir.givenName} ${
                 dir.surname
-              } (${dir.userPrincipalName
-                .toLowerCase()
-                .replace("@ynet.gov.yk.ca", "")})`;
+              } (${dir.userPrincipalName.toLowerCase()})`;
               let title = "Unknown title";
 
               if (dir.department) {
@@ -147,9 +154,7 @@ export class YESNETService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName
-                  .toLowerCase()
-                  .replace("@ynet.gov.yk.ca", ""),
+                ynet_id: yesnet_id,
                 email: dir.mail,
                 long_name,
                 title,
@@ -187,7 +192,7 @@ export class YESNETService {
       queryStmts.push(`( startsWith(mail,'${terms}') )`);
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,accountEnabled";
 
       return axios
         .get<AzureADUserGetResponse>(
@@ -243,11 +248,18 @@ export class YESNETService {
               )
                 continue;
 
+              if (!dir.accountEnabled) continue;
+              if (dir.jobTitle == "Student") continue;
+
+              const yesnet_id = dir.userPrincipalName
+                .toLowerCase()
+                .replace("@yesnet.yk.ca", "");
+
+              if (!isNaN(Number(yesnet_id))) continue;
+
               let long_name = `${dir.givenName} ${
                 dir.surname
-              } (${dir.userPrincipalName
-                .toLowerCase()
-                .replace("@ynet.gov.yk.ca", "")})`;
+              } (${dir.userPrincipalName.toLowerCase()})`;
               let title = "Unknown title";
 
               if (dir.department) {
@@ -263,9 +275,7 @@ export class YESNETService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName
-                  .toLowerCase()
-                  .replace("@ynet.gov.yk.ca", ""),
+                ynet_id: yesnet_id,
                 email: dir.mail,
                 long_name,
                 title,
