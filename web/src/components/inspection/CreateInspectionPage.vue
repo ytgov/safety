@@ -58,7 +58,8 @@
 
             <v-list v-if="hazards.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
               <div v-for="(hazard, idx) of hazards">
-                <v-list-item class="pt-2 pb-2" :title="makeTitle(hazard)" :subtitle="makeSubtitle(hazard)">
+                <v-list-item class="pt-2 pb-2" :title="makeTitle(hazard)" :subtitle="makeSubtitle(hazard)"
+                  @click="openOtherActionDialog(hazard)">
                   <template #prepend>
                     <v-avatar size="small" class="mx-n2">
                       <v-icon v-if="hazard.urgency_code == 'Critical'" color="#D90000"
@@ -151,7 +152,6 @@ async function reload() {
   await loadHazards({
     page: 1,
     perPage: 100,
-    location: report.value.location_code,
     inspection_location_id: report.value.inspection_location_id,
     status: ["Open", "InPro"],
   });
@@ -231,5 +231,11 @@ function openConfirmationDialogAndGoToInspectionsPage() {
     },
     () => { }
   );
+}
+
+function openOtherActionDialog(action) {
+  const hazardAction = action.actions[0];
+  
+  doShowActionEdit(hazardAction);
 }
 </script>

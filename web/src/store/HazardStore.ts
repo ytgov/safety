@@ -56,6 +56,7 @@ export const useHazardStore = defineStore("hazards", {
       urgency,
       location,
       category,
+      inspection_location_id,
     }: {
       page: number | null;
       perPage: number | null;
@@ -64,6 +65,7 @@ export const useHazardStore = defineStore("hazards", {
       urgency: string | null;
       location: string | null;
       category: string | null;
+      inspection_location_id: number | null;
     }) {
       this.isLoading = true;
       const api = useApiStore();
@@ -75,6 +77,8 @@ export const useHazardStore = defineStore("hazards", {
       if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
       if (!isNil(location)) queryUrl += `location=${location}&`;
       if (!isNil(category)) queryUrl += `category=${category}&`;
+      if (!isNil(inspection_location_id))
+        queryUrl += `inspection_location_id=${inspection_location_id}&`;
 
       return api.secureCall("get", queryUrl).then((resp) => {
         this.hazards = resp.data;
@@ -90,10 +94,12 @@ export const useHazardStore = defineStore("hazards", {
 
     loadAttachments(hazardId: number) {
       const api = useApiStore();
-      return api.secureCall("get", `${HAZARD_URL}/${hazardId}/attachments`).then((resp) => {
-        this.attachments = resp.data;
-        return resp.data;
-      });
+      return api
+        .secureCall("get", `${HAZARD_URL}/${hazardId}/attachments`)
+        .then((resp) => {
+          this.attachments = resp.data;
+          return resp.data;
+        });
     },
 
     upload(hazardId: number, files: any[]) {
@@ -105,13 +111,17 @@ export const useHazardStore = defineStore("hazards", {
         formData.append("files", file);
       }
 
-      return api.secureUpload("post", `${HAZARD_URL}/${hazardId}/attachments`, formData).finally(() => {
-        this.isLoading = false;
-      });
+      return api
+        .secureUpload("post", `${HAZARD_URL}/${hazardId}/attachments`, formData)
+        .finally(() => {
+          this.isLoading = false;
+        });
     },
 
     openAttachment(attachment: any) {
-      window.open(`${ATTACHMENT_URL}/hazard/${attachment.hazard_id}/attachment/${attachment.id}`);
+      window.open(
+        `${ATTACHMENT_URL}/hazard/${attachment.hazard_id}/attachment/${attachment.id}`,
+      );
     },
   },
 });

@@ -8,7 +8,17 @@ import { DateTime } from "luxon";
 export const hazardRouter = express.Router();
 
 hazardRouter.get("/", async (req: Request, res: Response) => {
-  const { page, perPage, search, status, urgency, location, category } = req.query;
+  const {
+    page,
+    perPage,
+    search,
+    status,
+    urgency,
+    location,
+    category,
+    inspection_location_id,
+  } = req.query;
+
   const listQuery = knex("hazards");
   const countQuery = knex("hazards");
 
@@ -17,8 +27,12 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
 
   if (isEmpty())
     if (!isNil(search)) {
-      listQuery.whereRaw(`LOWER("description") like '%${search.toString().toLowerCase()}%'`);
-      countQuery.whereRaw(`LOWER("description") like '%${search.toString().toLowerCase()}%'`);
+      listQuery.whereRaw(
+        `LOWER("description") like '%${search.toString().toLowerCase()}%'`,
+      );
+      countQuery.whereRaw(
+        `LOWER("description") like '%${search.toString().toLowerCase()}%'`,
+      );
     }
   if (!isNil(status)) {
     const statusList = `${status}`.split(",");
@@ -38,6 +52,10 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
     listQuery.whereRaw(`"categories" like '%${category}%'`);
     countQuery.whereRaw(`"categories" like '%${category}%'`);
   }
+  if (!isNil(inspection_location_id)) {
+    listQuery.where("inspection_location_id", inspection_location_id);
+    countQuery.where("inspection_location_id", inspection_location_id);
+  }
 
   const count = await countQuery.count("* as count").first();
   const list = await listQuery
@@ -52,7 +70,9 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
   const statuses = await knex("hazard_statuses");
 
   for (const hazard of list) {
-    hazard.location = locations.find((l: any) => l.code === hazard.location_code);
+    hazard.location = locations.find(
+      (l: any) => l.code === hazard.location_code,
+    );
     hazard.type = types.find((t: any) => t.id === hazard.hazard_type_id);
     hazard.actions = actions.filter((a) => a.hazard_id === hazard.id);
     hazard.status = statuses.find((s: any) => s.code === hazard.status_code);
@@ -70,15 +90,20 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
 
       if (action.actor_role_type_id) {
         action.actor_display_name = (
-          await knex("role_types").where({ id: action.actor_role_type_id }).first()
+          await knex("role_types")
+            .where({ id: action.actor_role_type_id })
+            .first()
         ).description;
       } else if (action.actor_user_id) {
-        action.actor_display_name = (await knex("users").where({ id: action.actor_user_id }).first()).display_name;
+        action.actor_display_name = (
+          await knex("users").where({ id: action.actor_user_id }).first()
+        ).display_name;
       } else if (action.actor_user_email) {
         action.actor_display_name = action.actor_user_email;
       }
 
-      if (!isEmpty(action.actor_display_name)) hazard.assigned_to = action.actor_display_name;
+      if (!isEmpty(action.actor_display_name))
+        hazard.assigned_to = action.actor_display_name;
       action.categories = ((action.categories as string) ?? "").split(",");
     }
   }
@@ -88,7 +113,14 @@ hazardRouter.get("/", async (req: Request, res: Response) => {
 
 hazardRouter.put("/:id/action", async (req: Request, res: Response) => {
   const { id } = req.params;
-  const { notes, actor_user_email, actor_role_type_id, due_date, status_code, urgency_code } = req.body;
+  const {
+    notes,
+    actor_user_email,
+    actor_role_type_id,
+    due_date,
+    status_code,
+    urgency_code,
+  } = req.body;
   let { actor_user_id } = req.body;
 
   const hazard = await knex("hazards").where({ id }).first();
@@ -96,10 +128,14 @@ hazardRouter.put("/:id/action", async (req: Request, res: Response) => {
 
   let hazardStatus = HazardStatuses.OPEN.code;
 
-  if (status_code == ActionStatuses.IN_PROGRESS.code) hazardStatus = HazardStatuses.IN_PROGRESS.code;
-  if (status_code == ActionStatuses.COMPLETE.code) hazardStatus = HazardStatuses.REMEDIATED.code;
+  if (status_code == ActionStatuses.IN_PROGRESS.code)
+    hazardStatus = HazardStatuses.IN_PROGRESS.code;
+  if (status_code == ActionStatuses.COMPLETE.code)
+    hazardStatus = HazardStatuses.REMEDIATED.code;
 
-  await knex("hazards").where({ id: hazard.id }).update({ urgency_code, status_code: hazardStatus });
+  await knex("hazards")
+    .where({ id: hazard.id })
+    .update({ urgency_code, status_code: hazardStatus });
 
   await knex("actions")
     .where({ hazard_id: id })
@@ -113,7 +149,9 @@ hazardRouter.put("/:id/action", async (req: Request, res: Response) => {
     });
 
   if (!isEmpty(actor_user_email)) {
-    const actorUser = await knex("users").where("email", actor_user_email).first();
+    const actorUser = await knex("users")
+      .where("email", actor_user_email)
+      .first();
     if (actorUser) actor_user_id = actorUser.id;
   }
 
