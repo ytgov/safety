@@ -23,7 +23,7 @@
             </p>
 
             <p v-if="investigation.investigation_data.documentation_location" class="mt-1">
-              {{ investigation.investigation_data.documentation_location }}
+              Documentation Location: {{ investigation.investigation_data.documentation_location }}
             </p>
           </v-sheet>
 

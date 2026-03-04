@@ -102,7 +102,7 @@
                 </template>
                 <ul class="mx-5 my-3">
                   <li>
-                    Incidents or repots of speeding in YG vehicles, includes driving incidents or other unsafe acts that
+                    Incidents or reports of speeding in YG vehicles, includes driving incidents or other unsafe acts that
                     could result in injury or damage or loss.
                   </li>
                 </ul>
