@@ -277,6 +277,7 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
       const hazard = {
         hazard_type_id: 1,
         location_code: incident.location_code,
+        inspection_location_id: incident.inspection_location_id,
         department_code: incident.department_code,
         scope_code: Scopes.DEFAULT.code,
         status_code: HazardStatuses.OPEN.code,

@@ -26,11 +26,7 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox
-              v-model="action.categories"
-              value="Biological"
-              hide-details
-              density="compact"
+            <v-checkbox v-model="action.categories" value="Biological" hide-details density="compact"
               label="Biological" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
@@ -41,11 +37,7 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox
-              v-model="action.categories"
-              value="Ergonomic"
-              hide-details
-              density="compact"
+            <v-checkbox v-model="action.categories" value="Ergonomic" hide-details density="compact"
               label="Ergonomic" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
@@ -56,19 +48,14 @@
           </div>
 
           <div class="d-flex">
-            <v-checkbox
-              v-model="action.categories"
-              value="Physical Conditions"
-              hide-details
-              density="compact"
+            <v-checkbox v-model="action.categories" value="Physical Conditions" hide-details density="compact"
               label="Physical Conditions" />
 
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
               </template>
-              Examples: Electrical, temperature, humidity, fire/explosion potential, housekeeping, lighting, pressure
-              systems, road conditions, slippery or uneven surface, vibration, wildlife, working alone
+              Examples: Electrical, temperature, humidity, fire/explosion potential
             </v-tooltip>
           </div>
 
@@ -76,12 +63,12 @@
             <v-checkbox v-model="action.categories" value="Safety" hide-details density="compact" label="Safety" />
             <v-tooltip location="bottom right" width="600" open-delay="250">
               <template #activator="{ props }">
-                <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" style="opacity: 1" v-bind="props"
-                  >mdi-information</v-icon
-                >
+                <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" style="opacity: 1"
+                  v-bind="props">mdi-information</v-icon>
               </template>
-              Examples: Blocked exit routes, confined space, falling from heights, falling items, faulty equipment,
-              machinery in motion, overhead hazard, pinch/nip points, sharp objects
+              Examples: Blocked exit roues, confined space, falling from heights, falling items, faulty equipment,
+              equipment in motion, overhead hazard, pinch/hip points, sharp objects, housekeeping, slippery or uneven
+              surface, wildlife, road conditions and working alone
             </v-tooltip>
           </div>
         </v-card-text>
@@ -159,8 +146,9 @@
           <h3>{{ currentStep.title }}</h3>
 
           <p class="text-subtitle-1 mb-5">
-            Since the risk priority is set to <strong>{{ riskPriority }}</strong
-            >, all controls must be implemented within <strong>{{ maxDays }}</strong> day{{
+            Since the risk priority is set to <strong>{{ riskPriority }}</strong>, all controls must be implemented
+            within
+            <strong>{{ maxDays }}</strong> day{{
               maxDays > 1 ? "s" : ""
             }}
             (before {{ maxDueDate }}). The Due Date for this task has been automatically set to this date, but you may
@@ -316,6 +304,7 @@ function selectPriority(riskLevel) {
   border-bottom: 1px black solid;
   border-right: 1px black solid;
 }
+
 .score-table td {
   width: 99px;
   padding: 5px;
@@ -324,18 +313,22 @@ function selectPriority(riskLevel) {
   text-align: center;
   background-color: #ccc;
 }
+
 .score-table td.green {
   background-color: green;
   cursor: pointer;
 }
+
 .score-table td.yellow {
   background-color: yellow;
   cursor: pointer;
 }
+
 .score-table td.orange {
   background-color: orangered;
   cursor: pointer;
 }
+
 .score-table td.red {
   background-color: red;
   cursor: pointer;

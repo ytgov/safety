@@ -152,6 +152,7 @@ async function reload() {
     page: 1,
     perPage: 100,
     location: report.value.location_code,
+    inspection_location_id: report.value.inspection_location_id,
     status: ["Open", "InPro"],
   });
 }
@@ -160,6 +161,13 @@ const report = ref({ eventType: null, date: new Date(), urgency: "Medium", locat
 
 watch(
   () => report.value.location_code,
+  (newValue) => {
+    if (newValue) reload();
+  }
+);
+
+watch(
+  () => report.value.inspection_location_id,
   (newValue) => {
     if (newValue) reload();
   }

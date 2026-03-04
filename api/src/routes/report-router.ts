@@ -485,6 +485,10 @@ reportRouter.post("/", async (req: Request, res: Response) => {
         employeeName,
         insertedIncidents[0],
       );
+    } else {
+      console.log(
+        `Supervisor email ${supervisor_email} not found in directory, skipping notification email.`,
+      );
     }
 
     await trx.commit();

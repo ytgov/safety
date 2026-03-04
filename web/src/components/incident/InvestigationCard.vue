@@ -21,6 +21,10 @@
             <p v-if="investigation.investigation_data.collections_other" class="mt-1">
               {{ investigation.investigation_data.collections_other }}
             </p>
+
+            <p v-if="investigation.investigation_data.documentation_location" class="mt-1">
+              {{ investigation.investigation_data.documentation_location }}
+            </p>
           </v-sheet>
 
           <v-sheet border rounded class="pa-3 mb-4">
@@ -51,8 +55,8 @@
 
             <ul class="ml-4">
               <li>
-                <strong>{{ investigation.investigation_data.acts.subtitle }}:&nbsp;</strong
-                >{{ investigation.investigation_data.acts.title }}
+                <strong>{{ investigation.investigation_data.acts.subtitle }}:&nbsp;</strong>{{
+                  investigation.investigation_data.acts.title }}
               </li>
             </ul>
 

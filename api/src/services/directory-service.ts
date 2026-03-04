@@ -227,6 +227,13 @@ export class DirectoryService {
                       m.toLowerCase().endsWith("@wcb.yk.ca"),
                     ) ?? dir.mail;
 
+                  if (dir.mail.includes("yukonhospitals")) continue;
+
+                  dir.userPrincipalName = dir.userPrincipalName.replace(
+                    "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
+                    "@YNet.gov.yk.ca",
+                  );
+                } else if (dir.mail.includes("wcb.yk.ca")) {
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
                     "@YNet.gov.yk.ca",
@@ -238,8 +245,9 @@ export class DirectoryService {
                 dir.mail
                   .toLowerCase()
                   .endsWith("yukongovernment.onmicrosoft.com")
-              )
+              ) {
                 continue;
+              }
 
               if (!dir.accountEnabled) continue;
 
