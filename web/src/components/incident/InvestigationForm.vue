@@ -92,7 +92,7 @@
             </div>
 
             <div class="d-flex">
-              <v-checkbox v-model="events" value="damage" hide-details density="compact">
+              <v-checkbox v-model="events" value="vehicle_infraction" hide-details density="compact">
                 <template v-slot:label> Vehicle Infraction </template>
               </v-checkbox>
 
@@ -108,9 +108,6 @@
                 </ul>
               </v-tooltip>
             </div>
-
-
-
 
             <div class="d-flex">
               <v-checkbox v-model="events" value="service_loss" hide-details density="compact">
@@ -345,6 +342,7 @@ const eventOptions = computed(() => {
     { title: "Injury - First aid", value: "first_aid", required: true },
     { title: "Injury - Medical aid", value: "medical_aid", required: true },
     { title: "Damage", value: "damage", required: true },
+    { title: "Vehicle Infraction", value: "vehicle_infraction", required: true },
     { title: "Service Loss", value: "service_loss", required: true },
     { title: "Environmental impact", value: "environmental", required: true },
     { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
