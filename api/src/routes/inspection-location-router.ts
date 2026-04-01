@@ -17,7 +17,6 @@ inspectionLocationRouter.get("/branches/:department_code", async (req: Request, 
     .distinct("branch")
     .where({ department_code })
     .whereNotNull("branch")
-    .where("branch", "!=", "")
     .orderBy("branch");
   const branches = rows.map((r: any) => r.branch);
   return res.json({ data: branches });

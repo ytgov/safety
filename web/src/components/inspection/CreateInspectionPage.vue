@@ -26,7 +26,7 @@
             </v-col>
 
             <v-col cols="12" sm="4">
-              <v-label class="mb-1" style="white-space: inherit">Branch</v-label>
+              <v-label class="mb-1" style="white-space: inherit">Branch (optional)</v-label>
               <v-select v-model="selectedBranch" :items="branchOptions" :disabled="isNil(report.department_code)"
                 :readonly="!isNil(selectedReport)" clearable
                 @update:model-value="report.inspection_location_id = null" />
