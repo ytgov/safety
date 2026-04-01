@@ -122,8 +122,8 @@
             <v-card-text class="pt-2">
               <v-label class="mb-1" style="white-space: inherit">Health and Safety Committee
                 Recommendations</v-label>
-              <v-textarea v-model="selectedReport.hs_recommendations" :readonly="!canEditRecommendations"
-                :append-inner-icon="canEditRecommendations ? '' : 'mdi-lock'"
+              <v-textarea v-model="selectedReport.hs_recommendations" :readonly="!canCommitteeRecommendations"
+                :append-inner-icon="!canCommitteeRecommendations ? 'mdi-lock' : ''"
                 hint="Please do not include names or personal identifiers" persistent-hint />
 
               <div v-if="selectedReport.committee_review_complete_date" class="mt-4">
@@ -142,9 +142,9 @@
               </div>
 
               <div class="mt-4">
-                <v-btn v-if="canEditRecommendations" color="primary" class="my-0" @click="saveClick">Save</v-btn>
+                <v-btn v-if="canEditRecommendations || canCommitteeRecommendations" color="primary" class="my-0"
+                  @click="saveClick">Save</v-btn>
               </div>
-
             </v-card-text>
           </v-card>
         </v-col>
@@ -288,7 +288,7 @@ const isReview = computed(() => {
 const canAddTask = computed(() => {
   if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
   if (!(isSupervisor.value || isSystemAdmin.value)) return false;
-  if (selectedReport.value.status_code !== "Open") return false;
+  if (selectedReport.value.status_code !== "InProg") return false;
 
   if (selectedReport.value.incident_type_description == "Hazard") {
     return currentStep.value.step_title == "Control the Hazard";
@@ -302,9 +302,16 @@ const canAddTask = computed(() => {
   return currentStep.value.step_title == "Control Plan";
 });
 
+const canCommitteeRecommendations = computed(() => {
+  if (!hasCommitteeReview.value) return false;
+  if (selectedReport.value.status_code !== "InProg") return false;
+  if (selectedReport.value.committee_review_complete_date) return false; // Once committee review is complete, recommendations should be locked in
+  return isCommittee.value || isSystemAdmin.value;
+});
+
 const canEditRecommendations = computed(() => {
   if (!hasCommitteeReview.value) return false;
-  if (selectedReport.value.status_code !== "Open") return false;
+  if (selectedReport.value.status_code !== "InProg") return false;
   return isSupervisor.value || isSystemAdmin.value;
 });
 
