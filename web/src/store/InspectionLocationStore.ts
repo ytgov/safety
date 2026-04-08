@@ -23,7 +23,6 @@ export const useInspectionLocationStore = defineStore("inspectionLocation", {
 
           for (const location of this.inspectionlocations) {
             location.title = location.name;
-            if (!location.description) location.title = `${location.name} (${location.description})`;
           }
 
           return resp.data;
