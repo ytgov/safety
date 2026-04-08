@@ -121,7 +121,7 @@
             </v-card-item>
             <v-card-text class="pt-2">
               <v-label class="mb-1" style="white-space: inherit">Health and Safety Committee
-                Recommendations</v-label>
+                recommendations</v-label>
               <v-textarea v-model="selectedReport.hs_recommendations" :readonly="!canCommitteeRecommendations"
                 :append-inner-icon="!canCommitteeRecommendations ? 'mdi-lock' : ''"
                 hint="Please do not include names or personal identifiers" persistent-hint />
@@ -132,9 +132,17 @@
                   :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'" :items="committeeResponseOptions"
                   hide-details />
                 <div
-                  v-if="selectedReport.committee_supervisor_response === 'Supervisor rejects HSC recommendation. (If so, provide rationale below)'"
+                  v-if="selectedReport.committee_supervisor_response === 'Supervisor declines HSC recommendation. (If so, provide rationale below)'"
                   class="mt-4">
                   <v-label>Rationale</v-label>
+                  <v-textarea v-model="selectedReport.committee_supervisor_rationale"
+                    :readonly="!canEditRecommendations" :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'"
+                    hide-details />
+                </div>
+                <div
+                  v-if="selectedReport.committee_supervisor_response === 'Supervisor provides an alternative recommendation'"
+                  class="mt-4">
+                  <v-label>Alternative recommendation</v-label>
                   <v-textarea v-model="selectedReport.committee_supervisor_rationale"
                     :readonly="!canEditRecommendations" :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'"
                     hide-details />
@@ -318,7 +326,7 @@ const canEditRecommendations = computed(() => {
 const committeeResponseOptions = [
   'Supervisor accepts HSC recommendation as is',
   'Supervisor provides an alternative recommendation',
-  'Supervisor rejects HSC recommendation. (If so, provide rationale below)',
+  'Supervisor declines HSC recommendation. (If so, provide rationale below)',
 ];
 
 onMounted(() => {
