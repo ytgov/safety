@@ -16,12 +16,7 @@
       <v-col cols="12">
         <v-label>Hazard categories</v-label>
         <div class="pt-1 mb-n2">
-          <v-select
-            :model-value="action.categories"
-            chips
-            readonly
-            multiple
-            hide-details
+          <v-select :model-value="action.categories" chips readonly multiple hide-details
             append-inner-icon="mdi-lock" />
         </div>
       </v-col>
@@ -32,79 +27,55 @@
 
       <v-col cols="12">
         <v-label>Supervisor review</v-label>
-        <v-select
-          v-model="action.committee_supervisor_response"
-          :readonly="!isSupervisor"
-          :append-inner-icon="isSupervisor ? '' : 'mdi-lock'"
-          :items="[
+        <v-select v-model="action.committee_supervisor_response" :readonly="!isSupervisor"
+          :append-inner-icon="isSupervisor ? '' : 'mdi-lock'" :items="[
             'Supervisor accepts HSC recommendation as is',
             'Supervisor provides and alternative recommendation',
-            'Supervisor rejects HSC recommendation. (If so, provide rationale below)',
-          ]"
-          hide-details />
-        <div
-          v-if="
-            action.committee_supervisor_response ==
-            'Supervisor rejects HSC recommendation. (If so, provide rationale below)'
-          "
-          class="mt-5">
+            'Supervisor declines HSC recommendation. (If so, provide rationale below)',
+          ]" hide-details />
+        <div v-if="
+          action.committee_supervisor_response ==
+          'Supervisor declines HSC recommendation. (If so, provide rationale below)'
+        " class="mt-5">
           <v-label>Rationale</v-label>
-          <v-textarea
-            v-model="action.committee_task_rationale"
-            :readonly="!isSupervisor"
-            :append-inner-icon="isSupervisor ? '' : 'mdi-lock'"
-            hide-details />
+          <v-textarea v-model="action.committee_task_rationale" :readonly="!isSupervisor"
+            :append-inner-icon="isSupervisor ? '' : 'mdi-lock'" hide-details />
         </div>
       </v-col>
 
       <v-col cols="12">
         <v-label>Control plan progress</v-label>
         <div class="d-flex">
-          <v-textarea
-            v-model="props.action.notes"
-            :readonly="!isNil(props.action.complete_date) || isReadonly"
-            rows="3"
+          <v-textarea v-model="props.action.notes" :readonly="!isNil(props.action.complete_date) || isReadonly" rows="3"
             hide-details />
           <v-btn v-if="!isReadonly" class="ml-3 mt-auto" size="small" color="primary" @click="saveNotes"> Save</v-btn>
         </div>
       </v-col>
       <v-col v-if="!isNil(props.action.complete_name)" cols="12">
         <v-label>Completed</v-label>
-        <v-text-field
-          :model-value="`By: ${props.action.complete_name} On: ${formatDate(props.action.complete_date)}`"
-          readonly
-          hide-details />
+        <v-text-field :model-value="`By: ${props.action.complete_name} On: ${formatDate(props.action.complete_date)}`"
+          readonly hide-details />
       </v-col>
       <v-col v-else>
         <v-label>Assigned to</v-label>
-        <v-text-field
-          :model-value="props.action.actor_display_name"
-          readonly
-          hide-details
+        <v-text-field :model-value="props.action.actor_display_name" readonly hide-details
           append-inner-icon="mdi-lock" />
       </v-col>
     </v-row>
 
     <div v-if="!isReadonly" class="d-flex mt-5">
-      <v-btn v-if="!isNil(props.action.complete_date) && canAct" color="info" @click="revertClick"
-        ><v-icon class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn
-      >
-      <v-btn v-else :disabled="!canComplete || !canAct" color="success" @click="completeClick"
-        ><v-icon class="mr-2">mdi-check</v-icon> Control in place</v-btn
-      >
+      <v-btn v-if="!isNil(props.action.complete_date) && canAct" color="info" @click="revertClick"><v-icon
+          class="mr-2">mdi-arrow-u-left-top-bold</v-icon> Revert</v-btn>
+      <v-btn v-else :disabled="!canComplete || !canAct" color="success" @click="completeClick"><v-icon
+          class="mr-2">mdi-check</v-icon> Control in place</v-btn>
       <v-spacer />
 
       <ActionAssignmentDialog :action="action" @do-close="closeClick" />
     </div>
 
     <v-spacer />
-    <v-btn
-      v-if="(props.action.is_committee_task && isCommittee) || isSystemAdmin"
-      color="warning"
-      @click="deleteClick"
-      class="mt-3"
-      ><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn
-    >
+    <v-btn v-if="(props.action.is_committee_task && isCommittee) || isSystemAdmin" color="warning" @click="deleteClick"
+      class="mt-3"><v-icon class="mr-2">mdi-delete</v-icon>Delete</v-btn>
   </div>
 </template>
 
