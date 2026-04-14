@@ -12,6 +12,7 @@ export function SecureAPICall(method: string, token: string) {
   return axios.create({
     method: method,
     headers: headers,
+    timeout: 30000,
   });
 }
 
@@ -22,5 +23,6 @@ export function APICall(method: string) {
   return axios.create({
     method: method,
     headers: headers,
+    timeout: 30000,
   });
 }

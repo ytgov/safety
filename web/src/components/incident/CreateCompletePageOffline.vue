@@ -14,11 +14,11 @@
         </v-card-item>
         <v-card-text>
           <p class="text-body-1 mb-5 mt-5">
-            Your submission has been received and you will receive email notifications regarding the status of this
-            submission.
+            Your report has been saved and will be submitted automatically when your device reconnects to the internet.
+            Once submitted, you will receive email notifications regarding the status of this submission.
           </p>
           <p class="text-body-1 mb-5 mt-5">
-            At any time, you can also view your previously submitted reports on this site.
+            You can close this page. Your report will be uploaded in the background when connectivity is restored.
           </p>
 
           <div class="d-flex flex-wrap">

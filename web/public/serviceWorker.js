@@ -7,9 +7,10 @@ import { registerRoute, NavigationRoute } from "workbox-routing";
 import { CacheFirst, NetworkFirst, NetworkOnly } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { BackgroundSyncPlugin } from "workbox-background-sync";
+import { clientsClaim } from "workbox-core";
 
 self.skipWaiting();
-// workbox.core.clientsClaim();
+clientsClaim();
 
 /*
  * vite-plugin-pwa provides us with paths to all the files to precache via __WB_MANIFEST.

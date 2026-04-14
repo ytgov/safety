@@ -1,6 +1,7 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 import { useNotificationStore } from "@/store/NotificationStore";
 import { SecureAPICall, APICall } from "./helpers/axiosAPIConfig";
+import { withRetry } from "./helpers/retryRequest";
 import auth0 from "@/plugins/auth";
 import { router } from "@/routes";
 
@@ -86,8 +87,10 @@ export const useApiStore = defineStore("api", () => {
       return;
     } */
     response = await auth0.getAccessTokenSilently().then(async (token) => {
-      return await SecureAPICall(method, token)
-        .request({ url, data, headers: { "Content-Type": "multipart/form-data" }, validateStatus: () => true })
+      return await withRetry(() =>
+        SecureAPICall(method, token)
+          .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
+      )
         .then((res) => {
           return res.data;
         })
@@ -117,8 +120,10 @@ export const useApiStore = defineStore("api", () => {
   }
 
   async function upload(method: string, url: string, data?: any) {
-    let response = await APICall(method)
-      .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
+    let response = await withRetry(() =>
+      APICall(method)
+        .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
+    )
       .then((res) => {
         return res.data;
       })

@@ -74,7 +74,7 @@
           <v-col class="d-flex flex-nowrap" cols="12" md="6" offset-md="6">
             <v-checkbox
               v-model="report.eventType"
-              value="inspetion"
+              value="noloss"
               class="flex-grow-0 flex-shrink-0"
               style="width: 60px; height: 40px"
               hide-details />
@@ -168,14 +168,18 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { router } from "@/routes";
 import { useReportStore } from "@/store/ReportStore";
 import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import { requiredRule, emailRule } from "@/utils/validation";
+import { useNotificationStore } from "@/store/NotificationStore";
+
+const DRAFT_KEY = "offline-report-draft";
 
 const reportStore = useReportStore();
+const notificationStore = useNotificationStore();
 const { initialize, addReportOffline } = reportStore;
 const { locations, urgencies, isLoading } = storeToRefs(reportStore);
 
@@ -183,7 +187,32 @@ const isValid = ref(false);
 
 await initialize();
 
-const report = ref({ eventType: null, date: new Date(), urgency: "Medium" });
+// Restore saved draft if available
+const defaultReport = { eventType: null, date: new Date(), urgency: "Medium" };
+let restoredReport = defaultReport;
+
+try {
+  const saved = localStorage.getItem(DRAFT_KEY);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    if (parsed.date) parsed.date = new Date(parsed.date);
+    restoredReport = { ...defaultReport, ...parsed };
+  }
+} catch {}
+
+const report = ref(restoredReport);
+
+// Auto-save draft on changes (debounced via timeout)
+let saveTimeout = null;
+watch(report, (val) => {
+  if (saveTimeout) clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(() => {
+    try {
+      const { files, ...rest } = val;
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(rest));
+    } catch {}
+  }, 500);
+}, { deep: true });
 
 const canSave = computed(() => {
   return report.value.eventType && isValid.value;
@@ -192,9 +221,19 @@ const canSave = computed(() => {
 async function saveReport() {
   report.value.createDate = new Date();
 
-  await addReportOffline(report.value).then(() => {
+  try {
+    const result = await addReportOffline(report.value);
+
+    if (result?.error) {
+      notificationStore.notify({ text: "Failed to submit report. Please try again.", variant: "error" });
+      return;
+    }
+
+    localStorage.removeItem(DRAFT_KEY);
     router.push("/report-an-incident-offline/complete");
-  });
+  } catch (err) {
+    notificationStore.notify({ text: "Failed to submit report. Please try again.", variant: "error" });
+  }
 }
 
 function makeLocationTitle(item) {

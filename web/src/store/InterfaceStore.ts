@@ -1,29 +1,46 @@
-import { ref } from "vue";
+import { ref, onUnmounted } from "vue";
 import { defineStore } from "pinia";
+import { apiBaseUrl } from "@/config";
 
 export const useInterfaceStore = defineStore("interface", () => {
   const showApplicationOverlay = ref(true);
-  const isOffline = ref(false);
+  const isOffline = ref(!navigator.onLine);
   const overlayMessage = ref("");
 
-  window.addEventListener("offline", function (e) {
-    console.log("offline");
+  let connectivityInterval: ReturnType<typeof setInterval> | null = null;
+
+  async function checkConnectivity() {
+    try {
+      const resp = await fetch(`${apiBaseUrl}/api/healthCheck`, {
+        method: "HEAD",
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
+      });
+      isOffline.value = !resp.ok;
+    } catch {
+      isOffline.value = true;
+    }
+  }
+
+  // Use browser events as fast signal, verify with server ping
+  window.addEventListener("offline", function () {
     isOffline.value = true;
   });
 
-  window.addEventListener("online", function (e) {
-    console.log("online");
-    isOffline.value = false;
+  window.addEventListener("online", function () {
+    checkConnectivity();
   });
 
+  // Poll every 30 seconds for server reachability
+  connectivityInterval = setInterval(checkConnectivity, 30000);
+  checkConnectivity();
+
   function showOverlay(message?: string) {
-    console.log("SHOW OVER");
     overlayMessage.value = message ?? "";
     showApplicationOverlay.value = true;
   }
 
   function hideOverlay() {
-    console.log("HIDE OVER");
     showApplicationOverlay.value = false;
   }
 

@@ -434,7 +434,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
         incident_id: insertedIncidentId,
         step_title,
         order: i,
-        activate_date: i == i ? new Date() : null,
+        activate_date: i == 1 ? new Date() : null,
       } as IncidentStep;
 
       if (i == 1) {
@@ -502,12 +502,11 @@ reportRouter.post("/", async (req: Request, res: Response) => {
 
     await trx.commit();
     return res.status(200).json({ data: {} });
-  } catch (error) {
-    trx.rollback();
+  } catch (error: any) {
+    await trx.rollback();
     console.log("ERROR IN TRANSACTION", error);
+    return res.status(500).json({ data: {}, error: error.message || "Internal server error" });
   }
-
-  return res.status(400).json({ data: {} });
 });
 
 reportRouter.put(

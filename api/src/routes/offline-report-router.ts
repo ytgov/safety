@@ -157,7 +157,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
         incident_id: insertedIncidentId,
         step_title,
         order: i,
-        activate_date: i == i ? new Date() : null,
+        activate_date: i == 1 ? new Date() : null,
       } as IncidentStep;
 
       if (i == 1) {
@@ -167,6 +167,40 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       }
 
       await trx("incident_steps").insert(step);
+    }
+
+    // Handle file attachments
+    if (req.files && req.files.files) {
+      let files = req.files.files;
+      if (!isArray(files)) files = [files];
+
+      for (const file of files) {
+        let attachment = {
+          incident_id: insertedIncidentId,
+          added_by_email: currentUserEmail,
+          file_name: file.name,
+          file_type: file.mimetype,
+          file_size: file.size,
+          file: file.data,
+          added_date: InsertableDate(DateTime.utc().toISO()),
+        } as IncidentAttachment;
+
+        await trx("incident_attachments").insert(attachment);
+      }
+    }
+
+    // Handle additional people
+    let additional_people = req.body.additional_people ?? [];
+    if (!isArray(additional_people)) additional_people = additional_people.split(",");
+
+    for (const email of additional_people) {
+      const user_email = (email ?? "").trim();
+      if (user_email === "") continue;
+      await trx("incident_users").insert({
+        user_email,
+        incident_id: insertedIncidentId,
+        reason: "supervisor",
+      });
     }
 
     if (directorySubmitter && directorySubmitter.length > 0) {
@@ -202,10 +236,9 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
     await trx.commit();
     console.log("ALL GOOD!");
     return res.status(200).json({ data: {} });
-  } catch (error) {
-    trx.rollback();
+  } catch (error: any) {
+    await trx.rollback();
     console.log("ERROR IN TRANSACTION", error);
+    return res.status(500).json({ data: {}, error: error.message || "Internal server error" });
   }
-
-  return res.status(400).json({ data: {} });
 });

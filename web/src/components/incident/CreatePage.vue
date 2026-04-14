@@ -190,8 +190,10 @@ import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import DirectorySelector from "@/components/DirectorySelector.vue";
 import { requiredRule } from "@/utils/validation";
 import ReportUserList from "@/components/report/ReportUserList.vue";
+import { useNotificationStore } from "@/store/NotificationStore";
 
 const reportStore = useReportStore();
+const notificationStore = useNotificationStore();
 const { initialize, addReport } = reportStore;
 const { locations, urgencies } = storeToRefs(reportStore);
 
@@ -216,11 +218,20 @@ async function saveReport() {
   report.value.createDate = new Date();
   showOverlay("Saving Report");
 
-  await addReport(report.value).then(() => {
+  try {
+    const result = await addReport(report.value);
     hideOverlay();
-  });
 
-  router.push("/report-an-incident/complete");
+    if (result?.error) {
+      notificationStore.notify({ text: "Failed to submit report. Please try again.", variant: "error" });
+      return;
+    }
+
+    router.push("/report-an-incident/complete");
+  } catch (err) {
+    hideOverlay();
+    notificationStore.notify({ text: "Failed to submit report. Please try again.", variant: "error" });
+  }
 }
 
 function handleSupervisorSelect(value) {
