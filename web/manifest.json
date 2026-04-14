@@ -28,6 +28,8 @@
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ],
+  "lang": "en",
+  "dir": "ltr",
   "description": "Submit and view hazards and incidents",
   "screenshots": [
     { "form_factor": "narrow", "sizes": "512x512", "type": "image/png", "src": "/icon-512.png" },

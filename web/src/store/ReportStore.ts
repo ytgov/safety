@@ -256,6 +256,11 @@ export const useReportStore = defineStore("reports", {
       return api.secureCall("put", `${REPORTS_URL}/${this.selectedReport.id}`, body);
     },
 
+    async adminUpdateReport(incidentId: number, body: { department_code: string; supervisor_email: string; location_code: string; location_detail: string; description: string }) {
+      const api = useApiStore();
+      return api.secureCall("put", `${REPORTS_URL}/${incidentId}/admin-edit`, body);
+    },
+
     async loadReport(slug: string) {
       const api = useApiStore();
       return api

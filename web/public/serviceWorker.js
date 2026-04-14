@@ -1,7 +1,5 @@
 /* eslint-disable no-undef, no-restricted-globals */
 
-console.log("Loading serviceWorker.js...");
-
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { CacheFirst, NetworkFirst, NetworkOnly } from "workbox-strategies";
@@ -12,10 +10,15 @@ import { clientsClaim } from "workbox-core";
 self.skipWaiting();
 clientsClaim();
 
+// When a new service worker activates, clear the location cache so fresh data is fetched
+self.addEventListener("activate", (event) => {
+  event.waitUntil(caches.delete("api-location"));
+});
+
 /*
  * vite-plugin-pwa provides us with paths to all the files to precache via __WB_MANIFEST.
- * Do not precahce any where else.
- * Additional files needed to be precache should be configured in vite config
+ * Do not precache anywhere else.
+ * Additional files needed to be precached should be configured in vite config.
  */
 precacheAndRoute(self.__WB_MANIFEST);
 
@@ -42,7 +45,7 @@ registerRoute(
   })
 );
 
-// Cache locations
+// Cache locations - serve from network when online, fall back to cache when offline, expire after 30 days
 registerRoute(
   ({ url }) => {
     return url.pathname.startsWith("/api/location");
@@ -52,7 +55,7 @@ registerRoute(
     plugins: [
       new ExpirationPlugin({
         maxEntries: 1,
-        //maxAgeSeconds: 30 * 24 * 60, // 30 days
+        maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
       }),
     ],
   })

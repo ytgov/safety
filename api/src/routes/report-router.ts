@@ -246,6 +246,34 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
   });
 });
 
+reportRouter.put("/:id/admin-edit", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { department_code, supervisor_email, location_code, location_detail, description } = req.body;
+
+  const userIsAdmin =
+    (req.user.roles = req.user.roles || []).filter(
+      (role: UserRole) => role.name === "System Admin",
+    ).length > 0;
+
+  if (!userIsAdmin) return res.status(403).send({ messages: [{ variant: "error", text: "Unauthorized" }] });
+
+  const data = await db.getById(id, "System Admin");
+  if (!data) return res.status(404).send();
+
+  await knex("incidents").where({ id }).update({
+    department_code,
+    supervisor_email,
+    location_code,
+    location_detail,
+    description,
+  });
+
+  return res.json({
+    data: {},
+    messages: [{ variant: "success", text: "Incident Updated" }],
+  });
+});
+
 reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { investigation_data } = req.body;

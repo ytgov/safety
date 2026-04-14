@@ -30,7 +30,7 @@ export default defineConfig({
       srcDir: "public",
       filename: "serviceWorker.js",
       injectManifest: {
-        globPatterns: ["**/*.{js,css,html,svg,ico,woff,woff2,json,png,ttf}*"],
+        globPatterns: ["**/*.{js,css,html,svg,ico,woff,woff2,json,png,ttf}"],
       },
     }),
   ],

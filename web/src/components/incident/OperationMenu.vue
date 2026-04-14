@@ -75,6 +75,11 @@
       </v-list-item>
 
       <v-divider v-if="isSystemAdmin" class="mt-1" />
+      <v-list-item v-if="isSystemAdmin" title="Edit Details" subtitle="Admin only" @click="showAdminEditDialog = true">
+        <template #prepend>
+          <v-icon color="info">mdi-pencil</v-icon>
+        </template>
+      </v-list-item>
       <v-list-item v-if="isSystemAdmin" title="Delete" subtitle="This cannot be undone" @click="deleteClick">
         <template #prepend>
           <v-icon color="error">mdi-delete</v-icon>
@@ -114,6 +119,12 @@
     :department="selectedReport.department_code"
     @complete="sendToCommittee"
     @close="showCommitteeDialog = false" />
+
+  <AdminEditForm
+    v-model="showAdminEditDialog"
+    :incident-id="selectedReport.id"
+    @complete="showAdminEditDialog = false"
+    @close="showAdminEditDialog = false" />
 </template>
 
 <script setup>
@@ -130,6 +141,7 @@ import InvestigationForm from "./InvestigationForm.vue";
 import NotificationForm from "./NotificationForm.vue";
 import CommitteeForm from "./CommitteeForm.vue";
 import HazardAssessmentForm from "./HazardAssessmentForm.vue";
+import AdminEditForm from "./AdminEditForm.vue";
 
 const reportStore = useReportStore();
 const { completeStep, revertStep, deleteIncident, completeCommitteeReview } = reportStore;
@@ -143,6 +155,7 @@ const showInvestigationDialog = ref(false);
 const showHazardDialog = ref(false);
 const showNotificationDialog = ref(false);
 const showCommitteeDialog = ref(false);
+const showAdminEditDialog = ref(false);
 
 const previousStep = computed(() => {
   if (selectedReport.value) {
