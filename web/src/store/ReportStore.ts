@@ -169,7 +169,7 @@ export const useReportStore = defineStore("reports", {
         formData.append("files", file);
       }
 
-      return api.upload("post", `${OFFLINEREPORTS_URL}`, formData).finally(() => {
+      return api.offlineUpload("post", `${OFFLINEREPORTS_URL}`, formData).finally(() => {
         this.isLoading = false;
       });
     },

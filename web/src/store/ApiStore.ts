@@ -135,10 +135,28 @@ export const useApiStore = defineStore("api", () => {
     return response;
   }
 
+  async function offlineUpload(method: string, url: string, data?: any) {
+    let response = await APICall(method)
+      .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
+      .then((res) => {
+        return res.data;
+      })
+      .catch((err) => {
+        // Network errors are expected offline — the service worker's BackgroundSync
+        // plugin has already queued the request for retry when connectivity returns.
+        if (err.code === "ERR_NETWORK") return { queued: true };
+        doApiErrorMessage(err);
+        return { error: err };
+      });
+
+    return response;
+  }
+
   return {
     secureUpload,
     secureCall,
     upload,
+    offlineUpload,
     call,
   };
 });
