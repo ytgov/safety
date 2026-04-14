@@ -22,6 +22,11 @@
 
       <CreateIncidentButton block />
 
+      <v-btn variant="tonal" color="info" to="/offline-info" size="large" block class="mb-2">
+        <v-icon class="mr-4">mdi-wifi-off</v-icon>
+        How to Submit Reports Offline
+      </v-btn>
+
       <v-btn v-if="hasRole('Inspector')" color="info" to="/inspection" size="large" block>
         <v-icon class="mr-4">mdi-magnify-scan</v-icon>
         Report Inspection

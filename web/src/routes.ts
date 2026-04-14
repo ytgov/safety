@@ -42,6 +42,13 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: "offline-info",
+        component: () => import("@/views/OfflineInfo.vue"),
+        meta: {
+          requiresAuth: false,
+        },
+      },
+      {
         path: "actions",
         component: () => import("@/components/action/ActionListPage.vue"),
       },
