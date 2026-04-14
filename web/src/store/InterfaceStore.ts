@@ -1,6 +1,7 @@
-import { ref, onUnmounted } from "vue";
+import { ref } from "vue";
 import { defineStore } from "pinia";
 import { apiBaseUrl } from "@/config";
+import { useOfflineStore } from "./OfflineStore";
 
 export const useInterfaceStore = defineStore("interface", () => {
   const showApplicationOverlay = ref(true);
@@ -10,6 +11,7 @@ export const useInterfaceStore = defineStore("interface", () => {
   let connectivityInterval: ReturnType<typeof setInterval> | null = null;
 
   async function checkConnectivity() {
+    const wasOffline = isOffline.value;
     try {
       const resp = await fetch(`${apiBaseUrl}/api/healthCheck`, {
         method: "HEAD",
@@ -19,6 +21,14 @@ export const useInterfaceStore = defineStore("interface", () => {
       isOffline.value = !resp.ok;
     } catch {
       isOffline.value = true;
+    }
+
+    // When transitioning from offline to online, upload any pending reports
+    if (wasOffline && !isOffline.value) {
+      const offlineStore = useOfflineStore();
+      if (offlineStore.pendingCount > 0) {
+        offlineStore.uploadPendingReports();
+      }
     }
   }
 

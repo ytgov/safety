@@ -40,6 +40,8 @@
     </v-col>
   </v-row>
 
+  <PendingSubmissions />
+
   <v-divider class="mb-5" />
 
   <v-row v-if="!isOffline && isAuthenticated">
@@ -61,6 +63,7 @@ import { useUserStore } from "@/store/UserStore";
 import { useReportStore } from "@/store/ReportStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import ActionCard from "@/components/report/ActionCard.vue";
+import PendingSubmissions from "@/components/incident/PendingSubmissions.vue";
 
 const interfaceStore = useInterfaceStore();
 const { isOffline } = storeToRefs(interfaceStore);

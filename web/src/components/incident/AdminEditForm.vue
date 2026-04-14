@@ -8,31 +8,17 @@
       </v-toolbar>
       <v-card-text>
         <v-label class="mb-1">Department</v-label>
-        <v-autocomplete
-          v-model="form.department_code"
-          :items="departments"
-          item-title="name"
-          item-value="code"
-          clearable />
+        <v-autocomplete v-model="form.department_code" :items="departments" item-title="name" item-value="code" />
 
         <v-label class="mb-1">Supervisor</v-label>
-        <DirectorySelector
-          ref="directorySelectorRef"
-          label="Search and select supervisor"
+        <DirectorySelector ref="directorySelectorRef" label="Search and select supervisor"
           @selected="handleSupervisorSelect" />
 
         <v-label class="mb-1">General location</v-label>
-        <v-autocomplete
-          v-model="form.location_code"
-          :items="locations"
-          :item-title="makeLocationTitle"
-          item-value="code"
-          clearable>
+        <v-autocomplete v-model="form.location_code" :items="locations" :item-title="makeLocationTitle"
+          item-value="code">
           <template #item="{ item, props }">
-            <v-list-item
-              v-bind="props"
-              :title="item.raw.name"
-              :subtitle="`Community: ${item.raw.community}`" />
+            <v-list-item v-bind="props" :title="item.raw.name" :subtitle="`Community: ${item.raw.community}`" />
           </template>
           <template #selection="{ item }">
             {{ makeLocationTitle(item.raw) }}
@@ -43,16 +29,15 @@
         <v-text-field v-model="form.location_detail" />
 
         <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
-        <v-textarea
-          v-model="form.description"
-          hint="Please do not include names or personal identifiers"
+        <v-textarea v-model="form.description" hint="Please do not include names or personal identifiers"
           persistent-hint />
+          
+        <div class="d-flex">
+          <v-btn color="secondary" @click="close">Cancel</v-btn>
+          <v-spacer />
+          <v-btn color="primary" @click="save">Save</v-btn>
+        </div>
       </v-card-text>
-      <v-card-actions>
-        <v-spacer />
-        <v-btn color="secondary" @click="close">Cancel</v-btn>
-        <v-btn color="primary" @click="save">Save</v-btn>
-      </v-card-actions>
     </v-card>
   </v-dialog>
 </template>

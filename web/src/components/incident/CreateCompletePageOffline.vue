@@ -14,11 +14,13 @@
         </v-card-item>
         <v-card-text>
           <p class="text-body-1 mb-5 mt-5">
-            Your report has been saved and will be submitted automatically when your device reconnects to the internet.
+            Your report has been queued. When your device reconnects to the internet, it will be uploaded automatically.
             Once submitted, you will receive email notifications regarding the status of this submission.
           </p>
           <p class="text-body-1 mb-5 mt-5">
-            You can close this page. Your report will be uploaded in the background when connectivity is restored.
+            You can view and manage your pending submissions from the
+            <router-link to="/">home page</router-link>. From there you can also manually trigger an upload when you are
+            back online.
           </p>
 
           <div class="d-flex flex-wrap">

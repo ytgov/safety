@@ -1,6 +1,7 @@
 import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
-import { ATTACHMENT_URL, LOCATION_URL, OFFLINEREPORTS_URL, REPORTS_URL } from "@/urls";
+import { useOfflineStore } from "./OfflineStore";
+import { ATTACHMENT_URL, LOCATION_URL, REPORTS_URL } from "@/urls";
 import { isEmpty, isNil } from "lodash";
 import { useNotificationStore } from "./NotificationStore";
 
@@ -150,28 +151,16 @@ export const useReportStore = defineStore("reports", {
     async addReportOffline(report: Incident) {
       this.isLoading = true;
 
-      const api = useApiStore();
+      const offlineStore = useOfflineStore();
+      const pending = offlineStore.addPendingReport(report);
 
-      const formData = new FormData();
-      formData.append("eventType", report.eventType);
-      formData.append("date", (report as any).date.toString());
-      formData.append("urgency", report.urgency);
-      formData.append("location_code", report.location_code);
-      formData.append("location_detail", report.location_detail ?? "");
-      formData.append("description", report.description);
-      formData.append("supervisor_email", report.supervisor_email);
-      formData.append("additional_people", (report.additional_people ?? []).join(","));
-      if (report.supervisor_alt_email) formData.append("supervisor_alt_email", report.supervisor_alt_email);
-      formData.append("on_behalf", report.on_behalf);
-      formData.append("on_behalf_email", report.on_behalf_email);
+      // Try to upload immediately - if it works, great; if not, it stays queued
+      const success = await offlineStore.uploadSingleReport(pending.id);
 
-      for (const file of report.files || []) {
-        formData.append("files", file);
-      }
+      this.isLoading = false;
 
-      return api.offlineUpload("post", `${OFFLINEREPORTS_URL}`, formData).finally(() => {
-        this.isLoading = false;
-      });
+      // Return a result the caller can check: either uploaded or queued
+      return success ? { data: {} } : { queued: true };
     },
 
     async csvExport({

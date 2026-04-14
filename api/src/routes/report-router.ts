@@ -15,6 +15,7 @@ import {
   HazardStatuses,
   Incident,
   IncidentAttachment,
+  IncidentLog,
   IncidentStatuses,
   IncidentStep,
   SensitivityLevels,
@@ -29,6 +30,17 @@ export const reportRouter = express.Router();
 const db = new IncidentService();
 const emailService = new EmailService();
 const directoryService = new UnifiedDirectoryService();
+
+async function insertIncidentLog(
+  log: Omit<IncidentLog, "id" | "changed_date">,
+  trx?: Knex.Transaction,
+) {
+  const target = trx || knex;
+  await target("incident_logs").insert({
+    ...log,
+    changed_date: InsertableDate(DateTime.utc().toISO()),
+  });
+}
 
 reportRouter.get("/", async (req: Request, res: Response) => {
   const { page, perPage, search, status, urgency, location } = req.query;
@@ -240,6 +252,26 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
     committee_supervisor_rationale,
   });
 
+  const commentParts: string[] = [];
+  if (data.urgency_code !== urgency_code) commentParts.push(`Urgency: ${data.urgency_code} → ${urgency_code}`);
+  if (data.investigation_notes !== investigation_notes) commentParts.push("Investigation notes updated");
+  if (data.additional_description !== additional_description) commentParts.push("Additional description updated");
+  if (data.hs_recommendations !== hs_recommendations) commentParts.push("H&S recommendations updated");
+  if (data.committee_supervisor_response !== committee_supervisor_response) commentParts.push(`Supervisor response: ${committee_supervisor_response}`);
+  if (data.committee_supervisor_rationale !== committee_supervisor_rationale) commentParts.push("Supervisor rationale updated");
+
+  await insertIncidentLog({
+    incident_id: parseInt(id),
+    old_description: data.description,
+    old_incident_type_id: data.incident_type_id,
+    new_description: description,
+    new_incident_type_id: incident_type_id,
+    changer_user_id: req.user.id,
+    log_title: "Incident Updated",
+    log_comment: commentParts.length > 0 ? commentParts.join("; ") : undefined,
+    user_action: "UPDATE",
+  });
+
   return res.json({
     data: {},
     messages: [{ variant: "success", text: "Incident Saved" }],
@@ -268,6 +300,23 @@ reportRouter.put("/:id/admin-edit", async (req: Request, res: Response) => {
     description,
   });
 
+  const commentParts: string[] = [];
+  if (data.department_code !== department_code) commentParts.push(`Department: ${data.department_code} → ${department_code}`);
+  if (data.location_code !== location_code) commentParts.push(`Location: ${data.location_code} → ${location_code}`);
+  if (data.location_detail !== location_detail) commentParts.push(`Location detail: ${data.location_detail || "(none)"} → ${location_detail || "(none)"}`);
+
+  await insertIncidentLog({
+    incident_id: parseInt(id),
+    old_description: data.description,
+    old_supervisor: data.supervisor_email,
+    new_description: description,
+    new_supervisor: supervisor_email,
+    changer_user_id: req.user.id,
+    log_title: "Admin Edit",
+    log_comment: commentParts.length > 0 ? commentParts.join("; ") : undefined,
+    user_action: "ADMNEDIT",
+  });
+
   return res.json({
     data: {},
     messages: [{ variant: "success", text: "Incident Updated" }],
@@ -286,6 +335,14 @@ reportRouter.post("/:id/investigation", async (req: Request, res: Response) => {
   await knex("investigations").insert({
     incident_id: id,
     investigation_data: jsonString,
+  });
+
+  await insertIncidentLog({
+    incident_id: parseInt(id),
+    changer_user_id: req.user.id,
+    log_title: "Investigation Added",
+    log_comment: `Completed by ${req.user.display_name}`,
+    user_action: "INVEST",
   });
 
   return res.json({
@@ -318,6 +375,7 @@ reportRouter.delete("/:id", async (req: Request, res: Response) => {
     await trx("incident_steps").where({ incident_id: id }).delete();
     await trx("investigations").where({ incident_id: id }).delete();
     await trx("incident_users").where({ incident_id: id }).delete();
+    await trx("incident_logs").where({ incident_id: id }).delete();
     await trx("incidents").where({ id }).delete();
 
     trx.commit();
@@ -419,6 +477,22 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       .insert(incident)
       .returning("*");
     let insertedIncidentId = insertedIncidents[0].id;
+
+    await insertIncidentLog(
+      {
+        incident_id: insertedIncidentId,
+        new_description: description,
+        new_status_code: IncidentStatuses.OPEN.code,
+        new_sensitivity_code: SensitivityLevels.NOT_SENSITIVE.code,
+        new_supervisor: supervisor_email,
+        new_incident_type_id: defaultIncidentType.id,
+        changer_user_id: req.user.id,
+        log_title: "Incident Created",
+        log_comment: `Location: ${location_code}${location_detail ? " - " + location_detail : ""}, Urgency: ${urgency}`,
+        user_action: "CREATE",
+      },
+      trx,
+    );
 
     let peopleArray = additional_people ?? [];
     peopleArray = isArray(peopleArray) ? peopleArray : peopleArray.split(",");
@@ -542,6 +616,7 @@ reportRouter.put(
   async (req: Request, res: Response) => {
     const { id, step_id, operation } = req.params;
 
+    const incident = await knex("incidents").where({ id }).first();
     const step = await knex("incident_steps")
       .where({ incident_id: id, id: step_id })
       .first();
@@ -555,6 +630,13 @@ reportRouter.put(
             complete_date: InsertableDate(DateTime.utc().toISO()),
             complete_user_id: req.user.id,
           });
+
+        await insertIncidentLog({
+          incident_id: parseInt(id),
+          changer_user_id: req.user.id,
+          log_title: `Step Completed: ${step.step_title}`,
+          user_action: "STEPCMP",
+        });
       } else if (operation == "revert") {
         await knex("incident_steps")
           .where({ incident_id: id, id: step_id })
@@ -564,6 +646,7 @@ reportRouter.put(
             complete_user_id: null,
           });
 
+        const commentParts: string[] = [];
         if (step.step_title == "Investigation") {
           await knex("actions").where({ incident_id: id }).delete();
           await knex("investigations").where({ incident_id: id }).delete();
@@ -579,7 +662,16 @@ reportRouter.put(
               .delete();
             await knex("hazards").where({ id: link.hazard_id }).delete();
           }
+          commentParts.push("Investigation data, actions, and linked hazards removed");
         }
+
+        await insertIncidentLog({
+          incident_id: parseInt(id),
+          changer_user_id: req.user.id,
+          log_title: `Step Reverted: ${step.step_title}`,
+          log_comment: commentParts.length > 0 ? commentParts.join("; ") : undefined,
+          user_action: "STEPREV",
+        });
       }
     }
 
@@ -590,14 +682,30 @@ reportRouter.put(
       if (!step.complete_date) allComplete = false;
     }
 
+    const oldStatus = incident?.status_code;
+    let newStatus: string;
+
     if (allComplete) {
+      newStatus = IncidentStatuses.CLOSED.code;
       await knex("incidents")
         .where({ id })
-        .update({ status_code: IncidentStatuses.CLOSED.code });
+        .update({ status_code: newStatus });
     } else {
+      newStatus = IncidentStatuses.IN_PROGRESS.code;
       await knex("incidents")
         .where({ id })
-        .update({ status_code: IncidentStatuses.IN_PROGRESS.code });
+        .update({ status_code: newStatus });
+    }
+
+    if (oldStatus !== newStatus) {
+      await insertIncidentLog({
+        incident_id: parseInt(id),
+        old_status_code: oldStatus,
+        new_status_code: newStatus,
+        changer_user_id: req.user.id,
+        log_title: `Status Changed: ${oldStatus} → ${newStatus}`,
+        user_action: "STATUS",
+      });
     }
 
     return res.json({ data: {} });
@@ -656,6 +764,15 @@ reportRouter.post(
         { fullName: employeeName, email: recipient },
         incident,
       );
+
+      await insertIncidentLog({
+        incident_id: incident.id!,
+        changer_user_id: req.user.id,
+        log_title: "User Added",
+        log_comment: `Added ${recipient} (${req.body.reason || "linked"})`,
+        user_action: "ADDUSER",
+      });
+
       return res.json({ data: {} });
     }
 
@@ -679,7 +796,17 @@ reportRouter.delete(
     );
 
     if (incident) {
+      const userRecord = await knex("incident_users").where({ id }).first();
       const list = await knex("incident_users").where({ id }).delete();
+
+      await insertIncidentLog({
+        incident_id: incident.id!,
+        changer_user_id: req.user.id,
+        log_title: "User Removed",
+        log_comment: userRecord ? `Removed ${userRecord.user_email}` : undefined,
+        user_action: "RMUSER",
+      });
+
       return res.json({ data: list });
     }
 
@@ -790,6 +917,14 @@ reportRouter.post(
         committee_review_request_date: InsertableDate(DateTime.utc().toISO()),
       });
 
+    await insertIncidentLog({
+      incident_id: parseInt(id),
+      changer_user_id: req.user.id,
+      log_title: "Committee Review Requested",
+      log_comment: `Committee: ${committee.name || committeeId}`,
+      user_action: "CMTEREQ",
+    });
+
     for (const user of committeeUsers) {
       const userRecord = await knex("users")
         .where({ id: user.user_id })
@@ -837,6 +972,13 @@ reportRouter.post(
       .update({
         committee_review_complete_date: InsertableDate(DateTime.utc().toISO()),
       });
+
+    await insertIncidentLog({
+      incident_id: parseInt(id),
+      changer_user_id: req.user.id,
+      log_title: "Committee Review Completed",
+      user_action: "CMTECMP",
+    });
 
     await emailService.sendIncidentReviewCompleteNotification(
       {
@@ -909,6 +1051,14 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_name: user.display_name,
               complete_user_id: user.id,
             });
+
+          await insertIncidentLog({
+            incident_id: action.incident_id!,
+            changer_user_id: user.id,
+            log_title: `Step Auto-Completed: ${step.step_title}`,
+            log_comment: "All actions complete",
+            user_action: "STEPCMP",
+          });
         } else if (!allComplete && step.complete_date) {
           await knex("incident_steps")
             .where({ incident_id: action.incident_id, id: step.id })
@@ -917,6 +1067,14 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_name: null,
               complete_user_id: null,
             });
+
+          await insertIncidentLog({
+            incident_id: action.incident_id!,
+            changer_user_id: user.id,
+            log_title: `Step Auto-Reverted: ${step.step_title}`,
+            log_comment: "Not all actions complete",
+            user_action: "STEPREV",
+          });
         }
       }
 
@@ -929,6 +1087,14 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_name: user.display_name,
               complete_user_id: user.id,
             });
+
+          await insertIncidentLog({
+            incident_id: action.incident_id!,
+            changer_user_id: user.id,
+            log_title: `Step Auto-Completed: ${step.step_title}`,
+            log_comment: "All actions ready",
+            user_action: "STEPCMP",
+          });
         } else if (!allReady && step.complete_date) {
           await knex("incident_steps")
             .where({ incident_id: action.incident_id, id: step.id })
@@ -937,6 +1103,14 @@ export async function updateIncidentStatus(action: Action, user: User) {
               complete_name: null,
               complete_user_id: null,
             });
+
+          await insertIncidentLog({
+            incident_id: action.incident_id!,
+            changer_user_id: user.id,
+            log_title: `Step Auto-Reverted: ${step.step_title}`,
+            log_comment: "Not all actions ready",
+            user_action: "STEPREV",
+          });
         }
       }
     }

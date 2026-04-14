@@ -2,9 +2,8 @@
 
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
-import { CacheFirst, NetworkFirst, NetworkOnly } from "workbox-strategies";
+import { CacheFirst, NetworkFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
-import { BackgroundSyncPlugin } from "workbox-background-sync";
 import { clientsClaim } from "workbox-core";
 
 self.skipWaiting();
@@ -61,18 +60,5 @@ registerRoute(
   })
 );
 
-const bgSyncPlugin = new BackgroundSyncPlugin("reportQueue", {
-  maxRetentionTime: 30 * 24 * 60 , // Retry for max of 30 days (specified in minutes)
-});
-
-// Queue report submissions
-registerRoute(
-  ({ url }) => {
-    return url.pathname.startsWith("/api/offline-reports");
-  },
-  new NetworkOnly({
-    plugins: [bgSyncPlugin],
-  }),
-  // An optional third parameter specifies the request method
-  "POST"
-);
+// Offline report submissions are now managed by the app's OfflineStore
+// (localStorage queue with manual and auto-upload) instead of BackgroundSync.
