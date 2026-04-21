@@ -4,10 +4,17 @@ import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
 import { registerRoute, NavigationRoute } from "workbox-routing";
 import { CacheFirst, NetworkFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
-import { clientsClaim } from "workbox-core";
 
-self.skipWaiting();
-clientsClaim();
+// New service workers now wait in the "installed" state until the client asks
+// them to activate via a SKIP_WAITING message. This avoids hijacking a running
+// tab with a new precache manifest whose chunk hashes the current page doesn't
+// know about — which would cause dynamic route imports to 404 and leave the
+// router stuck (URL changed, page not updated).
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
+});
 
 // When a new service worker activates, clear the location cache so fresh data is fetched
 self.addEventListener("activate", (event) => {

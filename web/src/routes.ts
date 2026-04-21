@@ -122,6 +122,17 @@ export const router = createRouter({
   routes,
 });
 
+router.onError((err, to) => {
+  const msg = err?.message || "";
+  if (
+    /Loading chunk|Loading CSS chunk|Failed to fetch dynamically imported module|Importing a module script failed/i.test(
+      msg
+    )
+  ) {
+    window.location.href = to.fullPath;
+  }
+});
+
 router.beforeEach(async (to) => {
   if (to.meta.requiresAuth === false) {
     console.log("route allowed - no auth required");
