@@ -31,13 +31,43 @@ const db = new IncidentService();
 const emailService = new EmailService();
 const directoryService = new UnifiedDirectoryService();
 
+// Max lengths mirror the string column widths in the incident_logs migration.
+// Keep this in sync with the schema so we prefer a truncated audit entry over
+// an insert error rejecting a real change to the incident.
+const INCIDENT_LOG_COLUMN_LIMITS: Record<string, number> = {
+  old_description: 4000,
+  old_sensitivity_code: 8,
+  old_supervisor: 250,
+  old_status_code: 8,
+  new_description: 4000,
+  new_supervisor: 250,
+  new_sensitivity_code: 8,
+  new_status_code: 8,
+  log_title: 200,
+  log_comment: 4000,
+  user_action: 16,
+};
+
+function truncateLogFields<T extends Record<string, any>>(log: T): T {
+  const out: Record<string, any> = { ...log };
+  for (const [field, max] of Object.entries(INCIDENT_LOG_COLUMN_LIMITS)) {
+    const value = out[field];
+    if (typeof value !== "string" || value.length <= max) continue;
+    console.warn(
+      `incident_logs.${field} truncated from ${value.length} to ${max} characters`,
+    );
+    out[field] = value.slice(0, max);
+  }
+  return out as T;
+}
+
 async function insertIncidentLog(
   log: Omit<IncidentLog, "id" | "changed_date">,
   trx?: Knex.Transaction,
 ) {
   const target = trx || knex;
   await target("incident_logs").insert({
-    ...log,
+    ...truncateLogFields(log),
     changed_date: InsertableDate(DateTime.utc().toISO()),
   });
 }
