@@ -14,6 +14,14 @@ export const useApiStore = defineStore("api", () => {
 
   function doApiErrorMessage(err: any) {
     if (!err) return;
+
+    // Suppress transport-level failures when the browser is offline — they're
+    // expected (airplane mode, no signal) and the toast just adds noise.
+    const isNetworkError = !err.response && (err.code === "ERR_NETWORK" || err.message === "Network Error");
+    if (isNetworkError && typeof navigator !== "undefined" && navigator.onLine === false) {
+      return;
+    }
+
     let status_code = 500;
     let text = err.message;
 

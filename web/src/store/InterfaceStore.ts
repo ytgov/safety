@@ -11,7 +11,6 @@ export const useInterfaceStore = defineStore("interface", () => {
   let connectivityInterval: ReturnType<typeof setInterval> | null = null;
 
   async function checkConnectivity() {
-    const wasOffline = isOffline.value;
     try {
       const resp = await fetch(`${apiBaseUrl}/api/healthCheck`, {
         method: "HEAD",
@@ -23,8 +22,11 @@ export const useInterfaceStore = defineStore("interface", () => {
       isOffline.value = true;
     }
 
-    // When transitioning from offline to online, upload any pending reports
-    if (wasOffline && !isOffline.value) {
+    // Flush the queue whenever we're online and have pending reports — not
+    // just on the offline→online transition — so submissions from a previous
+    // session (app closed while offline, reopened while online) still upload.
+    // uploadPendingReports() guards against concurrent runs internally.
+    if (!isOffline.value) {
       const offlineStore = useOfflineStore();
       if (offlineStore.pendingCount > 0) {
         offlineStore.uploadPendingReports();
