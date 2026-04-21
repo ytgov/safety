@@ -35,6 +35,8 @@ export interface Incident {
   committee_review_complete_date?: Date;
   committee_supervisor_response?: string;
   committee_supervisor_rationale?: string;
+  additional_description?: string;
+  hs_recommendations?: string;
 
   attachments?: any[];
   steps?: IncidentStep[];
