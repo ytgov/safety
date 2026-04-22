@@ -188,15 +188,18 @@ const isValid = ref(false);
 await initialize();
 
 // Restore saved draft if available
-const defaultReport = { eventType: null, date: new Date(), urgency: "Medium" };
-let restoredReport = defaultReport;
+function freshDefaults() {
+  return { eventType: null, date: new Date(), urgency: "Medium" };
+}
+
+let restoredReport = freshDefaults();
 
 try {
   const saved = localStorage.getItem(DRAFT_KEY);
   if (saved) {
     const parsed = JSON.parse(saved);
     if (parsed.date) parsed.date = new Date(parsed.date);
-    restoredReport = { ...defaultReport, ...parsed };
+    restoredReport = { ...freshDefaults(), ...parsed };
   }
 } catch {}
 
@@ -229,7 +232,17 @@ async function saveReport() {
       return;
     }
 
+    // Cancel any pending debounced draft save so it doesn't re-populate the
+    // draft we're about to clear.
+    if (saveTimeout) {
+      clearTimeout(saveTimeout);
+      saveTimeout = null;
+    }
     localStorage.removeItem(DRAFT_KEY);
+    // Reset the in-memory form — vue-router can keep this component alive,
+    // so without this the old values would show up on the next submission.
+    report.value = freshDefaults();
+
     router.push("/report-an-incident-offline/complete");
   } catch (err) {
     notificationStore.notify({ text: "Failed to submit report. Please try again.", variant: "error" });
