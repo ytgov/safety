@@ -11,7 +11,7 @@ export default createAuth0({
   clientId: config.client_id,
   authorizationParams: {
     audience: config.audience,
-    redirect_uri: window.location.origin,
+    redirect_uri: `${window.location.origin}/callback`,
   },
   cacheLocation: "localstorage",
 });
