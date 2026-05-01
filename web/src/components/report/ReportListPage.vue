@@ -11,7 +11,7 @@
   <v-card class="default mb-5">
     <v-card-text class="pt-5">
       <v-row>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="3">
           <v-text-field v-model="search" label="Search" outlined dense clearable prepend-inner-icon="mdi-magnify" />
         </v-col>
         <v-col cols="12" md="2">
@@ -20,7 +20,10 @@
         <v-col cols="12" md="2">
           <HazardUrgencySelect v-model="urgency" label="Urgency" clearable />
         </v-col>
-        <v-col cols="12" md="4" class="d-flex">
+        <v-col cols="12" md="2">
+          <DepartmentSelector v-model="department" label="Department" clearable />
+        </v-col>
+        <v-col cols="12" md="3" class="d-flex">
           <LocationSelect v-model="location" label="Location" clearable />
           <v-btn
             icon="mdi-table-arrow-down"
@@ -74,6 +77,7 @@ import { DateTime } from "luxon";
 import IncidentStatusSelect from "@/components/incident/IncidentStatusSelect.vue";
 import HazardUrgencySelect from "@/components/hazard/HazardUrgencySelect.vue";
 import LocationSelect from "@/components/common/LocationSelect.vue";
+import DepartmentSelector from "@/components/DepartmentSelector.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 
@@ -86,6 +90,7 @@ const search = ref(null);
 const status = ref(null);
 const urgency = ref(null);
 const location = ref(null);
+const department = ref(null);
 
 const headers = [
   { title: "Id", value: "identifier" },
@@ -93,6 +98,7 @@ const headers = [
   { title: "Status", value: "status" },
   { title: "Urgency", value: "urgency_code" },
   { title: "Identified", value: "created_at" },
+  { title: "Department", value: "department_name" },
   { title: "Location", value: "location.name" },
 ];
 
@@ -102,7 +108,7 @@ const { reports, totalCount, isLoading } = storeToRefs(reportStore);
 
 reload();
 
-watch([search, status, urgency, location, page, perPage], () => {
+watch([search, status, urgency, location, department, page, perPage], () => {
   reload();
 });
 
@@ -114,6 +120,7 @@ async function reload() {
     status: status.value,
     urgency: urgency.value,
     location: location.value,
+    department: department.value,
   });
 }
 
@@ -123,6 +130,7 @@ async function csvExportClick() {
     status: status.value,
     urgency: urgency.value,
     location: location.value,
+    department: department.value,
   });
 }
 

@@ -282,6 +282,7 @@ export class IncidentService {
         Identified: report.created_at
           ? FormatDate(report.created_at as Date)
           : "",
+        Department: report.department_code || "",
         Location: report.location?.name,
         Supervisor: report.supervisor_email || "",
       }));
@@ -296,6 +297,7 @@ export class IncidentService {
         Identified: report.created_at
           ? FormatDate(report.created_at as Date)
           : "",
+        Department: report.department_code || "",
         Location: report.location?.name,
       }));
 

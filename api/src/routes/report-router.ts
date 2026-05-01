@@ -73,7 +73,7 @@ async function insertIncidentLog(
 }
 
 reportRouter.get("/", async (req: Request, res: Response) => {
-  const { page, perPage, search, status, urgency, location } = req.query;
+  const { page, perPage, search, status, urgency, location, department } = req.query;
 
   const pageNum = parseInt(page as string) || 1;
   const perPageNum = parseInt(perPage as string) || 10;
@@ -96,6 +96,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
     if (!isNil(location)) q.where("location_code", location);
+    if (!isNil(department)) q.where("department_code", department);
     return q;
   };
 
@@ -112,6 +113,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
     if (!isNil(location)) q.where("location_code", location);
+    if (!isNil(department)) q.where("department_code", department);
     q.limit(perPageNum);
     q.offset((pageNum - 1) * perPageNum);
     return q;
@@ -145,7 +147,7 @@ reportRouter.get("/", async (req: Request, res: Response) => {
 });
 
 reportRouter.get("/csv-export", async (req: Request, res: Response) => {
-  const { search, status, urgency, location } = req.query;
+  const { search, status, urgency, location, department } = req.query;
 
   const userIsAdmin =
     (req.user.roles = req.user.roles || []).filter(
@@ -165,6 +167,7 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
     if (!isNil(location)) q.where("location_code", location);
+    if (!isNil(department)) q.where("department_code", department);
     return q;
   };
 

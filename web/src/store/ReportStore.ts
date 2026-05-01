@@ -3,6 +3,7 @@ import { useApiStore } from "./ApiStore";
 import { useOfflineStore } from "./OfflineStore";
 import { ATTACHMENT_URL, LOCATION_URL, REPORTS_URL } from "@/urls";
 import { isEmpty, isNil } from "lodash";
+import { DateTime } from "luxon";
 import { useNotificationStore } from "./NotificationStore";
 
 const notificationStore = useNotificationStore();
@@ -57,6 +58,7 @@ export const useReportStore = defineStore("reports", {
       status,
       urgency,
       location,
+      department,
     }: {
       page: number | null;
       perPage: number | null;
@@ -64,6 +66,7 @@ export const useReportStore = defineStore("reports", {
       status: string | null;
       urgency: string | null;
       location: string | null;
+      department: string | null;
     }) {
       this.isLoading = true;
       const api = useApiStore();
@@ -74,6 +77,7 @@ export const useReportStore = defineStore("reports", {
       if (!isNil(status)) queryUrl += `status=${status}&`;
       if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
       if (!isNil(location)) queryUrl += `location=${location}&`;
+      if (!isNil(department)) queryUrl += `department=${department}&`;
 
       return api.secureCall("get", queryUrl).then((resp) => {
         this.reports = resp.data;
@@ -168,11 +172,13 @@ export const useReportStore = defineStore("reports", {
       status,
       urgency,
       location,
+      department,
     }: {
       search: string | null;
       status: string | null;
       urgency: string | null;
       location: string | null;
+      department: string | null;
     }) {
       if (this.isLoading) return;
       this.isLoading = true;
@@ -185,6 +191,7 @@ export const useReportStore = defineStore("reports", {
         if (!isNil(status)) queryUrl += `status=${status}&`;
         if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
         if (!isNil(location)) queryUrl += `location=${location}&`;
+        if (!isNil(department)) queryUrl += `department=${department}&`;
 
         const response = await api.secureCall("get", queryUrl);
         this.csvContent = response?.csvContent ?? "";
@@ -193,7 +200,8 @@ export const useReportStore = defineStore("reports", {
           const blob = new Blob([this.csvContent], { type: "text/csv" });
           const link = document.createElement("a");
           link.href = URL.createObjectURL(blob);
-          link.setAttribute("download", `Reports_${new Date().toISOString()}.csv`);
+          const timestamp = DateTime.now().toFormat("yyyy-MM-dd_HH-mm");
+          link.setAttribute("download", `Reports_${timestamp}.csv`);
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
