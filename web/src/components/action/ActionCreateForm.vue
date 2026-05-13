@@ -57,7 +57,7 @@
                 <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" style="opacity: 1"
                   v-bind="props">mdi-information</v-icon>
               </template>
-              Examples: Blocked exit roues, confined space, falling from heights, falling items, faulty equipment,
+              Examples: Blocked exit routes, confined space, falling from heights, falling items, faulty equipment,
               equipment in motion, overhead hazard, pinch/hip points, sharp objects, housekeeping, slippery or uneven
               surface, wildlife, road conditions and working alone
             </v-tooltip>
