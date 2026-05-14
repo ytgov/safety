@@ -1,50 +1,39 @@
 <template>
-  <v-menu transition="slide-y-transition">
-    <template v-slot:activator="{ props }">
-      <v-btn color="info" v-bind="props" class="my-0" variant="outlined">
-        <v-icon class="mr-2">mdi-chevron-down</v-icon> Actions
-      </v-btn>
-    </template>
+  <div class="text-right">
+    <v-menu transition="slide-y-transition">
+      <template v-slot:activator="{ props }">
+        <v-btn color="info" v-bind="props" class="my-0" variant="outlined">
+          <v-icon class="mr-2">mdi-chevron-down</v-icon> Actions
+        </v-btn>
+      </template>
 
-    <v-list>
-      <v-list-item
-        v-if="isInvestigation"
-        title="Report Investigation"
-        :subtitle="currentStep.step_title"
-        @click="showInvestigationDialog = true">
-        <template #prepend>
-          <v-icon color="green">mdi-eye-check-outline</v-icon>
-        </template>
-      </v-list-item>
-      <v-list-item
-        v-if="isHazardAssessment"
-        title="Begin Hazard Assessment"
-        :subtitle="currentStep.step_title"
-        @click="showHazardDialog = true">
-        <template #prepend>
-          <v-icon color="green">mdi-eye-check-outline</v-icon>
-        </template>
-      </v-list-item>
-      <v-list-item
-        v-if="isCommittee"
-        title="Request Committee Review"
-        subtitle="Co-Chair Notification"
-        @click="showCommitteeDialog = true">
-        <template #prepend>
-          <v-icon color="warning">mdi-account-group</v-icon>
-        </template>
-      </v-list-item>
-      <v-list-item
-        v-if="isNotification"
-        title="Send Notifications"
-        :subtitle="currentStep.step_title"
-        @click="showNotificationDialog = true">
-        <template #prepend>
-          <v-icon color="green">mdi-email</v-icon>
-        </template>
-      </v-list-item>
+      <v-list>
+        <v-list-item v-if="isInvestigation" title="Report Investigation" :subtitle="currentStep.step_title"
+          @click="showInvestigationDialog = true">
+          <template #prepend>
+            <v-icon color="green">mdi-eye-check-outline</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item v-if="isHazardAssessment" title="Begin Hazard Assessment" :subtitle="currentStep.step_title"
+          @click="showHazardDialog = true">
+          <template #prepend>
+            <v-icon color="green">mdi-eye-check-outline</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item v-if="isCommittee" title="Request Committee Review" subtitle="Co-Chair Notification"
+          @click="showCommitteeDialog = true">
+          <template #prepend>
+            <v-icon color="warning">mdi-account-group</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item v-if="isNotification" title="Send Notifications" :subtitle="currentStep.step_title"
+          @click="showNotificationDialog = true">
+          <template #prepend>
+            <v-icon color="green">mdi-email</v-icon>
+          </template>
+        </v-list-item>
 
-      <!-- 
+        <!-- 
       <v-list-item
         title="Complete Next Step"
         :subtitle="currentStep.step_title"
@@ -55,75 +44,82 @@
         </template>
       </v-list-item> -->
 
-      <v-list-item
-        v-if="isReview"
-        title="Complete Committee Review"
-        @click="completeReviewClick">
-        <template #prepend>
-          <v-icon color="green">mdi-check-bold</v-icon>
-        </template>
-      </v-list-item>
+        <v-list-item v-if="isReview" title="Complete Committee Review" @click="completeReviewClick">
+          <template #prepend>
+            <v-icon color="green">mdi-check-bold</v-icon>
+          </template>
+        </v-list-item>
 
-      <v-list-item
-        v-if="canRevert && previousStep.id"
-        title="Revert Previous Step"
-        :subtitle="previousStep.step_title"
-        @click="revertClick(previousStep)">
-        <template #prepend>
-          <v-icon color="error">mdi-arrow-u-left-top-bold</v-icon>
-        </template>
-      </v-list-item>
+        <v-list-item v-if="canRevert && previousStep.id" title="Revert Previous Step"
+          :subtitle="previousStep.step_title" @click="revertClick(previousStep)">
+          <template #prepend>
+            <v-icon color="error">mdi-arrow-u-left-top-bold</v-icon>
+          </template>
+        </v-list-item>
 
-      <v-divider v-if="isSystemAdmin" class="mt-1" />
-      <v-list-item v-if="isSystemAdmin" title="Edit Details" subtitle="Admin only" @click="showAdminEditDialog = true">
+        <v-divider v-if="isSystemAdmin" class="mt-1" />
+        <v-list-item v-if="isSystemAdmin" title="Edit Details" subtitle="Admin only"
+          @click="showAdminEditDialog = true">
+          <template #prepend>
+            <v-icon color="info">mdi-pencil</v-icon>
+          </template>
+        </v-list-item>
+        <v-list-item v-if="isSystemAdmin" title="Delete" subtitle="This cannot be undone" @click="deleteClick">
+          <template #prepend>
+            <v-icon color="error">mdi-delete</v-icon>
+          </template>
+        </v-list-item>
+      </v-list>
+    </v-menu>
+
+    <div v-if="selectedReport.status_code != 'Closed'" class="my-3">
+      <span class="text-subtitle-2">
+        Waiting on:</span>
+      <v-btn v-if="isInvestigation" variant="tonal" color="primary" class="ml-3 my-1"
+        @click="showInvestigationDialog = true">
+
         <template #prepend>
-          <v-icon color="info">mdi-pencil</v-icon>
+          <v-icon class="mt-1">mdi-eye-check-outline</v-icon>
         </template>
-      </v-list-item>
-      <v-list-item v-if="isSystemAdmin" title="Delete" subtitle="This cannot be undone" @click="deleteClick">
+        Report Investigation</v-btn>
+
+      <v-btn v-else-if="isNotification" variant="tonal" color="primary" class="ml-3 my-1"
+        @click="showNotificationDialog = true">
         <template #prepend>
-          <v-icon color="error">mdi-delete</v-icon>
+          <v-icon class="mt-1">mdi-email</v-icon>
         </template>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+        Send Notifications</v-btn>
+
+      <v-btn v-else-if="isHazardAssessment" variant="tonal" color="primary" class="ml-3 my-1"
+        @click="showHazardDialog = true">
+        <template #prepend>
+          <v-icon class="mt-1">mdi-eye-check-outline</v-icon>
+        </template>
+        Begin Hazard Assessment</v-btn>
+      <span v-else class="text-subtitle-2"> Completion of {{ currentStep.step_title }}</span>
+    </div>
+
+  </div>
+
   <ConfirmDialog ref="confirm" />
 
-  <InvestigationForm
-    v-model="showInvestigationDialog"
-    :incident="selectedReport"
-    :incident-id="selectedReport.id"
-    :incident_type_description="selectedReport.incident_type_description"
-    @complete="completeInvestigation"
+  <InvestigationForm v-model="showInvestigationDialog" :incident="selectedReport" :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description" @complete="completeInvestigation"
     @close="showInvestigationDialog = false" />
 
-  <HazardAssessmentForm
-    v-model="showHazardDialog"
-    :incident-id="selectedReport.id"
-    :incident_type_description="selectedReport.incident_type_description"
-    :hazard-report="selectedReport"
-    @complete="completeInvestigation"
-    @close="showHazardDialog = false" />
+  <HazardAssessmentForm v-model="showHazardDialog" :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description" :hazard-report="selectedReport"
+    @complete="completeInvestigation" @close="showHazardDialog = false" />
 
-  <NotificationForm
-    v-model="showNotificationDialog"
-    :incident-id="selectedReport.id"
-    :incident_type_description="selectedReport.incident_type_description"
-    @complete="completeNotification"
+  <NotificationForm v-model="showNotificationDialog" :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description" @complete="completeNotification"
     @close="showNotificationDialog = false" />
 
-  <CommitteeForm
-    v-model="showCommitteeDialog"
-    :incident-id="selectedReport.id"
-    :incident_type_description="selectedReport.incident_type_description"
-    :department="selectedReport.department_code"
-    @complete="sendToCommittee"
-    @close="showCommitteeDialog = false" />
+  <CommitteeForm v-model="showCommitteeDialog" :incident-id="selectedReport.id"
+    :incident_type_description="selectedReport.incident_type_description" :department="selectedReport.department_code"
+    @complete="sendToCommittee" @close="showCommitteeDialog = false" />
 
-  <AdminEditForm
-    v-model="showAdminEditDialog"
-    :incident-id="selectedReport.id"
-    @complete="showAdminEditDialog = false"
+  <AdminEditForm v-model="showAdminEditDialog" :incident-id="selectedReport.id" @complete="showAdminEditDialog = false"
     @close="showAdminEditDialog = false" />
 </template>
 
@@ -170,6 +166,7 @@ const previousStep = computed(() => {
 const isCommittee = computed(() => {
   if (!selectedReport.value || !selectedReport.value.steps) return false;
   if (selectedReport.value.committee_review_request_date) return false;
+  if (selectedReport.value.status_code === "Closed") return false;
 
   // Committee review can be requested once the investigation step (order 2) is complete
   const investigationStep = selectedReport.value.steps.find((s) => s.order === 2);
@@ -230,7 +227,7 @@ async function deleteClick(step) {
       await deleteIncident();
       router.push("/");
     },
-    () => {}
+    () => { }
   );
 }
 
