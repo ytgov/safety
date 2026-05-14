@@ -41,8 +41,16 @@
           </v-row>
 
           <v-label>Attachments</v-label>
-          <v-file-input v-model="report.files" prepend-icon="" prepend-inner-icon="mdi-paperclip" chips
-            :readonly="!isNil(selectedReport)" :clearable="isNil(selectedReport)" multiple></v-file-input>
+          <v-file-input v-model="pendingFiles" prepend-icon="" prepend-inner-icon="mdi-paperclip"
+            :readonly="!isNil(selectedReport)" :clearable="false" multiple
+            hide-details></v-file-input>
+
+          <div v-if="attachedFiles.length > 0" class="mt-3 mb-2">
+            <v-chip v-for="(file, idx) in attachedFiles" :key="`${file.name}-${idx}`" class="mr-2 mb-2" color="info"
+              :closable="isNil(selectedReport)" @click:close="removeAttachedFile(idx)">
+              {{ file.name }}
+            </v-chip>
+          </div>
 
           <p>
             If you have attachments associated with this Inspection, they need to be uploaded before you click "Report
@@ -171,6 +179,19 @@ async function reload() {
 }
 
 const report = ref({ eventType: null, date: new Date(), urgency: "Medium", location_code: "WHI" });
+const pendingFiles = ref([]);
+const attachedFiles = ref([]);
+
+watch(pendingFiles, (newFiles) => {
+  if (!newFiles || newFiles.length === 0) return;
+  const filesArray = Array.isArray(newFiles) ? newFiles : [newFiles];
+  attachedFiles.value = [...attachedFiles.value, ...filesArray];
+  pendingFiles.value = [];
+});
+
+function removeAttachedFile(idx) {
+  attachedFiles.value = attachedFiles.value.filter((_, i) => i !== idx);
+}
 
 watch(
   () => report.value.department_code,
@@ -215,6 +236,7 @@ const canSave = computed(() => {
 
 async function saveReport() {
   report.value.createDate = new Date();
+  report.value.files = attachedFiles.value;
   showOverlay();
 
   await addInspection(report.value).then(async (resp) => {
