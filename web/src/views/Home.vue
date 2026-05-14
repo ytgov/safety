@@ -27,7 +27,7 @@
         How to Submit Reports Offline
       </v-btn>
 
-      <v-btn v-if="hasRole('Inspector')" color="info" to="/inspection" size="large" block>
+      <v-btn v-if="isAuthenticated && !isOffline" color="info" to="/inspection" size="large" block>
         <v-icon class="mr-4">mdi-magnify-scan</v-icon>
         Report Inspection
       </v-btn>
@@ -46,8 +46,14 @@
 
   <v-row v-if="!isOffline && isAuthenticated">
     <!-- the first tow card show whether they have items or not, others are conditional -->
-    <v-col cols="12" md="6"> <ReportListCard /><SupervisorCard /> </v-col>
-    <v-col cols="12" md="6"> <ActionCard /> <SafetyAuthorityListCard /> </v-col>
+    <v-col cols="12" md="6">
+      <ReportListCard />
+      <SupervisorCard />
+    </v-col>
+    <v-col cols="12" md="6">
+      <ActionCard />
+      <SafetyAuthorityListCard />
+    </v-col>
   </v-row>
 </template>
 
