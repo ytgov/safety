@@ -35,7 +35,7 @@
                     readonly></v-text-field>
                 </v-col>
                 <v-col>
-                  <v-label style="white-space: inherit">Branch</v-label>
+                  <v-label style="white-space: inherit">Area (optional)</v-label>
                   <v-text-field :model-value="selectedReport.inspection_location_branch" readonly
                     append-inner-icon="mdi-lock" />
                 </v-col>

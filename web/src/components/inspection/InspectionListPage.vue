@@ -49,7 +49,7 @@ const location = ref(null);
 
 const headers = [
   { title: "Date", value: "created_at" },
-  { title: "Branch", value: "inspection_location.branch" },
+  { title: "Area", value: "inspection_location.branch" },
   { title: "Location", value: "inspection_location.name" },
   { title: "Inspector", value: "reporting_person_email" },
 ];
