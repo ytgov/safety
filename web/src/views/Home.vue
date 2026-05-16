@@ -58,6 +58,7 @@
 </template>
 
 <script setup>
+import { onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import CreateIncidentButton from "@/components/incident/CreateButton.vue";
 import ReportListCard from "@/components/report/ReportListCard.vue";
@@ -83,7 +84,9 @@ const { user } = storeToRefs(userStore);
 const reportStore = useReportStore();
 const { initialize, getStoredReports } = reportStore;
 
-await initialize();
+onMounted(() => {
+  initialize();
+});
 
 function loginClick() {
   loginWithRedirect({
