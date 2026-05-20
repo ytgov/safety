@@ -162,12 +162,29 @@
 
           <v-label>Attach supporting images</v-label>
           <v-file-input
-            v-model="report.files"
+            v-model="pendingFiles"
             prepend-icon=""
             prepend-inner-icon="mdi-camera"
-            chips
+            :clearable="false"
             multiple
-            accept="image/*"></v-file-input>
+            accept="image/*"
+            hide-details></v-file-input>
+
+          <div v-if="attachedFiles.length > 0" class="mt-3 mb-2">
+            <v-chip
+              v-for="(file, idx) in attachedFiles"
+              :key="`${file.name}-${idx}`"
+              class="mr-2 mb-2"
+              color="info"
+              closable
+              @click:close="removeAttachedFile(idx)">
+              {{ file.name }}
+            </v-chip>
+          </div>
+
+          <p>
+            If you have attachments associated with this report, they need to be uploaded before you click "Submit".
+          </p>
 
           <div class="d-flex">
             <v-btn color="primary" @click="saveReport" class="mb-0" :disabled="!canSave">Submit </v-btn>
@@ -179,7 +196,7 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { isEmpty } from "lodash";
 import { router } from "@/routes";
@@ -205,6 +222,19 @@ const isValid = ref(false);
 await initialize();
 
 const report = ref({ eventType: null, date: new Date(), urgency: "Medium", additional_people: [] });
+const pendingFiles = ref([]);
+const attachedFiles = ref([]);
+
+watch(pendingFiles, (newFiles) => {
+  if (!newFiles || newFiles.length === 0) return;
+  const filesArray = Array.isArray(newFiles) ? newFiles : [newFiles];
+  attachedFiles.value = [...attachedFiles.value, ...filesArray];
+  pendingFiles.value = [];
+});
+
+function removeAttachedFile(idx) {
+  attachedFiles.value = attachedFiles.value.filter((_, i) => i !== idx);
+}
 
 const canSave = computed(() => {
   if (report.value.on_behalf == "Yes") {
@@ -216,6 +246,7 @@ const canSave = computed(() => {
 
 async function saveReport() {
   report.value.createDate = new Date();
+  report.value.files = attachedFiles.value;
   showOverlay("Saving Report");
 
   try {
