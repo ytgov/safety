@@ -34,16 +34,14 @@
             <v-col cols="12" sm="8">
               <v-label class="mb-1" style="white-space: inherit">Location</v-label>
               <InspectionLocationSelector v-model="report.inspection_location_id"
-                :disabled="isNil(report.department_code)" :department="report.department_code"
-                :branch="selectedBranch"
+                :disabled="isNil(report.department_code)" :department="report.department_code" :branch="selectedBranch"
                 :readonly="!isNil(selectedReport)" :rules="[requiredRule]" />
             </v-col>
           </v-row>
 
           <v-label>Attachments</v-label>
           <v-file-input v-model="pendingFiles" prepend-icon="" prepend-inner-icon="mdi-paperclip"
-            :readonly="!isNil(selectedReport)" :clearable="false" multiple
-            hide-details></v-file-input>
+            :readonly="!isNil(selectedReport)" :clearable="false" multiple hide-details></v-file-input>
 
           <div v-if="attachedFiles.length > 0" class="mt-3 mb-2">
             <v-chip v-for="(file, idx) in attachedFiles" :key="`${file.name}-${idx}`" class="mr-2 mb-2" color="info"
@@ -74,7 +72,7 @@
             <v-list v-if="actions.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
               <div v-for="(action, idx) of actions">
                 <v-list-item class="pt-2 pb-2" :title="makeTitle(action)" :subtitle="makeSubtitle(action)"
-                  @click="openOtherActionDialog(action)">
+                  style="cursor: pointer" @click="openHazardDetailsDialog(action)">
                   <template #prepend>
                     <v-avatar size="small" class="mx-n2">
                       <v-icon v-if="action.urgency_code == 'Critical'" color="#D90000"
@@ -112,6 +110,54 @@
       </v-col>
     </v-row>
   </v-form>
+
+  <v-dialog v-model="showHazardDetails" width="640px" @keydown.esc="showHazardDetails = false">
+    <v-card v-if="hazardDetails">
+      <v-toolbar color="primary" density="comfortable">
+        <v-toolbar-title class="text-white">Hazard Details</v-toolbar-title>
+        <v-toolbar-items>
+          <v-btn icon="mdi-close" @click="showHazardDetails = false"></v-btn>
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card-text>
+        <v-row dense>
+          <v-col cols="12">
+            <v-text-field label="Description" :model-value="hazardDetails.description || '—'" readonly />
+          </v-col>
+          <v-col cols="12">
+            <v-text-field label="Status" :model-value="hazardDetails.status?.name || hazardDetails.status_code || '—'"
+              readonly />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field label="Created" :model-value="formatDate(hazardDetails.created_at)" readonly />
+          </v-col>
+          <v-col cols="6">
+            <v-text-field label="Due date" :model-value="formatDate(hazardDetails.due_date)" readonly />
+          </v-col>
+          <v-col cols="12">
+            <v-text-field label="Assigned to"
+              :model-value="hazardDetails.actor_display_name || hazardDetails.actor_user_email || '—'" readonly />
+          </v-col>
+          <v-col v-if="hazardDetails.control" cols="12">
+            <v-text-field label="Control" :model-value="hazardDetails.control" readonly />
+          </v-col>
+          <v-col v-if="hazardDetails.notes" cols="12">
+            <v-textarea label="Notes" :model-value="hazardDetails.notes" readonly auto-grow rows="2" />
+          </v-col>
+          <v-col v-if="hazardDetails.incident_identifier" cols="12">
+            <v-text-field label="Incident" :model-value="hazardDetails.incident_identifier" readonly />
+          </v-col>
+        </v-row>
+        <div class="d-flex">
+          <v-btn v-if="hazardDetails.incident_slug" color="info" prepend-icon="mdi-open-in-new"
+            @click="openInNewWindow(hazardDetails)">Open in new window</v-btn>
+          <v-spacer />
+          <v-btn color="warning" variant="outlined" @click="showHazardDetails = false">Close</v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
+  </v-dialog>
+
   <ConfirmDialog ref="confirmDialog" />
 </template>
 
@@ -125,7 +171,6 @@ import { useRouter } from "vue-router";
 import { useInspectionStore } from "@/store/InspectionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { useDepartmentStore } from "@/store/DepartmentStore";
-import { useHazardStore } from "@/store/HazardStore";
 import { useApiStore } from "@/store/ApiStore";
 import { INSPECTION_LOCATION_URL } from "@/urls";
 
@@ -164,6 +209,8 @@ const router = useRouter();
 const showActionEdit = ref(false);
 const actionToEdit = ref(null);
 const showHazardDialog = ref(false);
+const showHazardDetails = ref(false);
+const hazardDetails = ref(null);
 
 await initialize();
 await initDepartments();
@@ -282,9 +329,23 @@ function openConfirmationDialogAndGoToInspectionsPage() {
   );
 }
 
-function openOtherActionDialog(action) {
-  const hazardAction = action.actions[0];
+function openHazardDetailsDialog(action) {
+  hazardDetails.value = action;
+  showHazardDetails.value = true;
+}
 
-  doShowActionEdit(hazardAction);
+function openInNewWindow(action) {
+  if (!action?.incident_slug) return;
+  const path =
+    action.incident_type_id == 6
+      ? `/inspections/${action.incident_slug}?action=${action.slug}`
+      : `/reports/${action.incident_slug}?action=${action.slug}`;
+  const url = router.resolve(path).href;
+  window.open(url, "_blank", "noopener");
+}
+
+function formatDate(value) {
+  if (isNil(value)) return "—";
+  return DateTime.fromISO(value.toString()).toFormat("yyyy-MM-dd");
 }
 </script>
