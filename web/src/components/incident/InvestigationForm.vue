@@ -102,7 +102,8 @@
                 </template>
                 <ul class="mx-5 my-3">
                   <li>
-                    Incidents or reports of speeding in YG vehicles, includes driving incidents or other unsafe acts that
+                    Incidents or reports of speeding in YG vehicles, includes driving incidents or other unsafe acts
+                    that
                     could result in injury or damage or loss.
                   </li>
                 </ul>
@@ -382,7 +383,7 @@ const incidentOptions = [
   { title: "Exposure", value: "exposure" },
   { title: "Sharps / puncture / laceration", value: "sharps_puncture_laceration" },
   { title: "Physical abuse / violence", value: "physical_abuse_violence" },
-  { title: "Motor vehicle accident", value: "motor_vehicle_accident" },
+  { title: "Motor vehicle event (includes speeding)", value: "motor_vehicle_accident" },
   { title: "Caught in/ on/ between objects", value: "caught_in_on_between_objects" },
   { title: "Struck against/ Struck by", value: "struck_against_struck_by" },
   { title: "Fire/explosion", value: "fire_explosion" },
@@ -532,6 +533,7 @@ const rootCauseOptions = [
   { title: "Hiring and placement", value: "hiring_placement" },
   { title: "Materials and services management", value: "materials_services_management" },
   { title: "Failure to respond to HSC recommendations", value: "failure_respond_hsc_recommendations" },
+  { title: "Poor procedural/work planning", value: "poor_procedural_work_planning" },
 ];
 const hasAllRootCauses = computed(() => {
   return causes.value.length > 0;
