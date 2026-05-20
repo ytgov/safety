@@ -193,6 +193,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
     let additional_people = req.body.additional_people ?? [];
     if (!isArray(additional_people)) additional_people = additional_people.split(",");
 
+    const invitedPeople: string[] = [];
     for (const email of additional_people) {
       const user_email = (email ?? "").trim();
       if (user_email === "") continue;
@@ -201,6 +202,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
         incident_id: insertedIncidentId,
         reason: "supervisor",
       });
+      invitedPeople.push(user_email);
     }
 
     if (directorySubmitter && directorySubmitter.length > 0) {
@@ -234,6 +236,19 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
     }
 
     await trx.commit();
+
+    for (const user_email of invitedPeople) {
+      const directoryInvitee = await directoryService.searchByEmail(user_email);
+      const inviteeName =
+        directoryInvitee && directoryInvitee[0]
+          ? directoryInvitee[0].display_name
+          : user_email;
+      await emailService.sendIncidentInviteNotification(
+        { fullName: inviteeName, email: user_email },
+        insertedIncidents[0],
+      );
+    }
+
     console.log("ALL GOOD!");
     return res.status(200).json({ data: {} });
   } catch (error: any) {

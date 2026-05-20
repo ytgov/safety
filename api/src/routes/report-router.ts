@@ -530,6 +530,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     let peopleArray = additional_people ?? [];
     peopleArray = isArray(peopleArray) ? peopleArray : peopleArray.split(",");
 
+    const invitedPeople: string[] = [];
     if (peopleArray.length > 0) {
       for (const email of peopleArray) {
         const user_email = (email ?? "").trim();
@@ -540,6 +541,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
           incident_id: insertedIncidentId,
           reason: "supervisor",
         });
+        invitedPeople.push(user_email);
       }
     }
 
@@ -636,6 +638,19 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     }
 
     await trx.commit();
+
+    for (const user_email of invitedPeople) {
+      const directoryInvitee = await directoryService.searchByEmail(user_email);
+      const inviteeName =
+        directoryInvitee && directoryInvitee[0]
+          ? directoryInvitee[0].display_name
+          : user_email;
+      await emailService.sendIncidentInviteNotification(
+        { fullName: inviteeName, email: user_email },
+        insertedIncidents[0],
+      );
+    }
+
     return res.status(200).json({ data: {} });
   } catch (error: any) {
     await trx.rollback();
