@@ -3,6 +3,7 @@ import { param } from "express-validator";
 
 import { IncidentService, RoleService, UserService } from "../services";
 import { ReturnValidationErrors } from "../middleware";
+import { syncDepartmentFromDirectory } from "../middleware/authz.middleware";
 import { User, UserRole } from "../data/models";
 
 export const userRouter = express.Router();
@@ -12,6 +13,11 @@ const roleService = new RoleService();
 
 userRouter.get("/me", async (req: Request, res: Response) => {
   return res.json({ data: req.user });
+});
+
+userRouter.post("/me/sync-directory", async (req: Request, res: Response) => {
+  const department = await syncDepartmentFromDirectory(req.user, db);
+  return res.json({ data: { department } });
 });
 
 userRouter.get("/", async (req: Request, res: Response) => {
