@@ -102,6 +102,7 @@ export class YESNETService {
                 continue;
               if (isNil(dir.mail)) continue;
 
+              if (dir.mail.toLowerCase().endsWith("@yukon.ca")) continue;
               if (
                 dir.userPrincipalName
                   .toLowerCase()
