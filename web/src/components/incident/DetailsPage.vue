@@ -93,7 +93,7 @@
           </v-card>
 
           <v-card class="default mb-5"
-            v-if="isSupervisor || isSystemAdmin || isAction || isCommittee || (isReporter && (currentStep.order >= 3 || selectedReport.status_code == 'Closed'))">
+            v-if="isSupervisor || isSystemAdmin || isAction || isCommittee || isControlPlanVisibleToReporter">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
@@ -287,6 +287,13 @@ const isActionOnly = computed(() => {
 
 const hasCommitteeReview = computed(() => {
   return !isNil(selectedReport.value.committee_review_request_date);
+});
+
+const isControlPlanVisibleToReporter = computed(() => {
+  if (!isReporter.value) return false;
+  if (selectedReport.value.status_code == 'Closed') return true;
+  const minOrder = selectedReport.value.incident_type_description == 'Hazard' ? 2 : 3;
+  return currentStep.value.order >= minOrder;
 });
 
 const isReview = computed(() => {
