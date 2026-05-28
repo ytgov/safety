@@ -1,11 +1,11 @@
 <template>
   <v-app-bar app :class="instanceClass" flat height="70" style="left: 0; border-bottom: 3px #f3b228 solid">
     <router-link to="/"
-      ><img src="/yukon.svg" style="margin-top: -10px; margin-left: 14px" height="44" class="mr-0 mr-md-6"
+      ><img src="/STICH_WEB HEADER.png" style="margin-top: 7px; margin-left: 14px" height="44" class="mr-0 mr-md-6"
     /></router-link>
     <!-- <v-img class="ml-0m pl-0" src="src/assets/yukon.svg" height="44" /> -->
     <v-app-bar-title class="pt-0 font-weight-bold">
-      <router-link to="/" class="title-link">{{ applicationName }} {{ instanceName }}</router-link>
+      <router-link to="/" class="title-link">{{ instanceName }}</router-link>
     </v-app-bar-title>
 
     <template #append>
@@ -45,6 +45,13 @@
                 <v-icon>mdi-clipboard-list-outline</v-icon>
               </template>
               <v-list-item-title style="font-size: 0.9rem !important">Report Inspection</v-list-item-title>
+            </v-list-item>
+
+            <v-list-item to="/committee-meetings">
+              <template v-slot:prepend>
+                <v-icon>mdi-account-group</v-icon>
+              </template>
+              <v-list-item-title style="font-size: 0.9rem !important">Committee Meetings</v-list-item-title>
             </v-list-item>
 
             <v-list-item to="/administration" v-if="isSystemAdmin">

@@ -21,3 +21,4 @@ export const ATTACHMENT_URL = `${config.apiBaseUrl}/api/attachment`;
 export const HAZARD_URL = `${config.apiBaseUrl}/api/hazard`;
 export const ACTION_URL = `${config.apiBaseUrl}/api/action`;
 export const COMMITTEE_URL = `${config.apiBaseUrl}/api/committees`;
+export const COMMITTEE_MEETING_URL = `${config.apiBaseUrl}/api/committee-meetings`;
