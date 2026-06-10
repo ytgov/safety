@@ -4,6 +4,24 @@ import axios from "axios";
 import jwksRsa, { type GetVerificationKey } from "jwks-rsa";
 import { AUTH0_DOMAIN, AUTH0_AUDIENCE } from "../config";
 import { UserService } from "../services";
+import { UnifiedDirectoryService } from "../services/unified-directory-service";
+
+export async function syncDepartmentFromDirectory(user: any, db: UserService): Promise<string | null> {
+  if (!user?.email || !user?.id) return null;
+  try {
+    const directory = new UnifiedDirectoryService();
+    const results = await directory.searchByEmail(user.email);
+    const match = results.find((r) => r.department) ?? results[0];
+    if (!match?.department) return null;
+    if (match.department === user.department) return match.department;
+    await db.update(user.id, { department: match.department });
+    user.department = match.department;
+    return match.department;
+  } catch (err) {
+    console.log("Directory department sync failed for", user.email, err);
+    return null;
+  }
+}
 
 console.log(AUTH0_AUDIENCE, AUTH0_DOMAIN);
 
