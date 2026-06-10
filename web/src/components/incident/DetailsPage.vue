@@ -185,7 +185,7 @@
                 <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
                 <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" hide-details />
 
-                <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-4">
+                <div class="mt-4">
                   <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
                   <v-textarea v-model="selectedReport.investigation_notes" :readonly="!canEdit"
                     :append-inner-icon="canEdit ? '' : 'mdi-lock'"
