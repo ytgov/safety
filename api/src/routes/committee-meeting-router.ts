@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { isArray } from "lodash";
 
 import { db as knex } from "../data/db-client";
+import { InsertableDate } from "../utils/formatters";
 
 export const committeeMeetingRouter = express.Router();
 
@@ -102,7 +103,7 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
   const inserted = await knex("committee_meetings")
     .insert({
       committee_id,
-      meeting_date,
+      meeting_date: InsertableDate(meeting_date),
       created_by_user_id: req.user?.id ?? null,
     })
     .returning("*");
@@ -140,7 +141,7 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   }
 
   const update: any = {};
-  if (meeting_date !== undefined) update.meeting_date = meeting_date;
+  if (meeting_date !== undefined) update.meeting_date = InsertableDate(meeting_date);
   if (minutes !== undefined) update.minutes = minutes;
 
   if (Object.keys(update).length > 0) {
