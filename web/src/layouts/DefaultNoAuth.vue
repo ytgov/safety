@@ -1,8 +1,11 @@
 <template>
   <v-app-bar app :class="instanceClass" flat height="70" style="left: 0; border-bottom: 3px #f3b228 solid">
-    <router-link to="/"
-      ><img src="/STICH_WEB HEADER.png" style="margin-top: 7px; margin-left: 14px" height="44" class="mr-0 mr-md-6"
-    /></router-link>
+    <router-link to="/">
+      <img src="/STICH_WEB HEADER.png" style="margin-top: 7px; margin-left: 14px" height="44"
+        class="mr-0 mr-md-6 d-none d-md-inline" />
+      <img src="/STICH_WEB HEADER-Narrow.png" style="margin-top: 7px; margin-left: 14px" height="44"
+        class="mr-0 mr-md-6 d-inline d-md-none" />
+    </router-link>
     <!-- <v-img class="ml-0m pl-0" src="src/assets/yukon.svg" height="44" /> -->
     <v-app-bar-title class="pt-0 font-weight-bold">
       <router-link to="/" class="title-link">{{ instanceName }}</router-link>
@@ -147,7 +150,7 @@ async function loginClick() {
 </script>
 
 <style scoped>
-.v-list-item__prepend > .v-icon {
+.v-list-item__prepend>.v-icon {
   margin-inline-end: 12px;
 }
 </style>
