@@ -19,7 +19,7 @@ async function isCochair(meetingId: number | string, req: any): Promise<boolean>
     .where({ committee_meeting_id: meetingId })
     .where(function () {
       if (userId) this.orWhere({ user_id: userId });
-      if (email) this.orWhereRaw("LOWER(email) = ?", [email]);
+      if (email) this.orWhereRaw(`LOWER("email") = ?`, [email]);
     })
     .first();
   return !!row;
@@ -114,7 +114,7 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
     for (const c of cochairs) {
       let user_id = c.user_id ?? null;
       if (!user_id && c.email) {
-        const match = await knex("users").whereRaw("LOWER(email) = ?", [c.email.toLowerCase()]).first();
+        const match = await knex("users").whereRaw(`LOWER("email") = ?`, [c.email.toLowerCase()]).first();
         if (match) user_id = match.id;
       }
       await knex("committee_meeting_cochairs").insert({
@@ -155,7 +155,7 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
       for (const c of cochairs) {
         let user_id = c.user_id ?? null;
         if (!user_id && c.email) {
-          const match = await knex("users").whereRaw("LOWER(email) = ?", [c.email.toLowerCase()]).first();
+          const match = await knex("users").whereRaw(`LOWER("email") = ?`, [c.email.toLowerCase()]).first();
           if (match) user_id = match.id;
         }
         await knex("committee_meeting_cochairs").insert({
