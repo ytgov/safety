@@ -16,35 +16,20 @@
             <v-col cols="12" md="12">
               <v-select v-model="meeting.committee_id" :items="committees" item-title="name" item-value="id"
                 label="Committee" :loading="committeesLoading" />
-              <DateSelector v-model="meeting.meeting_date" label="Date" />
+
+              <DateSelector v-model="meeting.meeting_date" label="Date" class="mb-5" />
+
+              <v-select v-model="meeting.quorum" :items="['Yes', 'No']" label="Did you meet quorum?" />
+              <v-select v-if="meeting.quorum == 'No'" v-model="meeting.meet_anyway" :items="['Yes', 'No']"
+                label="Did you meet anyway for informational purposes?" />
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="12" md="4">
-          <h3 class="text-h6 mb-4">Previous Co-Chairs</h3>
+        <v-col cols="12" md="8">
+          <h3 class="text-h6 mb-4">Please record who is present for this meeting.</h3>
 
-          <v-list v-if="previousCochairs.length > 0" density="compact" class="py-0"
-            style="border: 1px #999 solid; border-radius: 4px">
-            <v-list-item v-for="(c, idx) in previousCochairs" :key="c.email"
-              :style="{ borderBottom: idx < previousCochairs.length - 1 ? '1px #999 solid' : 'none' }"
-              :title="c.display_name || c.email" :subtitle="c.display_name ? c.email : ''" class="py-3">
-              <template #append>
-                <v-btn color="primary" class="my-0" size="x-small" variant="text"
-                  :disabled="isAlreadyCochair(c.email)" @click="addPreviousCochair(c)">
-                  <v-icon>mdi-plus</v-icon>
-                </v-btn>
-              </template>
-            </v-list-item>
-          </v-list>
-          <div v-else-if="meeting.committee_id" class="text-medium-emphasis">
-            No previous co-chairs found.
-          </div>
-          <div v-else class="text-medium-emphasis">
-            Select a committee to see previous co-chairs.
-          </div>
-        </v-col>
-        <v-col cols="12" md="4">
-          <h3 class="text-h6 mb-4">Co-Chairs</h3>
+
+          <h4 class="text-h7 mb-4">Co-Chairs</h4>
 
           <v-list v-if="meeting.cochairs.length > 0" density="compact" class="py-0 mb-3"
             style="border: 1px #999 solid; border-radius: 4px">
@@ -61,11 +46,25 @@
 
           <DirectorySelector ref="dirRef" label="Add a co-chair" @selected="onDirectorySelected" />
 
+          <v-divider class="my-5" />
 
+          <h3 class="text-h6 mb-4">Members</h3>
+
+          <v-list v-if="meeting.members.length > 0" density="compact" class="py-0 mb-3"
+            style="border: 1px #999 solid; border-radius: 4px">
+            <v-list-item v-for="(m, idx) in meeting.members" :key="idx"
+              :style="{ borderBottom: idx < meeting.members.length - 1 ? '1px #999 solid' : 'none' }"
+              :title="m.display_name || m.email" :subtitle="m.display_name ? m.email : ''" class="py-3">
+              <template #append>
+                <v-btn color="error" class="my-0" size="x-small" variant="text" @click="removeMember(idx)">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-list-item>
+          </v-list>
+
+          <DirectorySelector ref="memberRef" label="Add a member" @selected="onMemberSelected" />
         </v-col>
-
-
-
       </v-row>
       <v-divider class="my-4" />
 
@@ -102,13 +101,13 @@ const { committees, isLoading: committeesLoading } = storeToRefs(committeeStore)
 
 const saving = ref(false);
 const dirRef = ref(null);
-/** @type {import('vue').Ref<Array<{user_id: number|null, email: string, display_name: string|null}>>} */
-const previousCochairs = ref([]);
+const memberRef = ref(null);
 
 const meeting = ref({
   committee_id: null,
   meeting_date: new Date().toISOString().slice(0, 10),
   cochairs: [],
+  members: [],
 });
 
 const canCreate = computed(
@@ -121,27 +120,20 @@ watch(
   () => meeting.value.committee_id,
   async (id) => {
     if (!id) {
-      previousCochairs.value = [];
+      meeting.value.cochairs = [];
+      meeting.value.members = [];
       return;
     }
-    previousCochairs.value = await meetingStore.loadPreviousCochairs(id);
+    const { cochairs, members } = await meetingStore.loadPreviousAttendees(id);
+    const mapPerson = (p) => ({
+      user_id: p.user_id ?? null,
+      email: p.email,
+      display_name: p.display_name ?? null,
+    });
+    meeting.value.cochairs = cochairs.map(mapPerson);
+    meeting.value.members = members.map(mapPerson);
   }
 );
-
-function isAlreadyCochair(email) {
-  if (!email) return false;
-  const lower = email.toLowerCase();
-  return meeting.value.cochairs.some((c) => (c.email ?? "").toLowerCase() === lower);
-}
-
-function addPreviousCochair(c) {
-  if (isAlreadyCochair(c.email)) return;
-  meeting.value.cochairs.push({
-    user_id: c.user_id ?? null,
-    email: c.email,
-    display_name: c.display_name ?? null,
-  });
-}
 
 function onDirectorySelected(person) {
   if (!person || !person.email) return;
@@ -156,6 +148,21 @@ function onDirectorySelected(person) {
 
 function removeCochair(idx) {
   meeting.value.cochairs.splice(idx, 1);
+}
+
+function onMemberSelected(person) {
+  if (!person || !person.email) return;
+  if (meeting.value.members.some((m) => m.email === person.email)) return;
+  meeting.value.members.push({
+    user_id: null,
+    email: person.email,
+    display_name: person.display_name || person.long_name || null,
+  });
+  if (memberRef.value && memberRef.value.clear) memberRef.value.clear();
+}
+
+function removeMember(idx) {
+  meeting.value.members.splice(idx, 1);
 }
 
 async function create() {

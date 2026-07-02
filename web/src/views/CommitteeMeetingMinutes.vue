@@ -40,24 +40,42 @@
       <v-col cols="12" md="4">
         <v-card class="default">
           <v-card-item class="py-3 px-5 bg-sun">
-            <h4 class="text-h6">Upload Minutes File</h4>
+            <h4 class="text-h6">Upload Files</h4>
           </v-card-item>
           <v-card-text class="pt-5">
             <template v-if="!isComplete">
-              <v-file-input v-model="newFile" label="Choose file" prepend-icon="" prepend-inner-icon="mdi-paperclip"
-                show-size clearable hide-details />
+              <v-file-input v-model="newFiles" label="Choose file(s)" prepend-icon="" prepend-inner-icon="mdi-paperclip"
+                show-size clearable hide-details multiple />
 
               <div class="d-flex justify-end">
-                <v-btn color="primary" :loading="uploading" :disabled="!newFile" @click="uploadFile">Upload</v-btn>
+                <v-btn color="primary" :loading="uploading" :disabled="!newFiles || newFiles.length === 0"
+                  @click="uploadFiles">Upload</v-btn>
               </div>
             </template>
 
-            <div v-if="meeting.minutes_file_name" class="">
-              <v-icon class="mr-2">mdi-file-document</v-icon>
-              <a href="#" @click.prevent="downloadFile">{{ meeting.minutes_file_name }}</a>
-              <v-btn v-if="!isComplete" class="ml-4" icon="mdi-delete" size="small" variant="text" color="red"
-                @click="removeFile" />
-            </div>
+            <template v-if="meeting.files && meeting.files.length > 0">
+              <div class="text-caption text-medium-emphasis text-uppercase mt-4 mb-1">
+                Attached files ({{ meeting.files.length }})
+              </div>
+              <v-list class="border rounded py-0" density="comfortable" lines="two" bg-color="transparent">
+                <template v-for="(f, i) in meeting.files" :key="f.id">
+                  <v-divider v-if="i > 0" />
+                  <v-list-item class="px-3" :title="f.file_name" @click="downloadFile(f)">
+                    <template #prepend>
+                      <v-icon :icon="fileIcon(f)" color="primary" class="mr-3" />
+                    </template>
+                    <v-list-item-title class="text-body-2 text-primary">{{ f.file_name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ formatSize(f.file_size) }}</v-list-item-subtitle>
+                    <template #append>
+                      <v-btn v-if="!isComplete" icon="mdi-delete" size="small" variant="text" color="red"
+                        @click.stop="removeFile(f)" />
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-list>
+            </template>
+
+            <p v-else-if="isComplete" class="text-medium-emphasis mb-0">No files attached.</p>
           </v-card-text>
         </v-card>
 
@@ -141,7 +159,7 @@ const { selected: meeting, isLoading } = storeToRefs(store);
 const { isSystemAdmin, user: currentUser } = storeToRefs(userStore);
 
 const minutesText = ref("");
-const newFile = ref(null);
+const newFiles = ref([]);
 const savingText = ref(false);
 const uploading = ref(false);
 const deleting = ref(false);
@@ -163,9 +181,9 @@ const canMarkComplete = computed(() => isSystemAdmin.value || isCurrentUserCocha
 
 onMounted(load);
 
-async function downloadFile() {
-  if (!meeting.value) return;
-  await store.downloadMinutesFile(meeting.value.id, meeting.value.minutes_file_name);
+async function downloadFile(file) {
+  if (!meeting.value || !file) return;
+  await store.downloadFile(meeting.value.id, file.id, file.file_name);
 }
 
 async function load() {
@@ -180,6 +198,24 @@ watch(meeting, (m) => {
 function formatDate(d) {
   if (!d) return "";
   return DateTime.fromISO(d).toFormat("DDD");
+}
+
+function formatSize(bytes) {
+  if (!bytes && bytes !== 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function fileIcon(file) {
+  const type = (file.file_type || "").toLowerCase();
+  const name = (file.file_name || "").toLowerCase();
+  if (type.startsWith("image/")) return "mdi-file-image";
+  if (type === "application/pdf" || name.endsWith(".pdf")) return "mdi-file-pdf-box";
+  if (type.includes("word") || /\.docx?$/.test(name)) return "mdi-file-word";
+  if (type.includes("sheet") || type.includes("excel") || /\.xlsx?$/.test(name)) return "mdi-file-excel";
+  if (/\.(zip|rar|7z)$/.test(name)) return "mdi-folder-zip";
+  return "mdi-file-document";
 }
 
 function formatCochairs(list) {
@@ -198,23 +234,23 @@ async function saveText() {
   }
 }
 
-async function uploadFile() {
-  if (!meeting.value || !newFile.value) return;
-  const file = Array.isArray(newFile.value) ? newFile.value[0] : newFile.value;
+async function uploadFiles() {
+  if (!meeting.value || !newFiles.value || newFiles.value.length === 0) return;
+  const files = Array.isArray(newFiles.value) ? newFiles.value : [newFiles.value];
   uploading.value = true;
   try {
-    await store.uploadMinutesFile(meeting.value.id, file);
-    newFile.value = null;
-    notify.notify({ text: "File uploaded", variant: "success" });
+    await store.uploadFiles(meeting.value.id, files);
+    newFiles.value = [];
+    notify.notify({ text: "File(s) uploaded", variant: "success" });
     await load();
   } finally {
     uploading.value = false;
   }
 }
 
-async function removeFile() {
-  if (!meeting.value) return;
-  await store.deleteMinutesFile(meeting.value.id);
+async function removeFile(file) {
+  if (!meeting.value || !file) return;
+  await store.deleteFile(meeting.value.id, file.id);
   notify.notify({ text: "File removed", variant: "success" });
   await load();
 }

@@ -35,7 +35,7 @@
             <template #item.meeting_date="{ item }">{{ formatDate(item.meeting_date) }}</template>
             <template #item.cochairs="{ item }">{{ formatCochairs(item.cochairs) }}</template>
             <template #item.has_minutes="{ item }">
-              <v-icon v-if="item.minutes || item.has_minutes_file" color="success">mdi-check</v-icon>
+              <v-icon v-if="item.minutes || (item.files && item.files.length > 0)" color="success">mdi-check</v-icon>
             </template>
           </v-data-table>
         </v-card-text>

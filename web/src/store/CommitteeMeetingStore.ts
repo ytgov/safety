@@ -14,21 +14,31 @@ export interface CommitteeMeetingCochair {
   display_name?: string | null;
 }
 
+export type CommitteeMeetingMember = CommitteeMeetingCochair;
+
+export interface CommitteeMeetingFile {
+  id: number;
+  committee_meeting_id: number;
+  added_date?: string;
+  added_by_email?: string | null;
+  file_name?: string | null;
+  file_type?: string | null;
+  file_size?: number | null;
+}
+
 export interface CommitteeMeeting {
   id?: number;
   committee_id: number;
   committee_name?: string;
   meeting_date: string;
   minutes?: string | null;
-  minutes_file_name?: string | null;
-  minutes_file_type?: string | null;
-  minutes_file_size?: number | null;
-  has_minutes_file?: boolean;
   status?: "Draft" | "Complete";
   completed_at?: string | null;
   completed_by_user_id?: number | null;
   created_at?: string;
   cochairs?: CommitteeMeetingCochair[];
+  members?: CommitteeMeetingMember[];
+  files?: CommitteeMeetingFile[];
 }
 
 export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
@@ -62,10 +72,12 @@ export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
         .finally(() => (this.isLoading = false));
     },
 
-    async loadPreviousCochairs(committeeId: number): Promise<CommitteeMeetingCochair[]> {
+    async loadPreviousAttendees(
+      committeeId: number
+    ): Promise<{ cochairs: CommitteeMeetingCochair[]; members: CommitteeMeetingMember[] }> {
       const api = useApiStore();
       return api
-        .secureCall("get", `${COMMITTEE_MEETING_URL}/previous-cochairs/${committeeId}`)
+        .secureCall("get", `${COMMITTEE_MEETING_URL}/previous-attendees/${committeeId}`)
         .then((resp) => resp.data);
     },
 
@@ -79,32 +91,32 @@ export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
       return api.secureCall("put", `${COMMITTEE_MEETING_URL}/${id}`, changes).then((resp) => resp.data);
     },
 
-    async downloadMinutesFile(id: number, fileName: string) {
+    async downloadFile(id: number, fileId: number, fileName: string) {
       const token = await auth0.getAccessTokenSilently();
-      const resp = await axios.get(`${COMMITTEE_MEETING_URL}/${id}/minutes-file`, {
+      const resp = await axios.get(`${COMMITTEE_MEETING_URL}/${id}/files/${fileId}`, {
         headers: { Authorization: `Bearer ${token}` },
         responseType: "blob",
       });
       const url = URL.createObjectURL(resp.data);
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", fileName || "minutes");
+      link.setAttribute("download", fileName || "file");
       document.body.appendChild(link);
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
     },
 
-    async uploadMinutesFile(id: number, file: File) {
+    async uploadFiles(id: number, files: File[]) {
       const api = useApiStore();
       const formData = new FormData();
-      formData.append("file", file);
-      return api.secureUpload("post", `${COMMITTEE_MEETING_URL}/${id}/minutes-file`, formData);
+      for (const file of files) formData.append("file", file);
+      return api.secureUpload("post", `${COMMITTEE_MEETING_URL}/${id}/files`, formData);
     },
 
-    async deleteMinutesFile(id: number) {
+    async deleteFile(id: number, fileId: number) {
       const api = useApiStore();
-      return api.secureCall("delete", `${COMMITTEE_MEETING_URL}/${id}/minutes-file`);
+      return api.secureCall("delete", `${COMMITTEE_MEETING_URL}/${id}/files/${fileId}`);
     },
 
     async setStatus(id: number, status: "Draft" | "Complete") {

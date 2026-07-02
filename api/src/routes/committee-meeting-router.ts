@@ -32,43 +32,52 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
     .select("committee_meetings.*", "committees.name as committee_name");
 
   const cochairs = await knex("committee_meeting_cochairs");
+  const members = await knex("committee_meeting_members");
+  const files = await knex("committee_meeting_files").select(
+    "id",
+    "committee_meeting_id",
+    "added_date",
+    "added_by_email",
+    "file_name",
+    "file_type",
+    "file_size"
+  );
   for (const m of list) {
     m.cochairs = cochairs.filter((c) => c.committee_meeting_id === m.id);
-    m.has_minutes_file = !!m.minutes_file;
-    delete m.minutes_file;
+    m.members = members.filter((mem) => mem.committee_meeting_id === m.id);
+    m.files = files.filter((f) => f.committee_meeting_id === m.id);
   }
 
   return res.json({ data: list });
 });
 
-committeeMeetingRouter.get("/previous-cochairs/:committee_id", async (req: Request, res: Response) => {
+committeeMeetingRouter.get("/previous-attendees/:committee_id", async (req: Request, res: Response) => {
   const { committee_id } = req.params;
 
-  const meetings = await knex("committee_meetings")
+  const previous = await knex("committee_meetings")
     .where({ committee_id })
     .orderBy("meeting_date", "desc")
     .orderBy("id", "desc")
-    .limit(10)
-    .select("id");
+    .first();
 
-  if (meetings.length === 0) return res.json({ data: [] });
+  if (!previous) return res.json({ data: { cochairs: [], members: [] } });
 
-  const meetingIds = meetings.map((m) => m.id);
-  const cochairs = await knex("committee_meeting_cochairs").whereIn("committee_meeting_id", meetingIds);
+  const dedupe = (rows: any[]) => {
+    const seen = new Set<string>();
+    const unique: any[] = [];
+    for (const r of rows) {
+      const key = (r.email ?? "").toLowerCase();
+      if (!key || seen.has(key)) continue;
+      seen.add(key);
+      unique.push({ user_id: r.user_id, email: r.email, display_name: r.display_name });
+    }
+    return unique;
+  };
 
-  const orderById = new Map(meetingIds.map((id, idx) => [id, idx]));
-  cochairs.sort((a, b) => (orderById.get(a.committee_meeting_id) ?? 0) - (orderById.get(b.committee_meeting_id) ?? 0));
+  const cochairs = await knex("committee_meeting_cochairs").where({ committee_meeting_id: previous.id });
+  const members = await knex("committee_meeting_members").where({ committee_meeting_id: previous.id });
 
-  const seen = new Set<string>();
-  const unique: any[] = [];
-  for (const c of cochairs) {
-    const key = (c.email ?? "").toLowerCase();
-    if (!key || seen.has(key)) continue;
-    seen.add(key);
-    unique.push({ user_id: c.user_id, email: c.email, display_name: c.display_name });
-  }
-
-  return res.json({ data: unique });
+  return res.json({ data: { cochairs: dedupe(cochairs), members: dedupe(members) } });
 });
 
 committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {
@@ -81,24 +90,28 @@ committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {
   if (!item) return res.status(404).json({ error: "Meeting not found" });
 
   item.cochairs = await knex("committee_meeting_cochairs").where({ committee_meeting_id: id });
-  item.has_minutes_file = !!item.minutes_file;
-  delete item.minutes_file;
+  item.members = await knex("committee_meeting_members").where({ committee_meeting_id: id });
+  item.files = await knex("committee_meeting_files")
+    .where({ committee_meeting_id: id })
+    .select("id", "committee_meeting_id", "added_date", "added_by_email", "file_name", "file_type", "file_size");
 
   return res.json({ data: item });
 });
 
-committeeMeetingRouter.get("/:id/minutes-file", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const item = await knex("committee_meetings").where({ id }).first();
-  if (!item || !item.minutes_file) return res.status(404).send();
+committeeMeetingRouter.get("/:id/files/:fileId", async (req: Request, res: Response) => {
+  const { id, fileId } = req.params;
+  const file = await knex("committee_meeting_files")
+    .where({ committee_meeting_id: id, id: fileId })
+    .first();
+  if (!file || !file.file) return res.status(404).send();
 
-  res.setHeader("Content-disposition", `attachment; filename="${item.minutes_file_name}"`);
-  res.setHeader("Content-type", item.minutes_file_type ?? "application/octet-stream");
-  res.send(item.minutes_file);
+  res.setHeader("Content-disposition", `attachment; filename="${file.file_name}"`);
+  res.setHeader("Content-type", file.file_type ?? "application/octet-stream");
+  res.send(file.file);
 });
 
 committeeMeetingRouter.post("/", async (req: any, res: Response) => {
-  const { committee_id, meeting_date, cochairs } = req.body;
+  const { committee_id, meeting_date, cochairs, members } = req.body;
 
   const inserted = await knex("committee_meetings")
     .insert({
@@ -127,12 +140,29 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
     }
   }
 
+  if (isArray(members)) {
+    for (const m of members) {
+      let user_id = m.user_id ?? null;
+      if (!user_id && m.email) {
+        const match = await knex("users").whereRaw(`LOWER("email") = ?`, [m.email.toLowerCase()]).first();
+        if (match) user_id = match.id;
+      }
+      await knex("committee_meeting_members").insert({
+        committee_meeting_id: meeting.id,
+        committee_id,
+        user_id,
+        email: m.email ?? null,
+        display_name: m.display_name ?? null,
+      });
+    }
+  }
+
   return res.json({ data: meeting });
 });
 
 committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   const { id } = req.params;
-  const { meeting_date, minutes, cochairs } = req.body;
+  const { meeting_date, minutes, cochairs, members } = req.body;
 
   const existing = await knex("committee_meetings").where({ id }).first();
   if (!existing) return res.status(404).json({ error: "Meeting not found" });
@@ -164,6 +194,27 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
           user_id,
           email: c.email ?? null,
           display_name: c.display_name ?? null,
+        });
+      }
+    }
+  }
+
+  if (isArray(members)) {
+    const meeting = await knex("committee_meetings").where({ id }).first();
+    if (meeting) {
+      await knex("committee_meeting_members").where({ committee_meeting_id: id }).delete();
+      for (const m of members) {
+        let user_id = m.user_id ?? null;
+        if (!user_id && m.email) {
+          const match = await knex("users").whereRaw(`LOWER("email") = ?`, [m.email.toLowerCase()]).first();
+          if (match) user_id = match.id;
+        }
+        await knex("committee_meeting_members").insert({
+          committee_meeting_id: id,
+          committee_id: meeting.committee_id,
+          user_id,
+          email: m.email ?? null,
+          display_name: m.display_name ?? null,
         });
       }
     }
@@ -204,7 +255,7 @@ committeeMeetingRouter.post("/:id/status", async (req: any, res: Response) => {
   return res.json({ data: "success" });
 });
 
-committeeMeetingRouter.post("/:id/minutes-file", async (req: any, res: Response) => {
+committeeMeetingRouter.post("/:id/files", async (req: any, res: Response) => {
   const { id } = req.params;
 
   const existing = await knex("committee_meetings").where({ id }).first();
@@ -217,37 +268,39 @@ committeeMeetingRouter.post("/:id/minutes-file", async (req: any, res: Response)
     return res.status(400).json({ error: "No file uploaded" });
   }
 
-  const file = isArray(req.files.file) ? req.files.file[0] : req.files.file;
+  const uploaded = isArray(req.files.file) ? req.files.file : [req.files.file];
 
-  await knex("committee_meetings").where({ id }).update({
-    minutes_file_name: file.name,
-    minutes_file_type: file.mimetype,
-    minutes_file_size: file.size,
-    minutes_file: file.data,
-  });
+  for (const file of uploaded) {
+    await knex("committee_meeting_files").insert({
+      committee_meeting_id: id,
+      added_by_email: req.user?.email ?? null,
+      added_by_user_id: req.user?.id ?? null,
+      file_name: file.name,
+      file_type: file.mimetype,
+      file_size: file.size,
+      file: file.data,
+    });
+  }
 
   return res.json({ data: "success" });
 });
 
-committeeMeetingRouter.delete("/:id/minutes-file", async (req: Request, res: Response) => {
-  const { id } = req.params;
+committeeMeetingRouter.delete("/:id/files/:fileId", async (req: Request, res: Response) => {
+  const { id, fileId } = req.params;
   const existing = await knex("committee_meetings").where({ id }).first();
   if (!existing) return res.status(404).json({ error: "Meeting not found" });
   if (existing.status === "Complete") {
     return res.status(409).json({ error: "Meeting is complete and cannot be edited" });
   }
-  await knex("committee_meetings").where({ id }).update({
-    minutes_file_name: null,
-    minutes_file_type: null,
-    minutes_file_size: null,
-    minutes_file: null,
-  });
+  await knex("committee_meeting_files").where({ committee_meeting_id: id, id: fileId }).delete();
   return res.json({ data: "success" });
 });
 
 committeeMeetingRouter.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   await knex("committee_meeting_cochairs").where({ committee_meeting_id: id }).delete();
+  await knex("committee_meeting_members").where({ committee_meeting_id: id }).delete();
+  await knex("committee_meeting_files").where({ committee_meeting_id: id }).delete();
   await knex("committee_meetings").where({ id }).delete();
   return res.json({ data: "success" });
 });
