@@ -105,7 +105,7 @@
               <v-btn v-if="canAddTask" class="mb-0" size="small" color="info" @click="addTaskClick">Add Task</v-btn>
 
               <ActionDialog v-model="showActionEdit" :action="actionToEdit" :hazard-id="actionToEdit?.hazard_id"
-                :readonly="isCommittee" @doClose="actionReload"></ActionDialog>
+                :readonly="isCommittee && !isSupervisor" @doClose="actionReload"></ActionDialog>
 
               <HazardAssessmentForm v-model="showHazardDialog" :incident-id="selectedReport.id"
                 :incident_type_description="selectedReport.incident_type_description" :hazard-report="selectedReport"
