@@ -23,6 +23,15 @@
               density="comfortable"
               append-inner-icon="mdi-lock" />
 
+            <v-autocomplete
+              label="Department"
+              v-model="selectedUser.department"
+              :items="departments"
+              item-title="name"
+              item-value="name"
+              variant="outlined"
+              density="comfortable" />
+
             <v-select
               label="Status"
               v-model="selectedUser.is_active"
