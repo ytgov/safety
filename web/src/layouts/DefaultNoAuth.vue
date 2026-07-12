@@ -8,7 +8,7 @@
     </router-link>
     <!-- <v-img class="ml-0m pl-0" src="src/assets/yukon.svg" height="44" /> -->
     <v-app-bar-title class="pt-0 font-weight-bold">
-      <router-link to="/" class="title-link">{{ applicationName }} {{ instanceName }}</router-link>
+      <router-link to="/" class="title-link">{{ instanceName }}</router-link>
     </v-app-bar-title>
 
     <template #append>
@@ -91,8 +91,6 @@
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import { applicationName } from "@/config";
-//import { waitForUserToLoad } from "@/routes";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
