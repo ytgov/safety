@@ -1,14 +1,14 @@
 {
-  "short_name": "YG Safety Portal",
-  "name": "YG Safety Portal",
+  "short_name": "STICH",
+  "name": "STICH",
   "icons": [
     {
-      "src": "/icon-512.png",
+      "src": "/pwa-icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/pwa-icon-192.png",
       "type": "image/png",
       "sizes": "192x192"
     }
@@ -25,14 +25,10 @@
       "short_name": "Report",
       "description": "Report an incident",
       "url": "/report-an-incident",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-icon-192.png", "sizes": "192x192" }]
     }
   ],
   "lang": "en",
   "dir": "ltr",
-  "description": "Submit and view hazards and incidents",
-  "screenshots": [
-    { "form_factor": "narrow", "sizes": "512x512", "type": "image/png", "src": "/icon-512.png" },
-    { "form_factor": "wide", "sizes": "512x512", "type": "image/png", "src": "/icon-512.png" }
-  ]
+  "description": "Safety Tracking for Incidents, Controls & Hazards"
 }
