@@ -98,8 +98,6 @@
 import { computed, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 
-import { applicationName } from "@/config";
-//import { waitForUserToLoad } from "@/routes";
 import { useAuth0 } from "@auth0/auth0-vue";
 import { useUserStore } from "@/store/UserStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
