@@ -11,6 +11,47 @@ function isSystemAdmin(req: any): boolean {
   return roles.some((r: any) => r.name === "System Admin");
 }
 
+const YES_NO_FIELDS = ["quorum", "meet_anyway", "worker_vacancies"] as const;
+const COUNT_FIELDS = [
+  "no_loss_incidents_reviewed",
+  "loss_incidents_reviewed",
+  "new_hazards_reviewed",
+  "worker_vacancy_count",
+] as const;
+
+function cleanYesNo(value: any): string | null {
+  return value === "Yes" || value === "No" ? value : null;
+}
+
+function cleanCount(value: any): number | null {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(value);
+  if (!Number.isInteger(n) || n < 0) return null;
+  return n;
+}
+
+// Pulls the quorum/review answers off a request body. Only keys the caller actually
+// sent are returned, so a PUT that omits them leaves the stored answers alone.
+function reviewAnswersFrom(body: any): Record<string, any> {
+  const answers: Record<string, any> = {};
+  for (const field of YES_NO_FIELDS) {
+    if (body[field] !== undefined) answers[field] = cleanYesNo(body[field]);
+  }
+  for (const field of COUNT_FIELDS) {
+    if (body[field] !== undefined) answers[field] = cleanCount(body[field]);
+  }
+  return answers;
+}
+
+// The two follow-up answers only exist when their parent answer opens them up.
+// Applied against the merged (existing + incoming) row so a PUT that changes only
+// the parent still clears a now-orphaned follow-up.
+function clearOrphanedFollowUps(merged: Record<string, any>): Record<string, any> {
+  if (merged.quorum !== "No") merged.meet_anyway = null;
+  if (merged.worker_vacancies !== "Yes") merged.worker_vacancy_count = null;
+  return merged;
+}
+
 async function isCochair(meetingId: number | string, req: any): Promise<boolean> {
   const email = req.user?.email?.toLowerCase();
   const userId = req.user?.id;
@@ -118,6 +159,7 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
       committee_id,
       meeting_date: InsertableDate(meeting_date),
       created_by_user_id: req.user?.id ?? null,
+      ...clearOrphanedFollowUps(reviewAnswersFrom(req.body)),
     })
     .returning("*");
 
@@ -173,6 +215,14 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   const update: any = {};
   if (meeting_date !== undefined) update.meeting_date = InsertableDate(meeting_date);
   if (minutes !== undefined) update.minutes = minutes;
+
+  const answers = reviewAnswersFrom(req.body);
+  if (Object.keys(answers).length > 0) {
+    const merged = clearOrphanedFollowUps({ ...existing, ...answers });
+    for (const field of [...YES_NO_FIELDS, ...COUNT_FIELDS]) {
+      if (merged[field] !== existing[field]) update[field] = merged[field];
+    }
+  }
 
   if (Object.keys(update).length > 0) {
     await knex("committee_meetings").where({ id }).update(update);

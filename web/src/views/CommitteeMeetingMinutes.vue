@@ -20,6 +20,26 @@
     </p>
 
     <v-row dense>
+      <v-col cols="12">
+        <v-card class="default mb-3">
+          <v-card-item class="py-3 px-5 bg-sun">
+            <h4 class="text-h6">Quorum &amp; Review Questions</h4>
+          </v-card-item>
+          <v-card-text class="pt-5">
+            <v-row>
+              <v-col cols="12" md="6">
+                <CommitteeMeetingReviewQuestions v-model="reviewAnswers" :readonly="isComplete" />
+                <div v-if="!isComplete" class="d-flex justify-end">
+                  <v-btn color="primary" :loading="savingAnswers" @click="saveAnswers">Save Answers</v-btn>
+                </div>
+              </v-col>
+            </v-row>
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row dense>
       <v-col cols="12" md="8" class="d-flex">
         <v-card class="default" style="width: 100%">
           <v-card-item class="py-3 px-5 bg-sun">
@@ -145,10 +165,25 @@ import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 
+import CommitteeMeetingReviewQuestions from "@/components/committee/CommitteeMeetingReviewQuestions.vue";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
 import { useNotificationStore } from "@/store/NotificationStore";
 import { useUserStore } from "@/store/UserStore";
 import { useRouter } from "vue-router";
+
+const REVIEW_FIELDS = [
+  "quorum",
+  "meet_anyway",
+  "no_loss_incidents_reviewed",
+  "loss_incidents_reviewed",
+  "new_hazards_reviewed",
+  "worker_vacancies",
+  "worker_vacancy_count",
+];
+
+function pickReviewFields(source) {
+  return Object.fromEntries(REVIEW_FIELDS.map((f) => [f, source?.[f] ?? null]));
+}
 
 const route = useRoute();
 const router = useRouter();
@@ -159,8 +194,10 @@ const { selected: meeting, isLoading } = storeToRefs(store);
 const { isSystemAdmin, user: currentUser } = storeToRefs(userStore);
 
 const minutesText = ref("");
+const reviewAnswers = ref(pickReviewFields(null));
 const newFiles = ref([]);
 const savingText = ref(false);
+const savingAnswers = ref(false);
 const uploading = ref(false);
 const deleting = ref(false);
 const confirmDelete = ref(false);
@@ -189,6 +226,7 @@ async function downloadFile(file) {
 async function load() {
   await store.load(route.params.id);
   minutesText.value = meeting.value?.minutes || "";
+  reviewAnswers.value = pickReviewFields(meeting.value);
 }
 
 watch(meeting, (m) => {
@@ -231,6 +269,18 @@ async function saveText() {
     notify.notify({ text: "Minutes saved", variant: "success" });
   } finally {
     savingText.value = false;
+  }
+}
+
+async function saveAnswers() {
+  if (!meeting.value) return;
+  savingAnswers.value = true;
+  try {
+    await store.save(meeting.value.id, { ...reviewAnswers.value });
+    notify.notify({ text: "Answers saved", variant: "success" });
+    await load();
+  } finally {
+    savingAnswers.value = false;
   }
 }
 

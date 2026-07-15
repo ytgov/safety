@@ -26,12 +26,21 @@ export interface CommitteeMeetingFile {
   file_size?: number | null;
 }
 
+export type YesNo = "Yes" | "No";
+
 export interface CommitteeMeeting {
   id?: number;
   committee_id: number;
   committee_name?: string;
   meeting_date: string;
   minutes?: string | null;
+  quorum?: YesNo | null;
+  meet_anyway?: YesNo | null;
+  no_loss_incidents_reviewed?: number | null;
+  loss_incidents_reviewed?: number | null;
+  new_hazards_reviewed?: number | null;
+  worker_vacancies?: YesNo | null;
+  worker_vacancy_count?: number | null;
   status?: "Draft" | "Complete";
   completed_at?: string | null;
   completed_by_user_id?: number | null;

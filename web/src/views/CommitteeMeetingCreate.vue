@@ -10,7 +10,7 @@
   <v-card class="default">
     <v-card-text class="pt-5">
       <v-row>
-        <v-col cols="12" md="4">
+        <v-col cols="12" md="6">
           <h3 class="text-h6 mb-4">Meeting Details</h3>
           <v-row>
             <v-col cols="12" md="12">
@@ -19,13 +19,11 @@
 
               <DateSelector v-model="meeting.meeting_date" label="Date" class="mb-5" />
 
-              <v-select v-model="meeting.quorum" :items="['Yes', 'No']" label="Did you meet quorum?" />
-              <v-select v-if="meeting.quorum == 'No'" v-model="meeting.meet_anyway" :items="['Yes', 'No']"
-                label="Did you meet anyway for informational purposes?" />
+              <CommitteeMeetingReviewQuestions v-model="meeting" />
             </v-col>
           </v-row>
         </v-col>
-        <v-col cols="12" md="8">
+        <v-col cols="12" md="6">
           <h3 class="text-h6 mb-4">Please record who is present for this meeting.</h3>
 
 
@@ -87,6 +85,7 @@ import { storeToRefs } from "pinia";
 
 import DirectorySelector from "@/components/DirectorySelector.vue";
 import DateSelector from "@/components/DateSelector.vue";
+import CommitteeMeetingReviewQuestions from "@/components/committee/CommitteeMeetingReviewQuestions.vue";
 
 import { useCommitteeStore } from "@/store/CommitteeStore";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
@@ -106,6 +105,13 @@ const memberRef = ref(null);
 const meeting = ref({
   committee_id: null,
   meeting_date: new Date().toISOString().slice(0, 10),
+  quorum: null,
+  meet_anyway: null,
+  no_loss_incidents_reviewed: null,
+  loss_incidents_reviewed: null,
+  new_hazards_reviewed: null,
+  worker_vacancies: null,
+  worker_vacancy_count: null,
   cochairs: [],
   members: [],
 });
