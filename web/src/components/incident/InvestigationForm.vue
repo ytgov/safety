@@ -27,8 +27,11 @@
         </v-window-item>
         <v-window-item :value="1">
           <v-card-text>
-            <h3>{{ incident_type_description == "Hazard" ? "Potential" : "" }} Event Type</h3>
-            <p class="mb-5">Check all that apply.</p>
+            <h3>{{ incident_type_description.startsWith("No Loss") ? "Potential" : "" }} Event Type</h3>
+            <p class="mb-5">
+              {{ incident_type_description.startsWith("No Loss") ? "Select the most appropriate potential event type." :
+                "Check all that apply." }}
+            </p>
 
             <div class="d-flex">
               <v-checkbox v-model="events" value="first_aid" hide-details density="compact">
@@ -204,7 +207,7 @@
         </v-window-item>
         <v-window-item :value="2">
           <v-card-text>
-            <h3>Incident Type</h3>
+            <h3>{{ incident_type_description.startsWith("No Loss") ? "Potential" : "" }} Incident Type</h3>
 
             <p class="mb-5">Select the most relevant type.</p>
 
