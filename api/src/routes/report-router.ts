@@ -22,6 +22,7 @@ import {
   User,
   UserRole,
 } from "../data/models";
+import { RequireAdmin } from "../middleware";
 import { InsertableDate } from "../utils/formatters";
 import { DateTime } from "luxon";
 import { generateIdentifier, generateSlug } from "../utils/generateSlug";
@@ -249,6 +250,31 @@ reportRouter.get("/:slug", async (req: Request, res: Response) => {
 
   return res.json({ data });
 });
+
+reportRouter.get(
+  "/:id/audit-logs",
+  RequireAdmin,
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const logs = await knex("incident_logs")
+      .leftJoin("users", "incident_logs.changer_user_id", "users.id")
+      .where("incident_logs.incident_id", id)
+      .orderBy("incident_logs.changed_date", "asc")
+      .orderBy("incident_logs.id", "asc")
+      .select(
+        "incident_logs.id",
+        "incident_logs.changed_date",
+        "incident_logs.log_title",
+        "incident_logs.log_comment",
+        "incident_logs.user_action",
+        "users.display_name as changer_name",
+        "users.email as changer_email",
+      );
+
+    return res.json({ data: logs });
+  },
+);
 
 reportRouter.put("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;

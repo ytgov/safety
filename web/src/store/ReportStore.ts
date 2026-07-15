@@ -258,6 +258,13 @@ export const useReportStore = defineStore("reports", {
       return api.secureCall("put", `${REPORTS_URL}/${incidentId}/admin-edit`, body);
     },
 
+    async loadAuditLogs(incidentId: number) {
+      const api = useApiStore();
+      return api
+        .secureCall("get", `${REPORTS_URL}/${incidentId}/audit-logs`)
+        .then((resp) => resp.data);
+    },
+
     async loadReport(slug: string) {
       const api = useApiStore();
       return api
