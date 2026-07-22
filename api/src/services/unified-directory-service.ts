@@ -77,6 +77,33 @@ export class UnifiedDirectoryService {
   }
 
   /**
+   * Resolves the Azure AD userPrincipalName for an email address.
+   * Only an exact (case-insensitive) match on the directory mail attribute is
+   * accepted -- searchByEmail uses a startsWith filter, so a loose match could
+   * attach another person's UPN to the account.
+   * @returns the lowercased UPN, or null when the email isn't in either tenant
+   */
+  async getUpnByEmail(email: string): Promise<string | null> {
+    if (!email) return null;
+
+    const results = await this.searchByEmail(email);
+    const match = results.find(
+      (r) => r.email && r.email.toLowerCase() === email.toLowerCase(),
+    );
+
+    return match?.userPrincipalName?.toLowerCase() ?? null;
+  }
+
+  /**
+   * True once at least one tenant has a usable token. DirectoryService.connect()
+   * swallows its errors, so callers that need to distinguish "nobody by that
+   * name" from "Graph is unreachable" have to check this.
+   */
+  isConnected(): boolean {
+    return this.directoryService.connected || this.yesnetService.connected;
+  }
+
+  /**
    * Get individual service instances if needed for specific operations
    */
   getDirectoryService(): DirectoryService {

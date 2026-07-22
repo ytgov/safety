@@ -71,6 +71,10 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       title: "",
       is_active: true,
       auth_subject: currentUserEmail,
+      upn: await directoryService.getUpnByEmail(currentUserEmail).catch((err) => {
+        console.log("UPN lookup failed for", currentUserEmail, err);
+        return null;
+      }),
     });
 
     currentUserId = createdUser[0].id;

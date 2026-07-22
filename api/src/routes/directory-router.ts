@@ -62,7 +62,7 @@ directoryRouter.post(
         title: user.title,
         department: user.department,
         officeLocation: user.officeLocation,
-        userPrincipalName: user.userPrincipalName,
+        userPrincipalName: user.upn,
         user_id: user.id,
       });
     }
@@ -93,7 +93,7 @@ directoryRouter.post(
             title: nonDirectoryUser.title,
             department: nonDirectoryUser.department,
             officeLocation: nonDirectoryUser.officeLocation,
-            userPrincipalName: nonDirectoryUser.userPrincipalName,
+            userPrincipalName: nonDirectoryUser.upn,
             user_id: nonDirectoryUser.id,
           },
         ],
@@ -120,7 +120,7 @@ directoryRouter.post(
           title: nonDirectoryUser.title,
           department: nonDirectoryUser.department,
           officeLocation: nonDirectoryUser.officeLocation,
-          userPrincipalName: nonDirectoryUser.userPrincipalName,
+          userPrincipalName: nonDirectoryUser.upn,
           user_id: nonDirectoryUser.id,
         });
       }
