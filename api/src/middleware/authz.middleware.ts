@@ -11,6 +11,21 @@ export async function syncDepartmentFromDirectory(user: any, db: UserService): P
   try {
     const directory = new UnifiedDirectoryService();
     const results = await directory.searchByEmail(user.email);
+
+    // Backfill the UPN for accounts that predate the column, or that the
+    // backfill migration couldn't resolve at the time it ran.
+    if (!user.upn) {
+      const upn =
+        results
+          .find((r) => r.email && r.email.toLowerCase() === user.email.toLowerCase())
+          ?.userPrincipalName?.toLowerCase() ?? null;
+
+      if (upn) {
+        await db.update(user.id, { upn });
+        user.upn = upn;
+      }
+    }
+
     const match = results.find((r) => r.department) ?? results[0];
     if (!match?.department) return null;
     if (match.department === user.department) return match.department;
@@ -19,6 +34,20 @@ export async function syncDepartmentFromDirectory(user: any, db: UserService): P
     return match.department;
   } catch (err) {
     console.log("Directory department sync failed for", user.email, err);
+    return null;
+  }
+}
+
+/**
+ * Best-effort UPN lookup used when provisioning a new user. A directory outage
+ * must not block account creation, so failures resolve to null and get picked
+ * up later by syncDepartmentFromDirectory.
+ */
+export async function lookupUpn(email: string): Promise<string | null> {
+  try {
+    return await new UnifiedDirectoryService().getUpnByEmail(email);
+  } catch (err) {
+    console.log("UPN lookup failed for", email, err);
     return null;
   }
 }
@@ -116,6 +145,7 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
             unit: "",
             is_active: 1,
             title: "",
+            upn: await lookupUpn(email),
           };
 
           await db.create(newUser);

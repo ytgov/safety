@@ -47,6 +47,12 @@ export const DB_CONFIG = {
     port: DB_PORT,
   },
   pool: { min: 0, reapIntervalMillis: 600000 },
+  migrations: {
+    // Allow sharing one dev database across branches with divergent migration
+    // files without knex flagging the directory as corrupt. Kept off in
+    // production so the missing-migration safety check still applies there.
+    disableMigrationsListValidation: NODE_ENV !== "production",
+  },
 };
 
 export const DB_CONFIG_DEV = {
