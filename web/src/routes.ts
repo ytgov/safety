@@ -103,6 +103,10 @@ const routes: RouteRecordRaw[] = [
         component: () => import("@/views/CommitteeMeetingCreate.vue"),
       },
       {
+        path: "committee-meetings/:id/wizard",
+        component: () => import("@/views/CommitteeMeetingWizard.vue"),
+      },
+      {
         path: "committee-meetings/:id",
         component: () => import("@/views/CommitteeMeetingMinutes.vue"),
       },

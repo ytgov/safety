@@ -3,8 +3,22 @@ import { isArray } from "lodash";
 
 import { db as knex } from "../data/db-client";
 import { InsertableDate } from "../utils/formatters";
+import { buildMinutesPdf } from "../services/committee-meeting-pdf-service";
 
 export const committeeMeetingRouter = express.Router();
+
+// minutes_data is stored as a JSON string (mirrors investigations.investigation_data).
+// Parse it back into an object for callers; null/invalid becomes null.
+function parseMinutesData<T extends { minutes_data?: any }>(row: T): T {
+  if (row && typeof row.minutes_data === "string") {
+    try {
+      row.minutes_data = JSON.parse(row.minutes_data);
+    } catch {
+      row.minutes_data = null;
+    }
+  }
+  return row;
+}
 
 function isSystemAdmin(req: any): boolean {
   const roles = req.user?.roles ?? [];
@@ -136,7 +150,25 @@ committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {
     .where({ committee_meeting_id: id })
     .select("id", "committee_meeting_id", "added_date", "added_by_email", "file_name", "file_type", "file_size");
 
-  return res.json({ data: item });
+  return res.json({ data: parseMinutesData(item) });
+});
+
+committeeMeetingRouter.get("/:id/minutes.pdf", async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const item = await knex("committee_meetings")
+    .leftJoin("committees", "committee_meetings.committee_id", "committees.id")
+    .where("committee_meetings.id", id)
+    .select("committee_meetings.*", "committees.name as committee_name")
+    .first();
+  if (!item) return res.status(404).json({ error: "Meeting not found" });
+
+  parseMinutesData(item);
+  item.cochairs = await knex("committee_meeting_cochairs").where({ committee_meeting_id: id });
+  item.members = await knex("committee_meeting_members").where({ committee_meeting_id: id });
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="meeting-minutes-${id}.pdf"`);
+  buildMinutesPdf(item, res);
 });
 
 committeeMeetingRouter.get("/:id/files/:fileId", async (req: Request, res: Response) => {
@@ -204,7 +236,7 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
 
 committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   const { id } = req.params;
-  const { meeting_date, minutes, cochairs, members } = req.body;
+  const { meeting_date, minutes, minutes_data, cochairs, members } = req.body;
 
   const existing = await knex("committee_meetings").where({ id }).first();
   if (!existing) return res.status(404).json({ error: "Meeting not found" });
@@ -215,6 +247,9 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   const update: any = {};
   if (meeting_date !== undefined) update.meeting_date = InsertableDate(meeting_date);
   if (minutes !== undefined) update.minutes = minutes;
+  if (minutes_data !== undefined) {
+    update.minutes_data = minutes_data === null ? null : JSON.stringify(minutes_data);
+  }
 
   const answers = reviewAnswersFrom(req.body);
   if (Object.keys(answers).length > 0) {

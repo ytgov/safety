@@ -1,23 +1,39 @@
 <template>
-  <v-select v-model="quorum" :items="['Yes', 'No']" label="Did you meet quorum?" :readonly="readonly" />
+  <v-row>
+    <v-col cols="12" md="6">
+      <v-select v-model="quorum" :items="['Yes', 'No']" label="Did you meet quorum?" :readonly="readonly" />
+    </v-col>
 
-  <v-select v-if="quorum == 'No'" v-model="meet_anyway" :items="['Yes', 'No']"
-    label="Did you meet anyway for informational purposes?" :readonly="readonly" />
+    <v-col v-if="quorum == 'No'" cols="12" md="6">
+      <v-select v-model="meet_anyway" :items="['Yes', 'No']"
+        label="Did you meet anyway for informational purposes?" :readonly="readonly" />
+    </v-col>
 
-  <v-text-field v-model="no_loss_incidents_reviewed" type="number" min="0" :readonly="readonly"
-    label="Number of no loss (near miss) incidents reviewed by the committee" />
+    <v-col cols="12" md="6">
+      <v-text-field v-model="no_loss_incidents_reviewed" type="number" min="0" :readonly="readonly"
+        label="Number of no loss (near miss) incidents reviewed by the committee" />
+    </v-col>
 
-  <v-text-field v-model="loss_incidents_reviewed" type="number" min="0" :readonly="readonly"
-    label="Number of loss incidents reviewed by the committee" />
+    <v-col cols="12" md="6">
+      <v-text-field v-model="loss_incidents_reviewed" type="number" min="0" :readonly="readonly"
+        label="Number of loss incidents reviewed by the committee" />
+    </v-col>
 
-  <v-text-field v-model="new_hazards_reviewed" type="number" min="0" :readonly="readonly"
-    label="Number of new hazards reviewed by the committee" />
+    <v-col cols="12" md="6">
+      <v-text-field v-model="new_hazards_reviewed" type="number" min="0" :readonly="readonly"
+        label="Number of new hazards reviewed by the committee" />
+    </v-col>
 
-  <v-select v-model="worker_vacancies" :items="['Yes', 'No']" :readonly="readonly"
-    label="Do you currently have any worker member vacancies, as defined by your committee's Rules Of Procedure (ROP)?" />
+    <v-col cols="12" md="6">
+      <v-select v-model="worker_vacancies" :items="['Yes', 'No']" :readonly="readonly"
+        label="Do you currently have any worker member vacancies, as defined by your committee's Rules Of Procedure (ROP)?" />
+    </v-col>
 
-  <v-text-field v-if="worker_vacancies == 'Yes'" v-model="worker_vacancy_count" type="number" min="0"
-    :readonly="readonly" label="How many worker vacancies do you have?" />
+    <v-col v-if="worker_vacancies == 'Yes'" cols="12" md="6">
+      <v-text-field v-model="worker_vacancy_count" type="number" min="0"
+        :readonly="readonly" label="How many worker vacancies do you have?" />
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>

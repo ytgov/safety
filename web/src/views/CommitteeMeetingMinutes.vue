@@ -17,47 +17,29 @@
     <p class="text-body-1 text-medium-emphasis mb-4">
       <strong>{{ formatDate(meeting.meeting_date) }}</strong>
       &middot; Co-Chairs: {{ formatCochairs(meeting.cochairs) }}
+      &middot; Members: {{ formatCochairs(meeting.members) }}
     </p>
 
-    <v-row dense>
+    <v-row v-if="meeting.minutes_data" dense>
       <v-col cols="12">
         <v-card class="default mb-3">
           <v-card-item class="py-3 px-5 bg-sun">
-            <h4 class="text-h6">Quorum &amp; Review Questions</h4>
+            <div class="d-flex align-center" style="width: 100%">
+              <h4 class="text-h6">Minutes Document</h4>
+              <v-spacer />
+              <v-btn class="my-0" variant="flat" color="info" prepend-icon="mdi-file-pdf-box"
+                :loading="downloadingPdf" @click="downloadPdf">Download PDF</v-btn>
+            </div>
           </v-card-item>
           <v-card-text class="pt-5">
-            <v-row>
-              <v-col cols="12" md="6">
-                <CommitteeMeetingReviewQuestions v-model="reviewAnswers" :readonly="isComplete" />
-                <div v-if="!isComplete" class="d-flex justify-end">
-                  <v-btn color="primary" :loading="savingAnswers" @click="saveAnswers">Save Answers</v-btn>
-                </div>
-              </v-col>
-            </v-row>
+            <CommitteeMinutesPreview :meeting="meeting" />
           </v-card-text>
         </v-card>
       </v-col>
     </v-row>
 
     <v-row dense>
-      <v-col cols="12" md="8" class="d-flex">
-        <v-card class="default" style="width: 100%">
-          <v-card-item class="py-3 px-5 bg-sun">
-            <h4 class="text-h6">Type Minutes</h4>
-          </v-card-item>
-          <v-card-text class="pt-5">
-            <v-textarea v-model="minutesText" rows="20" auto-grow placeholder="Type meeting minutes here..."
-              hide-details :readonly="isComplete" />
-            <div v-if="!isComplete" class="d-flex justify-end">
-              <v-btn color="primary" :loading="savingText" @click="saveText">Save Minutes</v-btn>
-            </div>
-          </v-card-text>
-        </v-card>
-
-        <div class="text-center ml-2 pt-4" style="width: 30px">or</div>
-      </v-col>
-
-      <v-col cols="12" md="4">
+      <v-col cols="12">
         <v-card class="default">
           <v-card-item class="py-3 px-5 bg-sun">
             <h4 class="text-h6">Upload Files</h4>
@@ -115,6 +97,7 @@
         </div>
       </v-col>
     </v-row>
+
   </div>
 
   <v-dialog v-model="confirmComplete" width="500px" persistent @keydown.esc="confirmComplete = false">
@@ -153,37 +136,23 @@
       <v-card-actions class="px-4 pb-4">
         <v-spacer />
         <v-btn variant="text" @click="confirmDelete = false">Cancel</v-btn>
-        <v-btn color="red" :loading="deleting" @click="performDelete">Delete</v-btn>
+        <v-btn color="red" variant="flat" :loading="deleting" @click="performDelete">Delete</v-btn>
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 
-import CommitteeMeetingReviewQuestions from "@/components/committee/CommitteeMeetingReviewQuestions.vue";
+import CommitteeMinutesPreview from "@/components/committee/CommitteeMinutesPreview.vue";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
 import { useNotificationStore } from "@/store/NotificationStore";
 import { useUserStore } from "@/store/UserStore";
 import { useRouter } from "vue-router";
-
-const REVIEW_FIELDS = [
-  "quorum",
-  "meet_anyway",
-  "no_loss_incidents_reviewed",
-  "loss_incidents_reviewed",
-  "new_hazards_reviewed",
-  "worker_vacancies",
-  "worker_vacancy_count",
-];
-
-function pickReviewFields(source) {
-  return Object.fromEntries(REVIEW_FIELDS.map((f) => [f, source?.[f] ?? null]));
-}
 
 const route = useRoute();
 const router = useRouter();
@@ -193,16 +162,13 @@ const userStore = useUserStore();
 const { selected: meeting, isLoading } = storeToRefs(store);
 const { isSystemAdmin, user: currentUser } = storeToRefs(userStore);
 
-const minutesText = ref("");
-const reviewAnswers = ref(pickReviewFields(null));
 const newFiles = ref([]);
-const savingText = ref(false);
-const savingAnswers = ref(false);
 const uploading = ref(false);
 const deleting = ref(false);
 const confirmDelete = ref(false);
 const updatingStatus = ref(false);
 const confirmComplete = ref(false);
+const downloadingPdf = ref(false);
 
 const isComplete = computed(() => meeting.value?.status === "Complete");
 
@@ -223,15 +189,23 @@ async function downloadFile(file) {
   await store.downloadFile(meeting.value.id, file.id, file.file_name);
 }
 
-async function load() {
-  await store.load(route.params.id);
-  minutesText.value = meeting.value?.minutes || "";
-  reviewAnswers.value = pickReviewFields(meeting.value);
+async function downloadPdf() {
+  if (!meeting.value) return;
+  downloadingPdf.value = true;
+  try {
+    const slug = (meeting.value.committee_name ?? "committee").replace(/\s+/g, "-").toLowerCase();
+    const rawDate = meeting.value.meeting_date ?? "";
+    const datePart = typeof rawDate === "string" ? rawDate.slice(0, 10) : rawDate;
+    const name = `${slug}-minutes-${datePart || meeting.value.id}.pdf`;
+    await store.downloadMinutesPdf(meeting.value.id, name);
+  } finally {
+    downloadingPdf.value = false;
+  }
 }
 
-watch(meeting, (m) => {
-  if (m && minutesText.value === "") minutesText.value = m.minutes || "";
-});
+async function load() {
+  await store.load(route.params.id);
+}
 
 function formatDate(d) {
   if (!d) return "";
@@ -259,29 +233,6 @@ function fileIcon(file) {
 function formatCochairs(list) {
   if (!list || list.length === 0) return "None";
   return list.map((c) => c.display_name || c.email).join(", ");
-}
-
-async function saveText() {
-  if (!meeting.value) return;
-  savingText.value = true;
-  try {
-    await store.save(meeting.value.id, { minutes: minutesText.value });
-    notify.notify({ text: "Minutes saved", variant: "success" });
-  } finally {
-    savingText.value = false;
-  }
-}
-
-async function saveAnswers() {
-  if (!meeting.value) return;
-  savingAnswers.value = true;
-  try {
-    await store.save(meeting.value.id, { ...reviewAnswers.value });
-    notify.notify({ text: "Answers saved", variant: "success" });
-    await load();
-  } finally {
-    savingAnswers.value = false;
-  }
 }
 
 async function uploadFiles() {

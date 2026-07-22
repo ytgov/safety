@@ -17,9 +17,7 @@
               <v-select v-model="meeting.committee_id" :items="committees" item-title="name" item-value="id"
                 label="Committee" :loading="committeesLoading" />
 
-              <DateSelector v-model="meeting.meeting_date" label="Date" class="mb-5" />
-
-              <CommitteeMeetingReviewQuestions v-model="meeting" />
+              <DateSelector v-model="meeting.meeting_date" label="Date" class="mb-5" :teleport="true" />
             </v-col>
           </v-row>
         </v-col>
@@ -27,7 +25,7 @@
           <h3 class="text-h6 mb-4">Please record who is present for this meeting.</h3>
 
 
-          <h4 class="text-h7 mb-4">Co-Chairs</h4>
+          <h3 class="text-h6 mb-4">Co-Chairs</h3>
 
           <v-list v-if="meeting.cochairs.length > 0" density="compact" class="py-0 mb-3"
             style="border: 1px #999 solid; border-radius: 4px">
@@ -69,7 +67,7 @@
       <div class="d-flex justify-end">
         <v-btn class="mr-2" color="warning" variant="text" to="/committee-meetings">Cancel</v-btn>
         <v-btn color="primary" :loading="saving" :disabled="!canCreate" @click="create">
-          Create &amp; Continue to Minutes
+          Start
         </v-btn>
       </div>
 
@@ -85,7 +83,6 @@ import { storeToRefs } from "pinia";
 
 import DirectorySelector from "@/components/DirectorySelector.vue";
 import DateSelector from "@/components/DateSelector.vue";
-import CommitteeMeetingReviewQuestions from "@/components/committee/CommitteeMeetingReviewQuestions.vue";
 
 import { useCommitteeStore } from "@/store/CommitteeStore";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
@@ -105,13 +102,6 @@ const memberRef = ref(null);
 const meeting = ref({
   committee_id: null,
   meeting_date: new Date().toISOString().slice(0, 10),
-  quorum: null,
-  meet_anyway: null,
-  no_loss_incidents_reviewed: null,
-  loss_incidents_reviewed: null,
-  new_hazards_reviewed: null,
-  worker_vacancies: null,
-  worker_vacancy_count: null,
   cochairs: [],
   members: [],
 });
@@ -178,7 +168,7 @@ async function create() {
     const result = await meetingStore.create(meeting.value);
     if (result?.id) {
       notify.notify({ text: "Meeting created", variant: "success" });
-      router.push(`/committee-meetings/${result.id}`);
+      router.push(`/committee-meetings/${result.id}/wizard`);
     }
   } finally {
     saving.value = false;

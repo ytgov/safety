@@ -41,6 +41,7 @@ export interface CommitteeMeeting {
   new_hazards_reviewed?: number | null;
   worker_vacancies?: YesNo | null;
   worker_vacancy_count?: number | null;
+  minutes_data?: Record<string, any> | null;
   status?: "Draft" | "Complete";
   completed_at?: string | null;
   completed_by_user_id?: number | null;
@@ -110,6 +111,22 @@ export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
       const link = document.createElement("a");
       link.href = url;
       link.setAttribute("download", fileName || "file");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    },
+
+    async downloadMinutesPdf(id: number, fileName = "meeting-minutes.pdf") {
+      const token = await auth0.getAccessTokenSilently();
+      const resp = await axios.get(`${COMMITTEE_MEETING_URL}/${id}/minutes.pdf`, {
+        headers: { Authorization: `Bearer ${token}` },
+        responseType: "blob",
+      });
+      const url = URL.createObjectURL(resp.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileName);
       document.body.appendChild(link);
       link.click();
       link.remove();

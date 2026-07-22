@@ -13,7 +13,8 @@
       :text-input="true"
       :enable-time-picker="false"
       :max-date="max"
-      teleport-center
+      :teleport-center="!teleport"
+      :teleport="teleport || undefined"
       :min-date="min"
       @open="has_focus = true"
       @closed="has_focus = false"
