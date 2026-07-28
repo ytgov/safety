@@ -189,7 +189,7 @@ await initialize();
 
 // Restore saved draft if available
 function freshDefaults() {
-  return { eventType: null, date: new Date(), urgency: "Medium" };
+  return { eventType: null, date: new Date(), urgency: "Low" };
 }
 
 let restoredReport = freshDefaults();

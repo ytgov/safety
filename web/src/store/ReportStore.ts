@@ -89,6 +89,7 @@ export const useReportStore = defineStore("reports", {
 
     async loadUrgency() {
       this.urgencies = [
+        { code: "Critical", name: "Critical" },
         { code: "High", name: "High" },
         { code: "Medium", name: "Medium" },
         { code: "Low", name: "Low" },
