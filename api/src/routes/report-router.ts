@@ -19,6 +19,7 @@ import {
   IncidentStatuses,
   IncidentStep,
   SensitivityLevels,
+  Urgencies,
   User,
   UserRole,
 } from "../data/models";
@@ -226,6 +227,22 @@ reportRouter.get("/role/:role", async (req: Request, res: Response) => {
     query.whereIn("department_code", matchingDepartments);
 
     query.whereNot({ status_code: IncidentStatuses.CLOSED.code });
+
+    // "Requiring attention" = critically urgent, or has at least one action
+    // that is past its due date and not yet complete.
+    query.where(function (q: Knex.QueryBuilder) {
+      q.where("incidents.urgency_code", Urgencies.CRITICAL.code);
+      q.orWhereExists(function (sub: Knex.QueryBuilder) {
+        sub
+          .select(knex.raw("1"))
+          .from("actions")
+          .whereRaw(`"actions"."incident_id" = "incidents"."id"`)
+          .whereNotNull("actions.due_date")
+          .where("actions.due_date", "<", knex.fn.now())
+          .whereNot("actions.status_code", ActionStatuses.COMPLETE.code);
+      });
+    });
+
     return query;
   };
 
