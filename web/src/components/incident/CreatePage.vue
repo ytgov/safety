@@ -221,7 +221,7 @@ const isValid = ref(false);
 
 await initialize();
 
-const report = ref({ eventType: null, date: new Date(), urgency: "Medium", additional_people: [] });
+const report = ref({ eventType: null, date: new Date(), urgency: "Low", additional_people: [] });
 const pendingFiles = ref([]);
 const attachedFiles = ref([]);
 
