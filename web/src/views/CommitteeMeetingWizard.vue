@@ -138,7 +138,7 @@
           <h3 class="text-h6 mb-1">Hazard Assessments</h3>
           <p class="text-medium-emphasis mb-4">
             A completed Hazard Assessment identifies and ranks hazards to dedicate resources for controlling them.
-            (WSC Regulation Section 1.03.01)
+            (Hazard Management Performance Standard)
           </p>
           <v-row>
             <v-col cols="12" sm="6" md="3">

@@ -356,7 +356,7 @@ export function buildMinutesPdf(meeting: Meeting, stream: NodeJS.WritableStream)
     renderSection(
       doc,
       "Hazard Assessments",
-      "A completed Hazard Assessment identifies and ranks hazards to dedicate resources for controlling them. (WSC Regulation Section 1.03.01)",
+      "A completed Hazard Assessment identifies and ranks hazards to dedicate resources for controlling them. (Hazard Management Performance Standard)",
       assessmentsRows(doc, data.assessments ?? null)
     );
 
