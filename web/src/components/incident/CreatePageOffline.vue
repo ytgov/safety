@@ -48,36 +48,24 @@
 
         <v-row class="pa-2 pb-6">
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="hazard"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
+            <v-checkbox v-model="report.eventType" value="hazard" class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px" hide-details />
             <div>
               <strong>Hazard Identification</strong><br />
               Something has been observed that could potentially lead to an incident or injury
             </div>
           </v-col>
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="incident"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
+            <v-checkbox v-model="report.eventType" value="incident" class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px" hide-details />
             <div>
               <strong>Incident</strong> <br />
               Something has happened and caused an injury, equipment damage, property damage or environmental issue
             </div>
           </v-col>
           <v-col class="d-flex flex-nowrap" cols="12" md="6" offset-md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="noloss"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
+            <v-checkbox v-model="report.eventType" value="noloss" class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px" hide-details />
             <div>
               <strong>No Loss Incident (near miss)</strong><br />
               Something has happened. No damage or injury occurred, but could have
@@ -105,39 +93,42 @@
 
               <v-col cols="12" sm="6">
                 <v-label class="mb-1" style="white-space: inherit">Urgency for supervisor attention</v-label>
-                <v-select v-model="report.urgency" :items="urgencies" item-title="name" item-value="code"></v-select>
+                <v-select v-model="report.urgency" :items="urgencies" item-title="name" item-value="code"
+                  hint="Select the urgency level that best reflects how quickly action is needed to prevent further harm to people or property. Supervisors may adjust the urgency level after review."
+                  persistent-hint>
+                  <template #item="{ item, props }">
+                    <v-list-item v-bind="props" :title="item.raw.name">
+                      <v-list-item-subtitle style="white-space: normal">
+                        {{ item.raw.description }}
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-select>
               </v-col>
             </v-row>
           </v-col>
           <v-col cols="12" md="12" class="py-0">
             <v-label class="mb-1" style="white-space: inherit">General location where the event occurred</v-label>
-            <v-autocomplete
-              v-model="report.location_code"
-              :items="locations"
-              :item-title="makeLocationTitle"
-              item-value="code"
-              :rules="[requiredRule]">
+            <v-autocomplete v-model="report.location_code" :items="locations" :item-title="makeLocationTitle"
+              item-value="code" :rules="[requiredRule]">
               <template #item="{ item, props }">
-                <v-list-item
-                  v-bind="props"
-                  :title="item.raw.name"
+                <v-list-item v-bind="props" :title="item.raw.name"
                   :subtitle="`Community: ${item.raw.community}`"></v-list-item>
               </template>
               <template #selection="{ item }"> {{ makeLocationTitle(item.raw) }} </template>
             </v-autocomplete>
           </v-col>
           <v-col cols="12" md="12" class="py-0">
-            <v-label class="mb-1" style="white-space: inherit"
-              >Specific location where the event occurred (such as a spot in a building)</v-label
-            >
+            <v-label class="mb-1" style="white-space: inherit">Specific location where the event occurred (such as a
+              spot
+              in a building)</v-label>
             <v-text-field v-model="report.location_detail" :rules="[requiredRule]" />
           </v-col>
           <v-col cols="12" md="12" class="pt-0">
-            <v-label class="mb-1" style="white-space: inherit"
-              >Describe the event in your own words. Please include any details of equipment, materials, environmental
+            <v-label class="mb-1" style="white-space: inherit">Describe the event in your own words. Please include any
+              details of equipment, materials, environmental
               conditions (work area, temperature, noise, chemical, other person, etc.) that may have
-              contributed</v-label
-            >
+              contributed</v-label>
             <v-textarea v-model="report.description" :rules="[requiredRule]" />
           </v-col>
         </v-row>
@@ -201,7 +192,7 @@ try {
     if (parsed.date) parsed.date = new Date(parsed.date);
     restoredReport = { ...freshDefaults(), ...parsed };
   }
-} catch {}
+} catch { }
 
 const report = ref(restoredReport);
 
@@ -213,7 +204,7 @@ watch(report, (val) => {
     try {
       const { files, ...rest } = val;
       localStorage.setItem(DRAFT_KEY, JSON.stringify(rest));
-    } catch {}
+    } catch { }
   }, 500);
 }, { deep: true });
 
