@@ -67,7 +67,7 @@
       </table>
 
       <!-- Open Discussion of New Items -->
-      <h4 class="section">Open Discussion of New Items</h4>
+      <h4 class="section">Open Discussion of New Items and/or New Hazards Identified</h4>
       <table class="grid">
         <thead>
           <tr>

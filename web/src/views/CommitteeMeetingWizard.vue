@@ -99,7 +99,7 @@
 
         <!-- Guided step 2: New discussion items -->
         <template v-else-if="currentKey === 'new_items'">
-          <h3 class="text-h6 mb-1">Open Discussion of New Items</h3>
+          <h3 class="text-h6 mb-1">Open Discussion of New Items and/or New Hazards Identified</h3>
           <p class="text-medium-emphasis mb-4">
             Record the problem or concern, the action taken or proposed, and a target date.
           </p>

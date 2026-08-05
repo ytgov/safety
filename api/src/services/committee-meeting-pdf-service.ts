@@ -349,7 +349,7 @@ export function buildMinutesPdf(meeting: Meeting, stream: NodeJS.WritableStream)
   } else {
     renderSection(doc, "Outstanding Items from Previous Meetings", undefined, discussionRows(doc, data.outstanding_items ?? []));
 
-    renderSection(doc, "Open Discussion of New Items", undefined, discussionRows(doc, data.new_items ?? []));
+    renderSection(doc, "Open Discussion of New Items and/or New Hazards Identified", undefined, discussionRows(doc, data.new_items ?? []));
 
     renderSection(
       doc,
