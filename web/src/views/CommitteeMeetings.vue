@@ -37,6 +37,11 @@
             <template #item.has_minutes="{ item }">
               <v-icon v-if="item.minutes || (item.files && item.files.length > 0)" color="success">mdi-check</v-icon>
             </template>
+            <template #item.status="{ item }">
+              <v-chip :color="item.status === 'Complete' ? 'success' : 'warning'" size="x-small" variant="flat">
+                {{ item.status === "Complete" ? "Complete" : "Draft" }}
+              </v-chip>
+            </template>
           </v-data-table>
         </v-card-text>
       </v-card>
@@ -68,6 +73,7 @@ const headers = [
   { title: "Committee", key: "committee_name" },
   { title: "Co-Chairs", key: "cochairs", sortable: false },
   { title: "Minutes", key: "has_minutes", sortable: false },
+  { title: "Status", key: "status", sortable: false },
 ];
 
 const filteredMeetings = computed(() => {

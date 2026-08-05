@@ -5,8 +5,8 @@
     </v-col>
 
     <v-col v-if="quorum == 'No'" cols="12" md="6">
-      <v-select v-model="meet_anyway" :items="['Yes', 'No']"
-        label="Did you meet anyway for informational purposes?" :readonly="readonly" />
+      <v-select v-model="meet_anyway" :items="['Yes', 'No']" label="Did you meet anyway for informational purposes?"
+        :readonly="readonly" />
     </v-col>
 
     <v-col cols="12" md="6">
@@ -30,8 +30,15 @@
     </v-col>
 
     <v-col v-if="worker_vacancies == 'Yes'" cols="12" md="6">
-      <v-text-field v-model="worker_vacancy_count" type="number" min="0"
-        :readonly="readonly" label="How many worker vacancies do you have?" />
+      <p class="mb-2">If your HSC requires assistance filling your worker vacancies, contact your union and cc <a
+          href="mailto:safety@yukon.ca">safety@yukon.ca</a></p>
+      <ul class="mb-2">
+        <li>YEUà <a href="mailto:info@yeu.ca">info@yeu.ca</a> AND <a href="mailto:jlemphers@yeu.ca">jlemphers@yeu.ca</a>
+        </li>
+        <li>YAEPà <a href="mailto:era2@yaep.ca">era2@yaep.ca</a> AND <a href="mailto:pres@yaep.ca">pres@yaep.ca</a></li>
+      </ul>
+      <v-text-field v-model="worker_vacancy_count" type="number" min="0" :readonly="readonly"
+        label="How many worker vacancies do you have?" />
     </v-col>
   </v-row>
 </template>

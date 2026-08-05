@@ -20,6 +20,18 @@
       &middot; Members: {{ formatCochairs(meeting.members) }}
     </p>
 
+    <v-alert v-if="isEmpty && !isComplete" type="info" variant="tonal" class="mb-4">
+      <div class="d-flex align-center flex-wrap ga-3">
+        <div>
+          Setup for this meeting hasn't been finished, so there are no minutes yet.
+        </div>
+        <v-spacer />
+        <v-btn color="primary" variant="flat" prepend-icon="mdi-play" :to="`/committee-meetings/${meeting.id}/wizard`">
+          Resume Setup
+        </v-btn>
+      </div>
+    </v-alert>
+
     <v-row v-if="meeting.minutes_data" dense>
       <v-col cols="12">
         <v-card class="default mb-3">
@@ -82,6 +94,10 @@
         </v-card>
 
         <div class="d-flex justify-end mt-3 ga-2">
+          <v-btn v-if="!isComplete" color="primary" variant="outlined" prepend-icon="mdi-pencil"
+            :to="`/committee-meetings/${meeting.id}/wizard`">
+            {{ isEmpty ? "Resume Setup" : "Edit Setup" }}
+          </v-btn>
           <v-btn v-if="canMarkComplete && !isComplete" color="success" variant="flat" prepend-icon="mdi-lock"
             :loading="updatingStatus" @click="confirmComplete = true">
             Mark Complete
@@ -171,6 +187,11 @@ const confirmComplete = ref(false);
 const downloadingPdf = ref(false);
 
 const isComplete = computed(() => meeting.value?.status === "Complete");
+
+// Nothing was captured: the wizard was abandoned before Finish, so the meeting is a shell.
+const isEmpty = computed(
+  () => !meeting.value?.minutes_data && !meeting.value?.minutes && (meeting.value?.files?.length ?? 0) === 0
+);
 
 const isCurrentUserCochair = computed(() => {
   const u = currentUser.value;
