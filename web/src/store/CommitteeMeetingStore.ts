@@ -26,6 +26,13 @@ export interface CommitteeMeetingFile {
   file_size?: number | null;
 }
 
+export interface CommitteeMeetingDiscussionItem {
+  concern?: string | null;
+  action?: string | null;
+  target_date?: string | null;
+  flag_next?: boolean;
+}
+
 export type YesNo = "Yes" | "No";
 
 export interface CommitteeMeeting {
@@ -83,12 +90,27 @@ export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
     },
 
     async loadPreviousAttendees(
-      committeeId: number
+      committeeId: number,
+      before?: string | null
     ): Promise<{ cochairs: CommitteeMeetingCochair[]; members: CommitteeMeetingMember[] }> {
       const api = useApiStore();
+      const query = before ? `?before=${encodeURIComponent(before)}` : "";
       return api
-        .secureCall("get", `${COMMITTEE_MEETING_URL}/previous-attendees/${committeeId}`)
+        .secureCall("get", `${COMMITTEE_MEETING_URL}/previous-attendees/${committeeId}${query}`)
         .then((resp) => resp.data);
+    },
+
+    // Items the committee flagged for discussion at its previous meeting, shaped as
+    // outstanding discussion items.
+    async loadCarryForwardItems(
+      committeeId: number,
+      before?: string | null
+    ): Promise<CommitteeMeetingDiscussionItem[]> {
+      const api = useApiStore();
+      const query = before ? `?before=${encodeURIComponent(before)}` : "";
+      return api
+        .secureCall("get", `${COMMITTEE_MEETING_URL}/carry-forward/${committeeId}${query}`)
+        .then((resp) => resp.data ?? []);
     },
 
     async create(meeting: Partial<CommitteeMeeting>) {

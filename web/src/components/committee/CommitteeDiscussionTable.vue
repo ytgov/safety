@@ -14,6 +14,7 @@
         <v-btn icon="mdi-close" size="small" variant="tonal" color="error" @click="remove(idx)" />
       </v-col>
     </v-row>
+    <FlagForNextMeeting v-if="flaggable" v-model="row.flag_next" />
   </div>
 
   <v-btn size="small" variant="flat" color="info" prepend-icon="mdi-plus" @click="add">Add item</v-btn>
@@ -22,16 +23,20 @@
 <script setup>
 import { computed } from "vue";
 import DateSelector from "@/components/DateSelector.vue";
+import FlagForNextMeeting from "@/components/committee/FlagForNextMeeting.vue";
 
 const props = defineProps({
   modelValue: { type: Array, required: true },
+  flaggable: { type: Boolean, default: false },
 });
 const emit = defineEmits(["update:modelValue"]);
 
 const rows = computed(() => props.modelValue);
 
 function add() {
-  emit("update:modelValue", [...props.modelValue, { concern: "", action: "", target_date: null }]);
+  const row = { concern: "", action: "", target_date: null };
+  if (props.flaggable) row.flag_next = false;
+  emit("update:modelValue", [...props.modelValue, row]);
 }
 
 function remove(idx) {

@@ -10,19 +10,24 @@ interface Person {
   email?: string | null;
 }
 
-interface DiscussionItem {
+// Every guided row can be flagged to carry into the next meeting's outstanding items.
+interface Flaggable {
+  flag_next?: boolean | null;
+}
+
+interface DiscussionItem extends Flaggable {
   concern?: string | null;
   action?: string | null;
   target_date?: string | null;
 }
 
-interface HazardRow {
-  hazard?: string | null;
-  controlled_at_source?: number | string | null;
-  recommended_to_management?: number | string | null;
+export interface AssessmentRow extends Flaggable {
+  assessment?: string | null;
+  other_name?: string | null;
+  date_completed?: string | null;
 }
 
-interface RefusalRow {
+interface RefusalRow extends Flaggable {
   location?: string | null;
   reason?: string | null;
   outcome?: string | null;
@@ -32,13 +37,7 @@ interface MinutesData {
   method?: "upload" | "guided" | null;
   outstanding_items?: DiscussionItem[];
   new_items?: DiscussionItem[];
-  hazards?: HazardRow[];
-  assessments?: {
-    in_progress?: number | string | null;
-    completed?: number | string | null;
-    hazards_identified?: number | string | null;
-    controls_implemented?: number | string | null;
-  } | null;
+  assessments?: AssessmentRow[];
   refusals?: RefusalRow[];
 }
 
@@ -206,65 +205,69 @@ function renderSection(doc: PDFKit.PDFDocument, title: string, note: string | un
   drawOps(doc, ops);
 }
 
-function discussionRows(doc: PDFKit.PDFDocument, outstanding: DiscussionItem[], newItems: DiscussionItem[]): RowOp[] {
-  const total = contentWidth(doc);
-  const widths = [total * 0.45, total * 0.38, total * 0.17];
-  const ops: RowOp[] = [{ widths, cells: ["Problem or Concern", "Action Taken or Proposed", "Target Date"], header: true }];
+const FLAG_HEADER = "Flagged for Next Meeting";
 
-  const group = (items: DiscussionItem[], heading: string) => {
-    ops.push({ band: heading });
-    if (!items || items.length === 0) {
-      ops.push({ widths, cells: ["", "", ""] });
-      return;
-    }
-    for (const it of items) {
-      ops.push({ widths, cells: [text(it.concern), text(it.action), formatDate(it.target_date)] });
-    }
-  };
+// Dates and the flag get fixed widths so those columns land in the same place in
+// every section; the free-text columns share whatever is left.
+const DATE_W = 80;
+const FLAG_W = 95;
 
-  group(outstanding, "Outstanding Items from Previous Meetings");
-  group(newItems, "Open Discussion of New Items");
-  return ops;
+function flag(row: Flaggable): string {
+  return row.flag_next ? "Yes" : "";
 }
 
-function hazardsRows(doc: PDFKit.PDFDocument, hazards: HazardRow[]): RowOp[] {
-  const total = contentWidth(doc);
-  const widths = [total * 0.5, total * 0.25, total * 0.25];
+// Splits the space left over after the fixed columns across `parts` proportionally.
+function textWidths(doc: PDFKit.PDFDocument, fixed: number, parts: number[]): number[] {
+  const free = contentWidth(doc) - fixed;
+  const sum = parts.reduce((a, b) => a + b, 0);
+  return parts.map((p) => (free * p) / sum);
+}
+
+function discussionRows(doc: PDFKit.PDFDocument, items: DiscussionItem[]): RowOp[] {
+  const widths = [...textWidths(doc, DATE_W + FLAG_W, [55, 45]), DATE_W, FLAG_W];
   const ops: RowOp[] = [
-    { widths, cells: ["Hazards Identified", "Number Controlled at Source", "Number Recommended to Management"], header: true },
+    { widths, cells: ["Problem or Concern", "Action Taken or Proposed", "Target Date", FLAG_HEADER], header: true },
   ];
-  if (!hazards || hazards.length === 0) {
-    ops.push({ widths, cells: ["", "", ""] });
+
+  if (!items || items.length === 0) {
+    ops.push({ widths, cells: ["", "", "", ""] });
   } else {
-    for (const h of hazards) {
-      ops.push({ widths, cells: [text(h.hazard), text(h.controlled_at_source), text(h.recommended_to_management)] });
+    for (const it of items) {
+      ops.push({ widths, cells: [text(it.concern), text(it.action), formatDate(it.target_date), flag(it)] });
     }
   }
   return ops;
 }
 
-function assessmentsRows(doc: PDFKit.PDFDocument, a: MinutesData["assessments"]): RowOp[] {
-  const total = contentWidth(doc);
-  const widths = [total * 0.25, total * 0.25, total * 0.25, total * 0.25];
-  return [
-    {
-      widths,
-      cells: ["Number of Assessments in Progress", "Number of Assessments Completed", "Number of Hazards Identified", "Number of Controls Implemented"],
-      header: true,
-    },
-    { widths, cells: [text(a?.in_progress), text(a?.completed), text(a?.hazards_identified), text(a?.controls_implemented)] },
-  ];
+// "Other" assessments are named by the committee; everything else uses the picked option.
+export function assessmentLabel(a: AssessmentRow): string {
+  if (a.assessment === "Other") return text(a.other_name).trim() || "Other";
+  return text(a.assessment);
+}
+
+function assessmentsRows(doc: PDFKit.PDFDocument, assessments: AssessmentRow[]): RowOp[] {
+  const widths = [...textWidths(doc, DATE_W + FLAG_W, [1]), DATE_W, FLAG_W];
+  const ops: RowOp[] = [{ widths, cells: ["Assessment", "Date Completed", FLAG_HEADER], header: true }];
+  if (!assessments || assessments.length === 0) {
+    ops.push({ widths, cells: ["", "", ""] });
+  } else {
+    for (const a of assessments) {
+      ops.push({ widths, cells: [assessmentLabel(a), formatDate(a.date_completed), flag(a)] });
+    }
+  }
+  return ops;
 }
 
 function refusalsRows(doc: PDFKit.PDFDocument, refusals: RefusalRow[]): RowOp[] {
-  const total = contentWidth(doc);
-  const widths = [total * 0.33, total * 0.34, total * 0.33];
-  const ops: RowOp[] = [{ widths, cells: ["Workplace or Location", "Reason for refusal", "Outcome"], header: true }];
+  const widths = [...textWidths(doc, FLAG_W, [1, 1, 1]), FLAG_W];
+  const ops: RowOp[] = [
+    { widths, cells: ["Workplace or Location", "Reason for refusal", "Outcome", FLAG_HEADER], header: true },
+  ];
   if (!refusals || refusals.length === 0) {
-    ops.push({ widths, cells: ["", "", ""] });
+    ops.push({ widths, cells: ["", "", "", ""] });
   } else {
     for (const r of refusals) {
-      ops.push({ widths, cells: [text(r.location), text(r.reason), text(r.outcome)] });
+      ops.push({ widths, cells: [text(r.location), text(r.reason), text(r.outcome), flag(r)] });
     }
   }
   return ops;
@@ -344,20 +347,15 @@ export function buildMinutesPdf(meeting: Meeting, stream: NodeJS.WritableStream)
   if (data.method === "upload") {
     renderSection(doc, "Minutes", "Minutes were attached as an uploaded document.", []);
   } else {
-    renderSection(doc, "Discussion Items", undefined, discussionRows(doc, data.outstanding_items ?? [], data.new_items ?? []));
+    renderSection(doc, "Outstanding Items from Previous Meetings", undefined, discussionRows(doc, data.outstanding_items ?? []));
 
-    renderSection(
-      doc,
-      "Hazards Identified",
-      "From sources other than inspections — worker comments, incident reports or investigation summaries. (WSCA Section 29(e))",
-      hazardsRows(doc, data.hazards ?? [])
-    );
+    renderSection(doc, "Open Discussion of New Items", undefined, discussionRows(doc, data.new_items ?? []));
 
     renderSection(
       doc,
       "Hazard Assessments",
       "A completed Hazard Assessment identifies and ranks hazards to dedicate resources for controlling them. (Hazard Management Performance Standard)",
-      assessmentsRows(doc, data.assessments ?? null)
+      assessmentsRows(doc, Array.isArray(data.assessments) ? data.assessments : [])
     );
 
     renderSection(

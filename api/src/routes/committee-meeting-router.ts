@@ -3,7 +3,7 @@ import { isArray } from "lodash";
 
 import { db as knex } from "../data/db-client";
 import { InsertableDate } from "../utils/formatters";
-import { buildMinutesPdf } from "../services/committee-meeting-pdf-service";
+import { assessmentLabel, buildMinutesPdf } from "../services/committee-meeting-pdf-service";
 
 export const committeeMeetingRouter = express.Router();
 
@@ -18,6 +18,41 @@ function parseMinutesData<T extends { minutes_data?: any }>(row: T): T {
     }
   }
   return row;
+}
+
+function trimmed(value: any): string {
+  return value === null || value === undefined ? "" : `${value}`.trim();
+}
+
+// Rows the committee ticked "Flag for discussion in the next meeting" on, reshaped as
+// outstanding discussion items so the next meeting's minutes pick them up. Discussion
+// items keep their own target date; assessments and refusals start without one because
+// the committee sets a fresh target when it revisits them. Outstanding items come first
+// so a repeatedly deferred item keeps its place at the top of the list.
+function carryForwardItems(data: any): any[] {
+  if (!data || typeof data !== "object") return [];
+
+  const flagged = (rows: any): any[] => (isArray(rows) ? rows.filter((r) => r && r.flag_next) : []);
+  const items: any[] = [];
+  // Carried rows arrive unflagged — the committee re-ticks anything it defers again.
+  const push = (concern: string, action: string, target_date: any = null) =>
+    items.push({ concern, action, target_date, flag_next: false });
+
+  for (const r of [...flagged(data.outstanding_items), ...flagged(data.new_items)]) {
+    push(trimmed(r.concern), trimmed(r.action), r.target_date ?? null);
+  }
+
+  for (const r of flagged(data.assessments)) {
+    const label = assessmentLabel(r);
+    push(label ? `Hazard assessment: ${label}` : "Hazard assessment", "");
+  }
+
+  for (const r of flagged(data.refusals)) {
+    const detail = [trimmed(r.location), trimmed(r.reason)].filter(Boolean).join(" — ");
+    push(detail ? `Work refusal: ${detail}` : "Work refusal", trimmed(r.outcome));
+  }
+
+  return items;
 }
 
 function isSystemAdmin(req: any): boolean {
@@ -108,9 +143,13 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
 
 committeeMeetingRouter.get("/previous-attendees/:committee_id", async (req: Request, res: Response) => {
   const { committee_id } = req.params;
+  const before = req.query.before ? InsertableDate(`${req.query.before}`) : null;
 
   const previous = await knex("committee_meetings")
     .where({ committee_id })
+    .where((q) => {
+      if (before) q.where("meeting_date", "<", before);
+    })
     .orderBy("meeting_date", "desc")
     .orderBy("id", "desc")
     .first();
@@ -133,6 +172,26 @@ committeeMeetingRouter.get("/previous-attendees/:committee_id", async (req: Requ
   const members = await knex("committee_meeting_members").where({ committee_meeting_id: previous.id });
 
   return res.json({ data: { cochairs: dedupe(cochairs), members: dedupe(members) } });
+});
+
+// Items flagged at the committee's most recent earlier meeting, ready to seed the
+// Outstanding Items list of the meeting being set up.
+committeeMeetingRouter.get("/carry-forward/:committee_id", async (req: Request, res: Response) => {
+  const { committee_id } = req.params;
+  const before = req.query.before ? InsertableDate(`${req.query.before}`) : null;
+
+  const previous = await knex("committee_meetings")
+    .where({ committee_id })
+    .where((q) => {
+      if (before) q.where("meeting_date", "<", before);
+    })
+    .orderBy("meeting_date", "desc")
+    .orderBy("id", "desc")
+    .first();
+
+  if (!previous) return res.json({ data: [] });
+
+  return res.json({ data: carryForwardItems(parseMinutesData(previous).minutes_data) });
 });
 
 committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {

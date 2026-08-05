@@ -42,61 +42,50 @@
     </p>
 
     <template v-if="data.method !== 'upload'">
-      <!-- Discussion Items -->
-      <h4 class="section">Discussion Items</h4>
+      <!-- Outstanding Items from Previous Meetings -->
+      <h4 class="section">Outstanding Items from Previous Meetings</h4>
       <table class="grid">
         <thead>
           <tr>
             <th>Problem or Concern</th>
             <th>Action Taken or Proposed</th>
             <th class="narrow">Target Date</th>
+            <th class="narrow">Flagged for Next Meeting</th>
           </tr>
         </thead>
         <tbody>
-          <tr class="band">
-            <td colspan="3">Outstanding Items from Previous Meetings</td>
-          </tr>
           <tr v-for="(r, i) in data.outstanding_items || []" :key="'o' + i">
             <td>{{ val(r.concern) }}</td>
             <td>{{ val(r.action) }}</td>
             <td>{{ fmtDate(r.target_date) }}</td>
+            <td>{{ flag(r) }}</td>
           </tr>
           <tr v-if="!(data.outstanding_items || []).length">
-            <td colspan="3" class="empty">None recorded.</td>
-          </tr>
-
-          <tr class="band">
-            <td colspan="3">Open Discussion of New Items</td>
-          </tr>
-          <tr v-for="(r, i) in data.new_items || []" :key="'n' + i">
-            <td>{{ val(r.concern) }}</td>
-            <td>{{ val(r.action) }}</td>
-            <td>{{ fmtDate(r.target_date) }}</td>
-          </tr>
-          <tr v-if="!(data.new_items || []).length">
-            <td colspan="3" class="empty">None recorded.</td>
+            <td colspan="4" class="empty">None recorded.</td>
           </tr>
         </tbody>
       </table>
 
-      <!-- Hazards Identified -->
-      <h4 class="section">Hazards Identified</h4>
+      <!-- Open Discussion of New Items -->
+      <h4 class="section">Open Discussion of New Items</h4>
       <table class="grid">
         <thead>
           <tr>
-            <th>Hazards Identified</th>
-            <th class="narrow">Number Controlled at Source</th>
-            <th class="narrow">Number Recommended to Management</th>
+            <th>Problem or Concern</th>
+            <th>Action Taken or Proposed</th>
+            <th class="narrow">Target Date</th>
+            <th class="narrow">Flagged for Next Meeting</th>
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(r, i) in data.hazards || []" :key="'h' + i">
-            <td>{{ val(r.hazard) }}</td>
-            <td>{{ val(r.controlled_at_source) }}</td>
-            <td>{{ val(r.recommended_to_management) }}</td>
+          <tr v-for="(r, i) in data.new_items || []" :key="'n' + i">
+            <td>{{ val(r.concern) }}</td>
+            <td>{{ val(r.action) }}</td>
+            <td>{{ fmtDate(r.target_date) }}</td>
+            <td>{{ flag(r) }}</td>
           </tr>
-          <tr v-if="!(data.hazards || []).length">
-            <td colspan="3" class="empty">None recorded.</td>
+          <tr v-if="!(data.new_items || []).length">
+            <td colspan="4" class="empty">None recorded.</td>
           </tr>
         </tbody>
       </table>
@@ -106,18 +95,19 @@
       <table class="grid">
         <thead>
           <tr>
-            <th>Assessments in Progress</th>
-            <th>Assessments Completed</th>
-            <th>Hazards Identified</th>
-            <th>Controls Implemented</th>
+            <th>Assessment</th>
+            <th class="narrow">Date Completed</th>
+            <th class="narrow">Flagged for Next Meeting</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>{{ val(assessments.in_progress) }}</td>
-            <td>{{ val(assessments.completed) }}</td>
-            <td>{{ val(assessments.hazards_identified) }}</td>
-            <td>{{ val(assessments.controls_implemented) }}</td>
+          <tr v-for="(r, i) in assessments" :key="'a' + i">
+            <td>{{ val(assessmentLabel(r)) }}</td>
+            <td>{{ fmtDate(r.date_completed) }}</td>
+            <td>{{ flag(r) }}</td>
+          </tr>
+          <tr v-if="!assessments.length">
+            <td colspan="3" class="empty">None recorded.</td>
           </tr>
         </tbody>
       </table>
@@ -130,6 +120,7 @@
             <th>Workplace or Location</th>
             <th>Reason for refusal</th>
             <th>Outcome</th>
+            <th class="narrow">Flagged for Next Meeting</th>
           </tr>
         </thead>
         <tbody>
@@ -137,9 +128,10 @@
             <td>{{ val(r.location) }}</td>
             <td>{{ val(r.reason) }}</td>
             <td>{{ val(r.outcome) }}</td>
+            <td>{{ flag(r) }}</td>
           </tr>
           <tr v-if="!(data.refusals || []).length">
-            <td colspan="3" class="empty">None recorded.</td>
+            <td colspan="4" class="empty">None recorded.</td>
           </tr>
         </tbody>
       </table>
@@ -151,12 +143,15 @@
 import { computed } from "vue";
 import { DateTime } from "luxon";
 
+import { assessmentLabel } from "@/utils/committeeMinutes";
+
 const props = defineProps({
   meeting: { type: Object, required: true },
 });
 
 const data = computed(() => props.meeting.minutes_data || {});
-const assessments = computed(() => data.value.assessments || {});
+// Assessments used to be a single counts object; only the current list shape renders.
+const assessments = computed(() => (Array.isArray(data.value.assessments) ? data.value.assessments : []));
 
 // Review numbers can be filled via the upload step or the results-page card on any
 // meeting, so surface the block on value rather than gating behind the method.
@@ -174,6 +169,10 @@ const showReview = computed(() => data.value.method === "upload" || hasReviewNum
 
 function val(v) {
   return v === null || v === undefined || v === "" ? "—" : String(v);
+}
+
+function flag(row) {
+  return row?.flag_next ? "Yes" : "—";
 }
 
 function fmtDate(d) {

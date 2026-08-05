@@ -101,7 +101,7 @@ const memberRef = ref(null);
 
 const meeting = ref({
   committee_id: null,
-  meeting_date: new Date().toISOString().slice(0, 10),
+  meeting_date: new Date(),
   cochairs: [],
   members: [],
 });
@@ -112,15 +112,26 @@ const canCreate = computed(
 
 onMounted(() => committeeStore.loadCommittees());
 
+// Format in local time -- toISOString() shifts to UTC and can land on the previous day.
+function asDateString(value) {
+  if (!value) return null;
+  if (value instanceof Date) {
+    const month = `${value.getMonth() + 1}`.padStart(2, "0");
+    const day = `${value.getDate()}`.padStart(2, "0");
+    return `${value.getFullYear()}-${month}-${day}`;
+  }
+  return `${value}`.slice(0, 10);
+}
+
 watch(
-  () => meeting.value.committee_id,
-  async (id) => {
+  () => [meeting.value.committee_id, asDateString(meeting.value.meeting_date)],
+  async ([id, meetingDate]) => {
     if (!id) {
       meeting.value.cochairs = [];
       meeting.value.members = [];
       return;
     }
-    const { cochairs, members } = await meetingStore.loadPreviousAttendees(id);
+    const { cochairs, members } = await meetingStore.loadPreviousAttendees(id, meetingDate);
     const mapPerson = (p) => ({
       user_id: p.user_id ?? null,
       email: p.email,
@@ -165,7 +176,10 @@ async function create() {
   if (!canCreate.value) return;
   saving.value = true;
   try {
-    const result = await meetingStore.create(meeting.value);
+    const result = await meetingStore.create({
+      ...meeting.value,
+      meeting_date: asDateString(meeting.value.meeting_date),
+    });
     if (result?.id) {
       notify.notify({ text: "Meeting created", variant: "success" });
       router.push(`/committee-meetings/${result.id}/wizard`);

@@ -9,24 +9,51 @@ function toCount(v) {
   return Number.isNaN(n) ? null : n;
 }
 
-function cleanDiscussion(rows) {
+function cleanDiscussion(rows, flaggable = false) {
   return (rows || [])
     .map((r) => ({
       concern: (r.concern || "").trim(),
       action: (r.action || "").trim(),
-      target_date: r.target_date || null,
+      target_date: asDateString(r.target_date),
+      ...(flaggable ? { flag_next: !!r.flag_next } : {}),
     }))
     .filter((r) => r.concern || r.action || r.target_date);
 }
 
-function cleanHazards(rows) {
+export const ASSESSMENT_OPTIONS = [
+  "Formal Workplace Hazard Assessment",
+  "Psychological Health & Safety Hazard Assessment",
+  "Other",
+];
+
+// A row's display label is the picked option, except for "Other" where the
+// committee names the assessment themselves.
+export function assessmentLabel(row) {
+  if (!row) return "";
+  return row.assessment === "Other" ? (row.other_name || "").trim() || "Other" : row.assessment || "";
+}
+
+function cleanAssessments(rows) {
   return (rows || [])
     .map((r) => ({
-      hazard: (r.hazard || "").trim(),
-      controlled_at_source: toCount(r.controlled_at_source),
-      recommended_to_management: toCount(r.recommended_to_management),
+      assessment: r.assessment || null,
+      other_name: r.assessment === "Other" ? (r.other_name || "").trim() : "",
+      date_completed: asDateString(r.date_completed),
+      flag_next: !!r.flag_next,
     }))
-    .filter((r) => r.hazard || r.controlled_at_source !== null || r.recommended_to_management !== null);
+    .filter((r) => r.assessment || r.date_completed);
+}
+
+// The date picker hands back a Date; keep the stored value a local calendar day
+// rather than letting toISOString() shift it into the previous day.
+function asDateString(value) {
+  if (!value) return null;
+  if (value instanceof Date) {
+    const month = `${value.getMonth() + 1}`.padStart(2, "0");
+    const day = `${value.getDate()}`.padStart(2, "0");
+    return `${value.getFullYear()}-${month}-${day}`;
+  }
+  return `${value}`.slice(0, 10);
 }
 
 function cleanRefusals(rows) {
@@ -35,6 +62,7 @@ function cleanRefusals(rows) {
       location: (r.location || "").trim(),
       reason: (r.reason || "").trim(),
       outcome: (r.outcome || "").trim(),
+      flag_next: !!r.flag_next,
     }))
     .filter((r) => r.location || r.reason || r.outcome);
 }
@@ -50,17 +78,9 @@ export function buildMinutesData(form, mode) {
     new_hazards_reviewed: toCount(form.new_hazards_reviewed),
     worker_vacancies: form.worker_vacancies ?? null,
     worker_vacancy_count: toCount(form.worker_vacancy_count),
-    outstanding_items: guided ? cleanDiscussion(form.outstanding_items) : [],
-    new_items: guided ? cleanDiscussion(form.new_items) : [],
-    hazards: guided ? cleanHazards(form.hazards) : [],
-    assessments: guided
-      ? {
-          in_progress: toCount(form.assessments?.in_progress),
-          completed: toCount(form.assessments?.completed),
-          hazards_identified: toCount(form.assessments?.hazards_identified),
-          controls_implemented: toCount(form.assessments?.controls_implemented),
-        }
-      : null,
+    outstanding_items: guided ? cleanDiscussion(form.outstanding_items, true) : [],
+    new_items: guided ? cleanDiscussion(form.new_items, true) : [],
+    assessments: guided ? cleanAssessments(form.assessments) : [],
     refusals: guided ? cleanRefusals(form.refusals) : [],
   };
 }
@@ -105,8 +125,12 @@ export function renderMinutesText(data, meeting) {
     return lines.join("\n");
   }
 
+  const flagLine = (row) => {
+    if (row.flag_next) push("      Flagged for discussion in the next meeting");
+  };
+
   const discussionGroup = (heading, items) => {
-    push(heading);
+    if (heading) push(heading);
     if (!items || items.length === 0) {
       push("  (none)");
     } else {
@@ -114,36 +138,36 @@ export function renderMinutesText(data, meeting) {
         push(`  • ${val(it.concern)}`);
         push(`      Action: ${val(it.action)}`);
         if (it.target_date) push(`      Target date: ${fmtDate(it.target_date)}`);
+        flagLine(it);
       }
     }
     push();
   };
 
   rule();
-  push("DISCUSSION ITEMS");
+  push("OUTSTANDING ITEMS FROM PREVIOUS MEETINGS");
   rule();
-  discussionGroup("Outstanding Items from Previous Meetings", data.outstanding_items);
-  discussionGroup("Open Discussion of New Items", data.new_items);
+  discussionGroup("", data.outstanding_items);
 
   rule();
-  push("HAZARDS IDENTIFIED");
+  push("OPEN DISCUSSION OF NEW ITEMS");
   rule();
-  if (!data.hazards || data.hazards.length === 0) {
-    push("  (none)");
-  } else {
-    for (const h of data.hazards) {
-      push(`  • ${val(h.hazard)}`);
-      push(`      Controlled at source: ${val(h.controlled_at_source)}  |  Recommended to management: ${val(h.recommended_to_management)}`);
-    }
-  }
-  push();
+  discussionGroup("", data.new_items);
 
   rule();
   push("HAZARD ASSESSMENTS");
   rule();
-  const a = data.assessments || {};
-  push(`  In progress: ${val(a.in_progress)}  |  Completed: ${val(a.completed)}`);
-  push(`  Hazards identified: ${val(a.hazards_identified)}  |  Controls implemented: ${val(a.controls_implemented)}`);
+  // Assessments used to be a single counts object; only the current list shape renders.
+  const assessments = Array.isArray(data.assessments) ? data.assessments : [];
+  if (assessments.length === 0) {
+    push("  (none)");
+  } else {
+    for (const a of assessments) {
+      push(`  • ${val(assessmentLabel(a))}`);
+      push(`      Date completed: ${a.date_completed ? fmtDate(a.date_completed) : "—"}`);
+      flagLine(a);
+    }
+  }
   push();
 
   rule();
@@ -156,6 +180,7 @@ export function renderMinutesText(data, meeting) {
       push(`  • ${val(r.location)}`);
       push(`      Reason: ${val(r.reason)}`);
       push(`      Outcome: ${val(r.outcome)}`);
+      flagLine(r);
     }
   }
 

@@ -47,7 +47,7 @@
                 <div>
                   <div class="font-weight-medium">Guide me through the sections</div>
                   <div class="text-medium-emphasis text-body-2">
-                    Walk through discussion items, hazards, assessments and work refusals.
+                    Walk through discussion items, hazard assessments and work refusals.
                   </div>
                 </div>
               </template>
@@ -85,52 +85,26 @@
           </v-row>
         </template>
 
-        <!-- Guided step 1: Discussion items -->
-        <template v-else-if="currentKey === 'discussion'">
-          <h3 class="text-h6 mb-1">Discussion Items</h3>
+        <!-- Guided step 1: Outstanding discussion items -->
+        <template v-else-if="currentKey === 'outstanding'">
+          <h3 class="text-h6 mb-1">Outstanding Items from Previous Meetings</h3>
+          <p class="text-medium-emphasis mb-4">
+            Record the problem or concern, the action taken or proposed, and a target date.
+            Anything flagged for discussion at the previous meeting is listed here already; flag an item
+            again to defer it to the next meeting.
+          </p>
+
+          <DiscussionTable v-model="form.outstanding_items" flaggable />
+        </template>
+
+        <!-- Guided step 2: New discussion items -->
+        <template v-else-if="currentKey === 'new_items'">
+          <h3 class="text-h6 mb-1">Open Discussion of New Items</h3>
           <p class="text-medium-emphasis mb-4">
             Record the problem or concern, the action taken or proposed, and a target date.
           </p>
 
-          <div class="text-subtitle-1 font-weight-medium mb-2">Outstanding Items from Previous Meetings</div>
-          <DiscussionTable v-model="form.outstanding_items" />
-
-          <v-divider class="my-5" />
-
-          <div class="text-subtitle-1 font-weight-medium mb-2">Open Discussion of New Items</div>
-          <DiscussionTable v-model="form.new_items" />
-        </template>
-
-        <!-- Guided step 2: Hazards identified -->
-        <template v-else-if="currentKey === 'hazards'">
-          <h3 class="text-h6 mb-1">Hazards Identified</h3>
-          <p class="text-medium-emphasis mb-4">
-            Hazards from sources other than inspections — e.g. worker comments, incident reports or investigation
-            summaries. If not already controlled, they must be forwarded to management. (WSCA Section 29(e))
-          </p>
-
-          <div v-for="(row, idx) in form.hazards" :key="idx" class="mb-2">
-            <v-row dense align="center">
-              <v-col cols="12" md="5">
-                <v-text-field v-model="row.hazard" label="Hazard identified" hide-details />
-              </v-col>
-              <v-col cols="6" md="3">
-                <v-text-field v-model.number="row.controlled_at_source" type="number" min="0"
-                  label="Number controlled at source" hide-details />
-              </v-col>
-              <v-col cols="6" md="3">
-                <v-text-field v-model.number="row.recommended_to_management" type="number" min="0"
-                  label="Number recommended to management" hide-details />
-              </v-col>
-              <v-col cols="12" md="1" class="text-right">
-                <v-btn icon="mdi-close" size="small" variant="tonal" color="error" @click="remove(form.hazards, idx)" />
-              </v-col>
-            </v-row>
-          </div>
-          <v-btn size="small" variant="flat" color="info" prepend-icon="mdi-plus"
-            @click="add(form.hazards, { hazard: '', controlled_at_source: null, recommended_to_management: null })">
-            Add hazard
-          </v-btn>
+          <DiscussionTable v-model="form.new_items" flaggable />
         </template>
 
         <!-- Guided step 3: Hazard assessments -->
@@ -140,24 +114,29 @@
             A completed Hazard Assessment identifies and ranks hazards to dedicate resources for controlling them.
             (Hazard Management Performance Standard)
           </p>
-          <v-row>
-            <v-col cols="12" sm="6" md="3">
-              <v-text-field v-model.number="form.assessments.in_progress" type="number" min="0"
-                label="Assessments in progress" />
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-              <v-text-field v-model.number="form.assessments.completed" type="number" min="0"
-                label="Assessments completed" />
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-              <v-text-field v-model.number="form.assessments.hazards_identified" type="number" min="0"
-                label="Hazards identified" />
-            </v-col>
-            <v-col cols="12" sm="6" md="3">
-              <v-text-field v-model.number="form.assessments.controls_implemented" type="number" min="0"
-                label="Controls implemented" />
-            </v-col>
-          </v-row>
+
+          <div v-for="(row, idx) in form.assessments" :key="idx" class="mb-2">
+            <v-row dense align="center">
+              <v-col cols="12" :md="row.assessment === 'Other' ? 4 : 8">
+                <v-select v-model="row.assessment" :items="ASSESSMENT_OPTIONS" label="Assessment" hide-details />
+              </v-col>
+              <v-col v-if="row.assessment === 'Other'" cols="12" md="4">
+                <v-text-field v-model="row.other_name" label="Hazard assessment name" hide-details />
+              </v-col>
+              <v-col cols="10" md="3">
+                <DateSelector v-model="row.date_completed" label="Date completed" :teleport="true" />
+              </v-col>
+              <v-col cols="2" md="1" class="text-right">
+                <v-btn icon="mdi-close" size="small" variant="tonal" color="error"
+                  @click="remove(form.assessments, idx)" />
+              </v-col>
+            </v-row>
+            <FlagForNextMeeting v-model="row.flag_next" />
+          </div>
+          <v-btn size="small" variant="flat" color="info" prepend-icon="mdi-plus"
+            @click="add(form.assessments, { assessment: null, other_name: '', date_completed: null, flag_next: false })">
+            Add assessment
+          </v-btn>
         </template>
 
         <!-- Guided step 4: Work refusals -->
@@ -183,9 +162,10 @@
                 <v-btn icon="mdi-close" size="small" variant="tonal" color="error" @click="remove(form.refusals, idx)" />
               </v-col>
             </v-row>
+            <FlagForNextMeeting v-model="row.flag_next" />
           </div>
           <v-btn size="small" variant="flat" color="info" prepend-icon="mdi-plus"
-            @click="add(form.refusals, { location: '', reason: '', outcome: '' })">
+            @click="add(form.refusals, { location: '', reason: '', outcome: '', flag_next: false })">
             Add work refusal
           </v-btn>
         </template>
@@ -212,7 +192,9 @@ import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 
 import DiscussionTable from "@/components/committee/CommitteeDiscussionTable.vue";
-import { buildMinutesData, renderMinutesText } from "@/utils/committeeMinutes";
+import DateSelector from "@/components/DateSelector.vue";
+import FlagForNextMeeting from "@/components/committee/FlagForNextMeeting.vue";
+import { ASSESSMENT_OPTIONS, buildMinutesData, renderMinutesText } from "@/utils/committeeMinutes";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
 import { useNotificationStore } from "@/store/NotificationStore";
 
@@ -239,8 +221,7 @@ const form = reactive({
   // TODO: the sections below aren't on the CommitteeMeeting API model yet — persist once fields exist.
   outstanding_items: [],
   new_items: [],
-  hazards: [],
-  assessments: { in_progress: null, completed: null, hazards_identified: null, controls_implemented: null },
+  assessments: [],
   refusals: [],
 });
 
@@ -256,8 +237,8 @@ const stepDefs = computed(() => {
   if (mode.value === "guided") {
     return [
       first,
-      { key: "discussion", title: "Discussion Items" },
-      { key: "hazards", title: "Hazards Identified" },
+      { key: "outstanding", title: "Outstanding Items" },
+      { key: "new_items", title: "New Items" },
       { key: "assessments", title: "Hazard Assessments" },
       { key: "refusals", title: "Work Refusals" },
       review,
@@ -281,16 +262,28 @@ function rowsComplete(list) {
   return list.every((row) => Object.values(row).every(isFilled));
 }
 
+// "Other" carries a free-text name; every other choice ignores that field.
+function assessmentsComplete(list) {
+  return list.every(
+    (row) =>
+      isFilled(row.assessment) &&
+      isFilled(row.date_completed) &&
+      (row.assessment !== "Other" || isFilled(row.other_name))
+  );
+}
+
 const canAdvance = computed(() => {
   switch (currentKey.value) {
     case "mode":
       return !!mode.value;
     case "upload":
       return (uploadFiles.value?.length ?? 0) > 0;
-    case "discussion":
-      return rowsComplete(form.outstanding_items) && rowsComplete(form.new_items);
-    case "hazards":
-      return rowsComplete(form.hazards);
+    case "outstanding":
+      return rowsComplete(form.outstanding_items);
+    case "new_items":
+      return rowsComplete(form.new_items);
+    case "assessments":
+      return assessmentsComplete(form.assessments);
     case "refusals":
       return rowsComplete(form.refusals);
     case "review":
@@ -305,8 +298,32 @@ watch(stepDefs, (defs) => {
   if (step.value > defs.length) step.value = defs.length;
 });
 
+function list(rows) {
+  return Array.isArray(rows) ? rows.map((r) => ({ ...r })) : [];
+}
+
+// Re-entering the wizard on a draft restores what was captured before — otherwise
+// Finish would overwrite the saved sections (including carried-forward items) with blanks.
+function hydrate(data) {
+  if (!data) return false;
+  if (data.method === "upload" || data.method === "guided") mode.value = data.method;
+  form.outstanding_items = list(data.outstanding_items);
+  form.new_items = list(data.new_items);
+  form.assessments = list(data.assessments);
+  form.refusals = list(data.refusals);
+  return true;
+}
+
 onMounted(async () => {
   await store.load(route.params.id);
+
+  // A completed meeting is locked — the API rejects edits, so don't offer the wizard.
+  if (meeting.value?.status === "Complete") {
+    notify.notify({ text: "This meeting is complete and can no longer be edited", variant: "warning" });
+    router.replace(`/committee-meetings/${route.params.id}`);
+    return;
+  }
+
   form.quorum = meeting.value?.quorum ?? null;
   form.meet_anyway = meeting.value?.meet_anyway ?? null;
   form.no_loss_incidents_reviewed = meeting.value?.no_loss_incidents_reviewed ?? null;
@@ -314,6 +331,15 @@ onMounted(async () => {
   form.new_hazards_reviewed = meeting.value?.new_hazards_reviewed ?? null;
   form.worker_vacancies = meeting.value?.worker_vacancies ?? null;
   form.worker_vacancy_count = meeting.value?.worker_vacancy_count ?? null;
+
+  // First pass through a meeting: seed Outstanding Items from whatever the committee
+  // flagged last time. After that the saved minutes are the source of truth.
+  if (!hydrate(meeting.value?.minutes_data) && meeting.value?.committee_id) {
+    form.outstanding_items = await store.loadCarryForwardItems(
+      meeting.value.committee_id,
+      meeting.value.meeting_date
+    );
+  }
 });
 
 // A number input hands back a string; the API only accepts a non-negative integer or null.
