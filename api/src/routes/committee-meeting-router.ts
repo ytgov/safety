@@ -24,6 +24,30 @@ function trimmed(value: any): string {
   return value === null || value === undefined ? "" : `${value}`.trim();
 }
 
+// meeting_date is a date-only value. Trim any time/zone a caller sends so it can
+// never influence which day gets stored or which meetings a range comparison picks up.
+function dateOnly(value: any): string | null {
+  const s = trimmed(value);
+  return s ? s.slice(0, 10) : null;
+}
+
+// Oracle's DATE type is fetched as a JS Date, which res.json() then stamps to UTC --
+// shifting the day for any client whose timezone differs from the API's. Selecting the
+// column as text means no timezone is ever applied to it. TO_CHAR is valid on both
+// Oracle and Postgres. Aliased rather than overriding meeting_date directly so it can
+// sit alongside a `committee_meetings.*` select without duplicating the column.
+function meetingDateText() {
+  return knex.raw(`TO_CHAR("committee_meetings"."meeting_date", 'YYYY-MM-DD') as "meeting_date_text"`);
+}
+
+function normalizeMeetingDate<T extends { meeting_date?: any; meeting_date_text?: any }>(row: T): T {
+  if (row && row.meeting_date_text !== undefined) {
+    row.meeting_date = row.meeting_date_text;
+    delete row.meeting_date_text;
+  }
+  return row;
+}
+
 // Rows the committee ticked "Flag for discussion in the next meeting" on, reshaped as
 // outstanding discussion items so the next meeting's minutes pick them up. Discussion
 // items keep their own target date; assessments and refusals start without one because
@@ -119,7 +143,7 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
   const list = await knex("committee_meetings")
     .leftJoin("committees", "committee_meetings.committee_id", "committees.id")
     .orderBy("meeting_date", "desc")
-    .select("committee_meetings.*", "committees.name as committee_name");
+    .select("committee_meetings.*", "committees.name as committee_name", meetingDateText());
 
   const cochairs = await knex("committee_meeting_cochairs");
   const members = await knex("committee_meeting_members");
@@ -133,6 +157,7 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
     "file_size"
   );
   for (const m of list) {
+    normalizeMeetingDate(m);
     m.cochairs = cochairs.filter((c) => c.committee_meeting_id === m.id);
     m.members = members.filter((mem) => mem.committee_meeting_id === m.id);
     m.files = files.filter((f) => f.committee_meeting_id === m.id);
@@ -143,7 +168,7 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
 
 committeeMeetingRouter.get("/previous-attendees/:committee_id", async (req: Request, res: Response) => {
   const { committee_id } = req.params;
-  const before = req.query.before ? InsertableDate(`${req.query.before}`) : null;
+  const before = req.query.before ? InsertableDate(dateOnly(req.query.before)) : null;
 
   const previous = await knex("committee_meetings")
     .where({ committee_id })
@@ -178,7 +203,7 @@ committeeMeetingRouter.get("/previous-attendees/:committee_id", async (req: Requ
 // Outstanding Items list of the meeting being set up.
 committeeMeetingRouter.get("/carry-forward/:committee_id", async (req: Request, res: Response) => {
   const { committee_id } = req.params;
-  const before = req.query.before ? InsertableDate(`${req.query.before}`) : null;
+  const before = req.query.before ? InsertableDate(dateOnly(req.query.before)) : null;
 
   const previous = await knex("committee_meetings")
     .where({ committee_id })
@@ -199,7 +224,7 @@ committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {
   const item = await knex("committee_meetings")
     .leftJoin("committees", "committee_meetings.committee_id", "committees.id")
     .where("committee_meetings.id", id)
-    .select("committee_meetings.*", "committees.name as committee_name")
+    .select("committee_meetings.*", "committees.name as committee_name", meetingDateText())
     .first();
   if (!item) return res.status(404).json({ error: "Meeting not found" });
 
@@ -209,7 +234,7 @@ committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {
     .where({ committee_meeting_id: id })
     .select("id", "committee_meeting_id", "added_date", "added_by_email", "file_name", "file_type", "file_size");
 
-  return res.json({ data: parseMinutesData(item) });
+  return res.json({ data: normalizeMeetingDate(parseMinutesData(item)) });
 });
 
 committeeMeetingRouter.get("/:id/minutes.pdf", async (req: Request, res: Response) => {
@@ -217,11 +242,12 @@ committeeMeetingRouter.get("/:id/minutes.pdf", async (req: Request, res: Respons
   const item = await knex("committee_meetings")
     .leftJoin("committees", "committee_meetings.committee_id", "committees.id")
     .where("committee_meetings.id", id)
-    .select("committee_meetings.*", "committees.name as committee_name")
+    .select("committee_meetings.*", "committees.name as committee_name", meetingDateText())
     .first();
   if (!item) return res.status(404).json({ error: "Meeting not found" });
 
   parseMinutesData(item);
+  normalizeMeetingDate(item);
   item.cochairs = await knex("committee_meeting_cochairs").where({ committee_meeting_id: id });
   item.members = await knex("committee_meeting_members").where({ committee_meeting_id: id });
 
@@ -248,13 +274,16 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
   const inserted = await knex("committee_meetings")
     .insert({
       committee_id,
-      meeting_date: InsertableDate(meeting_date),
+      meeting_date: InsertableDate(dateOnly(meeting_date)),
       created_by_user_id: req.user?.id ?? null,
       ...clearOrphanedFollowUps(reviewAnswersFrom(req.body)),
     })
     .returning("*");
 
   const meeting = inserted[0];
+  // `returning("*")` hands back the driver's own rendering of the date column; echo the
+  // date-only string the caller sent instead so responses stay consistent with the reads.
+  meeting.meeting_date = dateOnly(meeting_date);
 
   if (isArray(cochairs)) {
     for (const c of cochairs) {
@@ -304,7 +333,7 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   }
 
   const update: any = {};
-  if (meeting_date !== undefined) update.meeting_date = InsertableDate(meeting_date);
+  if (meeting_date !== undefined) update.meeting_date = InsertableDate(dateOnly(meeting_date));
   if (minutes !== undefined) update.minutes = minutes;
   if (minutes_data !== undefined) {
     update.minutes_data = minutes_data === null ? null : JSON.stringify(minutes_data);

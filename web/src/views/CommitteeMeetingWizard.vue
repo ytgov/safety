@@ -337,7 +337,7 @@ onMounted(async () => {
   if (!hydrate(meeting.value?.minutes_data) && meeting.value?.committee_id) {
     form.outstanding_items = await store.loadCarryForwardItems(
       meeting.value.committee_id,
-      meeting.value.meeting_date
+      String(meeting.value.meeting_date).slice(0, 10)
     );
   }
 });

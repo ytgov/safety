@@ -80,7 +80,8 @@ function text(v: any): string {
   return String(v);
 }
 
-// Postgres returns `date` columns as JS Date objects; the date picker sends ISO strings.
+// meeting_date arrives as a plain "YYYY-MM-DD" string, but target dates inside minutes_data
+// come straight from the date picker and other callers may still hand over a JS Date.
 function toDateTime(d?: string | Date | null): DateTime | null {
   if (!d) return null;
   const dt = d instanceof Date ? DateTime.fromJSDate(d) : DateTime.fromISO(d);
