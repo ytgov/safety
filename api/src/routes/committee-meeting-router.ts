@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { isArray } from "lodash";
+import { DateTime } from "luxon";
 
 import { db as knex } from "../data/db-client";
 import { InsertableDate } from "../utils/formatters";
@@ -228,6 +229,63 @@ committeeMeetingRouter.get("/carry-forward/:committee_id", async (req: Request, 
   if (!previous) return res.json({ data: [] });
 
   return res.json({ data: carryForwardItems(parseMinutesData(previous).minutes_data) });
+});
+
+// Inspections carried out for the committee's own department, over a trailing window.
+// The window is anchored on the meeting date (`as_of`) rather than "now" so re-opening
+// an older meeting still lists the inspections that were current when it was held.
+const INSPECTION_RANGE_DAYS = [30, 60, 90];
+
+function inspectionRangeDays(value: any): number {
+  const n = Number(value);
+  return INSPECTION_RANGE_DAYS.includes(n) ? n : 30;
+}
+
+committeeMeetingRouter.get("/inspections/:committee_id", async (req: Request, res: Response) => {
+  const { committee_id } = req.params;
+  const days = inspectionRangeDays(req.query.days);
+  const location = trimmed(req.query.location) || null;
+
+  const committee = await knex("committees").where({ id: committee_id }).first();
+  // Committees without a department have nothing to match inspections against.
+  if (!committee?.department_code) return res.json({ data: [] });
+
+  const asOf = DateTime.fromISO(dateOnly(req.query.as_of) ?? "");
+  const end = asOf.isValid ? asOf : DateTime.utc().startOf("day");
+  const start = end.minus({ days });
+
+  const list = await knex("incidents")
+    .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
+    .leftJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
+    .leftJoin("locations", "locations.code", "incidents.location_code")
+    .leftJoin("inspection_locations", "inspection_locations.id", "incidents.inspection_location_id")
+    .where("incident_types.name", "inspection")
+    .where("incidents.department_code", committee.department_code)
+    .whereNotNull("incidents.reported_at")
+    .where("incidents.reported_at", ">=", InsertableDate(start.toISODate()))
+    // Exclusive upper bound on the day after `end`, so inspections reported during the
+    // meeting day itself are included whatever time of day they were logged.
+    .where("incidents.reported_at", "<", InsertableDate(end.plus({ days: 1 }).toISODate()))
+    .where((q) => {
+      if (location) q.where("incidents.location_code", location);
+    })
+    .orderBy("incidents.reported_at", "desc")
+    .orderBy("incidents.id", "desc")
+    .select(
+      "incidents.id",
+      "incidents.slug",
+      "incidents.description",
+      "incidents.location_code",
+      "incidents.reporting_person_email",
+      // reported_at is a timestamp; read it as text so no timezone can shift the day.
+      knex.raw(`TO_CHAR("incidents"."reported_at", 'YYYY-MM-DD') as "inspection_date"`),
+      "locations.name as location_name",
+      "incident_statuses.name as status_name",
+      "inspection_locations.name as inspection_location_name",
+      "inspection_locations.branch as inspection_location_branch"
+    );
+
+  return res.json({ data: list });
 });
 
 committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {

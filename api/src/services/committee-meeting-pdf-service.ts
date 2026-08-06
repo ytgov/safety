@@ -33,10 +33,25 @@ interface RefusalRow extends Flaggable {
   outcome?: string | null;
 }
 
+// Inspections are read-only in the minutes -- the committee reviews what was already
+// logged, so rows are snapshotted at Finish and never carry forward.
+export interface InspectionRow {
+  inspection_date?: string | null;
+  inspection_location_branch?: string | null;
+  inspection_location_name?: string | null;
+  location_name?: string | null;
+  reporting_person_email?: string | null;
+  status_name?: string | null;
+}
+
 interface MinutesData {
   method?: "upload" | "guided" | null;
   outstanding_items?: DiscussionItem[];
   new_items?: DiscussionItem[];
+  inspections?: InspectionRow[];
+  inspections_range_days?: number | null;
+  inspections_location_name?: string | null;
+  inspections_notes?: string | null;
   assessments?: AssessmentRow[];
   refusals?: RefusalRow[];
 }
@@ -240,6 +255,53 @@ function discussionRows(doc: PDFKit.PDFDocument, items: DiscussionItem[]): RowOp
   return ops;
 }
 
+const INSPECTION_RANGE_DAYS = [30, 60, 90];
+
+function inspectionsRows(doc: PDFKit.PDFDocument, inspections: InspectionRow[]): RowOp[] {
+  const widths = [DATE_W, ...textWidths(doc, DATE_W, [25, 30, 30, 15])];
+  const ops: RowOp[] = [
+    { widths, cells: ["Date", "Area", "Location", "Inspector", "Status"], header: true },
+  ];
+  if (!inspections || inspections.length === 0) {
+    ops.push({ widths, cells: ["", "", "", "", ""] });
+  } else {
+    for (const i of inspections) {
+      ops.push({
+        widths,
+        cells: [
+          formatDate(i.inspection_date),
+          text(i.inspection_location_branch),
+          text(i.inspection_location_name) || text(i.location_name),
+          text(i.reporting_person_email),
+          text(i.status_name),
+        ],
+      });
+    }
+  }
+  return ops;
+}
+
+// Describes which inspections the committee was looking at, so the list in the minutes
+// can be read without knowing what was picked in the wizard.
+function inspectionsNote(data: MinutesData): string {
+  const days = data.inspections_range_days;
+  const parts = [`Inspections completed in the last ${INSPECTION_RANGE_DAYS.includes(Number(days)) ? days : 30} days`];
+  const location = text(data.inspections_location_name).trim();
+  parts.push(location ? `at ${location}` : "across all locations");
+  return `${parts.join(" ")}.`;
+}
+
+// Free-text the committee added under the inspections list.
+function notesBlock(doc: PDFKit.PDFDocument, notes?: string | null) {
+  const value = text(notes).trim();
+  if (!value) return;
+  doc.moveDown(0.5);
+  ensureSpace(doc, 30);
+  doc.x = doc.page.margins.left;
+  doc.font(FONT_BOLD).fontSize(9).fillColor("#000000").text("Notes");
+  doc.font(FONT).fontSize(9).text(value, { width: contentWidth(doc) });
+}
+
 // "Other" assessments are named by the committee; everything else uses the picked option.
 export function assessmentLabel(a: AssessmentRow): string {
   if (a.assessment === "Other") return text(a.other_name).trim() || "Other";
@@ -351,6 +413,14 @@ export function buildMinutesPdf(meeting: Meeting, stream: NodeJS.WritableStream)
     renderSection(doc, "Outstanding Items from Previous Meetings", undefined, discussionRows(doc, data.outstanding_items ?? []));
 
     renderSection(doc, "Open Discussion of New Items and/or New Hazards Identified", undefined, discussionRows(doc, data.new_items ?? []));
+
+    renderSection(
+      doc,
+      "Inspections",
+      inspectionsNote(data),
+      inspectionsRows(doc, Array.isArray(data.inspections) ? data.inspections : [])
+    );
+    notesBlock(doc, data.inspections_notes);
 
     renderSection(
       doc,

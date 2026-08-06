@@ -90,6 +90,37 @@
         </tbody>
       </table>
 
+      <!-- Inspections -->
+      <h4 class="section">Inspections</h4>
+      <p class="note">{{ inspectionsScope }}</p>
+      <table class="grid">
+        <thead>
+          <tr>
+            <th class="narrow">Date</th>
+            <th>Area</th>
+            <th>Location</th>
+            <th>Inspector</th>
+            <th class="narrow">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(r, i) in inspections" :key="'i' + i">
+            <td>{{ fmtDate(r.inspection_date) }}</td>
+            <td>{{ val(r.inspection_location_branch) }}</td>
+            <td>{{ val(inspectionPlace(r)) }}</td>
+            <td>{{ val(r.reporting_person_email) }}</td>
+            <td>{{ val(r.status_name) }}</td>
+          </tr>
+          <tr v-if="!inspections.length">
+            <td colspan="5" class="empty">None recorded.</td>
+          </tr>
+        </tbody>
+      </table>
+      <template v-if="data.inspections_notes">
+        <div class="notes-label">Notes</div>
+        <p class="notes">{{ data.inspections_notes }}</p>
+      </template>
+
       <!-- Hazard Assessments -->
       <h4 class="section">Hazard Assessments</h4>
       <table class="grid">
@@ -143,7 +174,7 @@
 import { computed } from "vue";
 import { DateTime } from "luxon";
 
-import { assessmentLabel } from "@/utils/committeeMinutes";
+import { assessmentLabel, inspectionPlace, inspectionRangeDays } from "@/utils/committeeMinutes";
 
 const props = defineProps({
   meeting: { type: Object, required: true },
@@ -152,6 +183,17 @@ const props = defineProps({
 const data = computed(() => props.meeting.minutes_data || {});
 // Assessments used to be a single counts object; only the current list shape renders.
 const assessments = computed(() => (Array.isArray(data.value.assessments) ? data.value.assessments : []));
+
+const inspections = computed(() => (Array.isArray(data.value.inspections) ? data.value.inspections : []));
+
+// Spells out which inspections the list covers, so the section reads on its own.
+const inspectionsScope = computed(() => {
+  const days = inspectionRangeDays(data.value.inspections_range_days);
+  const where = data.value.inspections_location_name
+    ? `at ${data.value.inspections_location_name}`
+    : "across all locations";
+  return `Inspections completed in the last ${days} days ${where}.`;
+});
 
 // Review numbers can be filled via the upload step or the results-page card on any
 // meeting, so surface the block on value rather than gating behind the method.
@@ -218,5 +260,18 @@ function fmtDate(d) {
 .grid th.narrow,
 .grid td.narrow {
   width: 22%;
+}
+.note {
+  color: #555;
+  font-size: 11px;
+  margin: 0 0 6px;
+}
+.notes-label {
+  font-weight: 600;
+  margin: 10px 0 2px;
+}
+.notes {
+  margin: 0;
+  white-space: pre-wrap;
 }
 </style>

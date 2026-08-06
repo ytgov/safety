@@ -36,6 +36,23 @@ export interface CommitteeMeetingDiscussionItem {
   flag_next?: boolean;
 }
 
+// An inspection already logged against the committee's department. Read-only in the
+// minutes -- the committee reviews the list rather than editing it.
+export interface CommitteeMeetingInspection {
+  id?: number;
+  slug?: string | null;
+  description?: string | null;
+  inspection_date?: string | null;
+  location_code?: string | null;
+  location_name?: string | null;
+  status_name?: string | null;
+  reporting_person_email?: string | null;
+  inspection_location_name?: string | null;
+  inspection_location_branch?: string | null;
+}
+
+export type InspectionRangeDays = 30 | 60 | 90;
+
 export type YesNo = "Yes" | "No";
 
 export interface CommitteeMeeting {
@@ -113,6 +130,21 @@ export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
       const query = before ? `?before=${encodeURIComponent(before)}` : "";
       return api
         .secureCall("get", `${COMMITTEE_MEETING_URL}/carry-forward/${committeeId}${query}`)
+        .then((resp) => resp.data ?? []);
+    },
+
+    // Inspections logged against the committee's department within the trailing window.
+    // `asOf` anchors that window on the meeting date instead of today.
+    async loadInspections(
+      committeeId: number,
+      { days = 30, location = null, asOf = null }: { days?: number; location?: string | null; asOf?: string | null } = {}
+    ): Promise<CommitteeMeetingInspection[]> {
+      const api = useApiStore();
+      const params = new URLSearchParams({ days: `${days}` });
+      if (location) params.set("location", location);
+      if (asOf) params.set("as_of", asOf);
+      return api
+        .secureCall("get", `${COMMITTEE_MEETING_URL}/inspections/${committeeId}?${params.toString()}`)
         .then((resp) => resp.data ?? []);
     },
 

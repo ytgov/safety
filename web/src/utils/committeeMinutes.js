@@ -56,6 +56,38 @@ function asDateString(value) {
   return `${value}`.slice(0, 10);
 }
 
+export const INSPECTION_RANGE_OPTIONS = [
+  { title: "Last 30 Days", value: 30 },
+  { title: "Last 60 Days", value: 60 },
+  { title: "Last 90 Days", value: 90 },
+];
+
+export function inspectionRangeDays(value) {
+  const n = Number(value);
+  return INSPECTION_RANGE_OPTIONS.some((o) => o.value === n) ? n : 30;
+}
+
+// Inspections aren't authored in the wizard -- the rows shown at Finish are snapshotted
+// so the minutes keep rendering the same list even as newer inspections are logged.
+function cleanInspections(rows) {
+  return (rows || []).map((r) => ({
+    id: r.id ?? null,
+    inspection_date: asDateString(r.inspection_date),
+    inspection_location_branch: (r.inspection_location_branch || "").trim(),
+    inspection_location_name: (r.inspection_location_name || "").trim(),
+    location_name: (r.location_name || "").trim(),
+    reporting_person_email: (r.reporting_person_email || "").trim(),
+    status_name: (r.status_name || "").trim(),
+  }));
+}
+
+// The list column falls back to the community when an inspection has no named
+// inspection location attached.
+export function inspectionPlace(row) {
+  if (!row) return "";
+  return (row.inspection_location_name || "").trim() || (row.location_name || "").trim();
+}
+
 function cleanRefusals(rows) {
   return (rows || [])
     .map((r) => ({
@@ -80,6 +112,11 @@ export function buildMinutesData(form, mode) {
     worker_vacancy_count: toCount(form.worker_vacancy_count),
     outstanding_items: guided ? cleanDiscussion(form.outstanding_items, true) : [],
     new_items: guided ? cleanDiscussion(form.new_items, true) : [],
+    inspections: guided ? cleanInspections(form.inspections) : [],
+    inspections_range_days: guided ? inspectionRangeDays(form.inspections_range_days) : null,
+    inspections_location: guided ? form.inspections_location ?? null : null,
+    inspections_location_name: guided ? (form.inspections_location_name || "").trim() : "",
+    inspections_notes: guided ? (form.inspections_notes || "").trim() : "",
     assessments: guided ? cleanAssessments(form.assessments) : [],
     refusals: guided ? cleanRefusals(form.refusals) : [],
   };
@@ -153,6 +190,29 @@ export function renderMinutesText(data, meeting) {
   push("OPEN DISCUSSION OF NEW ITEMS");
   rule();
   discussionGroup("", data.new_items);
+
+  rule();
+  push("INSPECTIONS");
+  rule();
+  const inspections = Array.isArray(data.inspections) ? data.inspections : [];
+  const inspectionScope = data.inspections_location_name
+    ? `at ${data.inspections_location_name}`
+    : "across all locations";
+  push(`Completed in the last ${inspectionRangeDays(data.inspections_range_days)} days ${inspectionScope}.`);
+  if (inspections.length === 0) {
+    push("  (none)");
+  } else {
+    for (const i of inspections) {
+      push(`  • ${fmtDate(i.inspection_date)} — ${val(inspectionPlace(i))}`);
+      if (i.inspection_location_branch) push(`      Area: ${i.inspection_location_branch}`);
+      push(`      Inspector: ${val(i.reporting_person_email)}`);
+      push(`      Status: ${val(i.status_name)}`);
+    }
+  }
+  if (data.inspections_notes) {
+    push(`  Notes: ${data.inspections_notes}`);
+  }
+  push();
 
   rule();
   push("HAZARD ASSESSMENTS");

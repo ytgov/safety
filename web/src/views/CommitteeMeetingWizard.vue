@@ -107,7 +107,41 @@
           <DiscussionTable v-model="form.new_items" flaggable />
         </template>
 
-        <!-- Guided step 3: Hazard assessments -->
+        <!-- Guided step 3: Inspections already logged for the committee's department -->
+        <template v-else-if="currentKey === 'inspections'">
+          <h3 class="text-h6 mb-1">Inspections</h3>
+          <p class="text-medium-emphasis mb-4">
+            Inspections completed for this committee's department. Narrow the list by date range and
+            location; whatever is listed here is what appears in the minutes.
+          </p>
+
+          <v-row dense>
+            <v-col cols="12" md="4">
+              <v-select v-model="form.inspections_range_days" :items="INSPECTION_RANGE_OPTIONS" label="Date range"
+                hide-details />
+            </v-col>
+            <v-col cols="12" md="4">
+              <LocationSelect v-model="form.inspections_location" label="Location" clearable hide-details />
+            </v-col>
+          </v-row>
+
+          <v-data-table class="mt-4 border rounded" :headers="inspectionHeaders" :items="form.inspections"
+            :loading="loadingInspections" density="comfortable" items-per-page="-1" hide-default-footer>
+            <template #item.inspection_date="{ item }">{{ fmtDate(item.inspection_date) }}</template>
+            <template #item.place="{ item }">{{ inspectionPlace(item) || "—" }}</template>
+            <template #item.open="{ item }">
+              <v-btn v-if="item.slug" icon="mdi-open-in-new" size="small" variant="text" color="primary"
+                :href="inspectionLink(item)" target="_blank" rel="noopener" title="Open inspection in a new tab" />
+            </template>
+            <template #no-data>
+              <div class="text-medium-emphasis py-4">No inspections in this period.</div>
+            </template>
+          </v-data-table>
+
+          <v-textarea v-model="form.inspections_notes" class="mt-4" label="Notes" rows="3" auto-grow hide-details />
+        </template>
+
+        <!-- Guided step 4: Hazard assessments -->
         <template v-else-if="currentKey === 'assessments'">
           <h3 class="text-h6 mb-1">Hazard Assessments</h3>
           <p class="text-medium-emphasis mb-4">
@@ -139,7 +173,7 @@
           </v-btn>
         </template>
 
-        <!-- Guided step 4: Work refusals -->
+        <!-- Guided step 5: Work refusals -->
         <template v-else-if="currentKey === 'refusals'">
           <h3 class="text-h6 mb-1">Work Refusals</h3>
           <p class="text-medium-emphasis mb-4">
@@ -194,7 +228,15 @@ import { DateTime } from "luxon";
 import DiscussionTable from "@/components/committee/CommitteeDiscussionTable.vue";
 import DateSelector from "@/components/DateSelector.vue";
 import FlagForNextMeeting from "@/components/committee/FlagForNextMeeting.vue";
-import { ASSESSMENT_OPTIONS, buildMinutesData, renderMinutesText } from "@/utils/committeeMinutes";
+import LocationSelect from "@/components/common/LocationSelect.vue";
+import {
+  ASSESSMENT_OPTIONS,
+  INSPECTION_RANGE_OPTIONS,
+  buildMinutesData,
+  inspectionPlace,
+  renderMinutesText,
+} from "@/utils/committeeMinutes";
+import { useReportStore } from "@/store/ReportStore";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
 import { useNotificationStore } from "@/store/NotificationStore";
 
@@ -202,12 +244,24 @@ const route = useRoute();
 const router = useRouter();
 const store = useCommitteeMeetingStore();
 const notify = useNotificationStore();
+const reportStore = useReportStore();
 const { selected: meeting, isLoading } = storeToRefs(store);
+const { locations } = storeToRefs(reportStore);
 
 const step = ref(1);
 const saving = ref(false);
 const mode = ref(null); // "upload" | "guided"
 const uploadFiles = ref([]);
+const loadingInspections = ref(false);
+
+const inspectionHeaders = [
+  { title: "Date", key: "inspection_date" },
+  { title: "Area", key: "inspection_location_branch" },
+  { title: "Location", key: "place", sortable: false },
+  { title: "Inspector", key: "reporting_person_email" },
+  { title: "Status", key: "status_name" },
+  { title: "", key: "open", sortable: false, align: "end", width: 60 },
+];
 
 const form = reactive({
   quorum: null,
@@ -221,8 +275,22 @@ const form = reactive({
   // TODO: the sections below aren't on the CommitteeMeeting API model yet — persist once fields exist.
   outstanding_items: [],
   new_items: [],
+  // Inspections are pulled from what's already been logged rather than typed in; the
+  // filters below decide which rows get snapshotted into the minutes.
+  inspections: [],
+  inspections_range_days: 30,
+  inspections_location: null,
+  inspections_notes: "",
   assessments: [],
   refusals: [],
+});
+
+// The stored snapshot keeps the location's name so the minutes stay readable without
+// having to resolve the code again at render time.
+const inspectionsLocationName = computed(() => {
+  const code = form.inspections_location;
+  if (!code) return "";
+  return locations.value?.find((l) => l.code === code)?.name ?? code;
 });
 
 // Steps are dynamic: the method choice is always first and the review questions
@@ -239,6 +307,7 @@ const stepDefs = computed(() => {
       first,
       { key: "outstanding", title: "Outstanding Items" },
       { key: "new_items", title: "New Items" },
+      { key: "inspections", title: "Inspections" },
       { key: "assessments", title: "Hazard Assessments" },
       { key: "refusals", title: "Work Refusals" },
       review,
@@ -274,6 +343,9 @@ function assessmentsComplete(list) {
 
 const canAdvance = computed(() => {
   switch (currentKey.value) {
+    // Inspections are a read-only review with optional notes — never blocking.
+    case "inspections":
+      return true;
     case "mode":
       return !!mode.value;
     case "upload":
@@ -309,9 +381,29 @@ function hydrate(data) {
   if (data.method === "upload" || data.method === "guided") mode.value = data.method;
   form.outstanding_items = list(data.outstanding_items);
   form.new_items = list(data.new_items);
+  form.inspections = list(data.inspections);
+  form.inspections_range_days = data.inspections_range_days ?? 30;
+  form.inspections_location = data.inspections_location ?? null;
+  form.inspections_notes = data.inspections_notes ?? "";
   form.assessments = list(data.assessments);
   form.refusals = list(data.refusals);
   return true;
+}
+
+// Refreshing on filter change replaces the snapshot with the current matches — that's
+// the point of the filters, and Finish stores whatever is on screen.
+async function loadInspections() {
+  if (!meeting.value?.committee_id) return;
+  loadingInspections.value = true;
+  try {
+    form.inspections = await store.loadInspections(meeting.value.committee_id, {
+      days: form.inspections_range_days,
+      location: form.inspections_location,
+      asOf: String(meeting.value.meeting_date ?? "").slice(0, 10) || null,
+    });
+  } finally {
+    loadingInspections.value = false;
+  }
 }
 
 onMounted(async () => {
@@ -340,6 +432,16 @@ onMounted(async () => {
       String(meeting.value.meeting_date).slice(0, 10)
     );
   }
+
+  // Location names are needed to label the snapshot even before the Inspections step
+  // (and its LocationSelect) has been reached.
+  reportStore.loadLocations();
+
+  // Pull the list fresh against the saved (or default) filters, then start reacting to
+  // filter changes — registering the watch afterwards keeps hydrate's own assignments
+  // from firing a second, redundant load.
+  await loadInspections();
+  watch(() => [form.inspections_range_days, form.inspections_location], loadInspections);
 });
 
 // A number input hands back a string; the API only accepts a non-negative integer or null.
@@ -352,6 +454,19 @@ function normalizeCount(v) {
 function formatDate(d) {
   if (!d) return "";
   return DateTime.fromISO(d).toFormat("DDD");
+}
+
+// Resolved through the router so the app's base path is applied — the link opens in a
+// new tab, which a router.push would not.
+function inspectionLink(row) {
+  return router.resolve(`/inspections/${row.slug}`).href;
+}
+
+// Short form used inside the inspections table.
+function fmtDate(d) {
+  if (!d) return "—";
+  const dt = DateTime.fromISO(d);
+  return dt.isValid ? dt.toFormat("DD") : String(d);
 }
 
 function add(list, template) {
@@ -381,7 +496,10 @@ async function finish() {
     // The full wizard payload is the source of truth (minutes_data); the quorum and
     // review answers are also written to their typed columns for existing UI/reporting,
     // and a plain-text rendering seeds the editable minutes box.
-    const minutesData = buildMinutesData(form, mode.value);
+    const minutesData = buildMinutesData(
+      { ...form, inspections_location_name: inspectionsLocationName.value },
+      mode.value
+    );
     const minutes = renderMinutesText(minutesData, meeting.value);
     await store.save(meeting.value.id, {
       minutes,
