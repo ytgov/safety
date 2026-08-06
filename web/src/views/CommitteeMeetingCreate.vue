@@ -33,6 +33,8 @@
               :style="{ borderBottom: idx < meeting.cochairs.length - 1 ? '1px #999 solid' : 'none' }"
               :title="c.display_name || c.email" :subtitle="c.display_name ? c.email : ''" class="py-3">
               <template #append>
+                <v-switch v-model="c.representing" :label="c.representing" true-value="Employer"
+                  false-value="Employee" color="primary" density="compact" hide-details class="mr-3 flex-grow-0" />
                 <v-btn color="error" class="my-0" size="x-small" variant="text" @click="removeCochair(idx)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -52,6 +54,8 @@
               :style="{ borderBottom: idx < meeting.members.length - 1 ? '1px #999 solid' : 'none' }"
               :title="m.display_name || m.email" :subtitle="m.display_name ? m.email : ''" class="py-3">
               <template #append>
+                <v-switch v-model="m.representing" :label="m.representing" true-value="Employer"
+                  false-value="Employee" color="primary" density="compact" hide-details class="mr-3 flex-grow-0" />
                 <v-btn color="error" class="my-0" size="x-small" variant="text" @click="removeMember(idx)">
                   <v-icon>mdi-close</v-icon>
                 </v-btn>
@@ -136,6 +140,7 @@ watch(
       user_id: p.user_id ?? null,
       email: p.email,
       display_name: p.display_name ?? null,
+      representing: p.representing === "Employer" ? "Employer" : "Employee",
     });
     meeting.value.cochairs = cochairs.map(mapPerson);
     meeting.value.members = members.map(mapPerson);
@@ -149,6 +154,7 @@ function onDirectorySelected(person) {
     user_id: null,
     email: person.email,
     display_name: person.display_name || person.long_name || null,
+    representing: "Employee",
   });
   if (dirRef.value && dirRef.value.clear) dirRef.value.clear();
 }
@@ -164,6 +170,7 @@ function onMemberSelected(person) {
     user_id: null,
     email: person.email,
     display_name: person.display_name || person.long_name || null,
+    representing: "Employee",
   });
   if (memberRef.value && memberRef.value.clear) memberRef.value.clear();
 }

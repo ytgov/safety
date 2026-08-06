@@ -125,6 +125,12 @@ function clearOrphanedFollowUps(merged: Record<string, any>): Record<string, any
   return merged;
 }
 
+// Whether an attendee sits on the committee for the employee or the employer side.
+// Anything unrecognized falls back to Employee, which is also what pre-existing rows carry.
+function representingOf(person: any): string {
+  return person?.representing === "Employer" ? "Employer" : "Employee";
+}
+
 async function isCochair(meetingId: number | string, req: any): Promise<boolean> {
   const email = req.user?.email?.toLowerCase();
   const userId = req.user?.id;
@@ -188,7 +194,12 @@ committeeMeetingRouter.get("/previous-attendees/:committee_id", async (req: Requ
       const key = (r.email ?? "").toLowerCase();
       if (!key || seen.has(key)) continue;
       seen.add(key);
-      unique.push({ user_id: r.user_id, email: r.email, display_name: r.display_name });
+      unique.push({
+        user_id: r.user_id,
+        email: r.email,
+        display_name: r.display_name,
+        representing: r.representing ?? "Employee",
+      });
     }
     return unique;
   };
@@ -298,6 +309,7 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
         user_id,
         email: c.email ?? null,
         display_name: c.display_name ?? null,
+        representing: representingOf(c),
       });
     }
   }
@@ -315,6 +327,7 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
         user_id,
         email: m.email ?? null,
         display_name: m.display_name ?? null,
+        representing: representingOf(m),
       });
     }
   }
@@ -367,6 +380,7 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
           user_id,
           email: c.email ?? null,
           display_name: c.display_name ?? null,
+          representing: representingOf(c),
         });
       }
     }
@@ -388,6 +402,7 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
           user_id,
           email: m.email ?? null,
           display_name: m.display_name ?? null,
+          representing: representingOf(m),
         });
       }
     }

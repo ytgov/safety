@@ -39,7 +39,7 @@
             <div class="d-flex align-center" style="width: 100%">
               <h4 class="text-h6">Minutes Document</h4>
               <v-spacer />
-              <v-btn class="my-0" variant="flat" color="info" prepend-icon="mdi-file-pdf-box"
+              <v-btn v-if="!isUploadMethod" class="my-0" variant="flat" color="info" prepend-icon="mdi-file-pdf-box"
                 :loading="downloadingPdf" @click="downloadPdf">Download PDF</v-btn>
             </div>
           </v-card-item>
@@ -187,6 +187,10 @@ const confirmComplete = ref(false);
 const downloadingPdf = ref(false);
 
 const isComplete = computed(() => meeting.value?.status === "Complete");
+
+// The generated PDF only carries the guided minutes, so on the upload path it would
+// come out nearly blank — the real minutes live in the attached file instead.
+const isUploadMethod = computed(() => meeting.value?.minutes_data?.method === "upload");
 
 // Nothing was captured: the wizard was abandoned before Finish, so the meeting is a shell.
 const isEmpty = computed(

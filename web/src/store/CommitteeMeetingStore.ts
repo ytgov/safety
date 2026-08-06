@@ -5,6 +5,8 @@ import auth0 from "@/plugins/auth";
 import { useApiStore } from "@/store/ApiStore";
 import { COMMITTEE_MEETING_URL } from "@/urls";
 
+export type Representing = "Employee" | "Employer";
+
 export interface CommitteeMeetingCochair {
   id?: number;
   committee_meeting_id?: number;
@@ -12,6 +14,7 @@ export interface CommitteeMeetingCochair {
   user_id?: number | null;
   email?: string | null;
   display_name?: string | null;
+  representing?: Representing | null;
 }
 
 export type CommitteeMeetingMember = CommitteeMeetingCochair;
