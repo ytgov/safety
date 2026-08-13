@@ -13,7 +13,7 @@ export const inspectionRouter = express.Router();
 const db = new InspectionService();
 
 inspectionRouter.get("/", async (req: Request, res: Response) => {
-  const { page, perPage, search, status, urgency, location } = req.query;
+  const { page, perPage, search, status, urgency, inspection_location_id } = req.query;
 
   const pageNum = parseInt(page as string) || 1;
   let perPageNum = parseInt(perPage as string) || 10;
@@ -27,7 +27,7 @@ inspectionRouter.get("/", async (req: Request, res: Response) => {
     if (!isNil(search)) q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
-    if (!isNil(location)) q.where("location_code", location);
+    if (!isNil(inspection_location_id)) q.where("incidents.inspection_location_id", inspection_location_id);
     return q;
   };
 
@@ -35,7 +35,7 @@ inspectionRouter.get("/", async (req: Request, res: Response) => {
     if (!isNil(search)) q.whereRaw(`LOWER("incidents"."description") like '%${search.toString().toLowerCase()}%'`);
     if (!isNil(status)) q.where("status_code", status);
     if (!isNil(urgency)) q.where("urgency_code", urgency);
-    if (!isNil(location)) q.where("location_code", location);
+    if (!isNil(inspection_location_id)) q.where("incidents.inspection_location_id", inspection_location_id);
     q.limit(perPageNum);
     q.offset((pageNum - 1) * perPageNum);
     return q;

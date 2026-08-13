@@ -15,7 +15,7 @@
           <v-text-field v-model="search" label="Search" outlined dense clearable prepend-inner-icon="mdi-magnify" />
         </v-col>
         <v-col cols="12" md="6">
-          <LocationSelect v-model="location" label="Area" clearable />
+          <InspectionLocationSelector v-model="inspectionLocationId" label="Area" clearable />
         </v-col>
       </v-row>
 
@@ -35,7 +35,7 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from "pinia";
 import { DateTime } from "luxon";
 
-import LocationSelect from "@/components/common/LocationSelect.vue";
+import InspectionLocationSelector from "@/components/InspectionLocationSelector.vue";
 
 import { useInspectionStore } from "@/store/InspectionStore";
 
@@ -45,7 +45,7 @@ const page = ref(1);
 const perPage = ref(10);
 
 const search = ref(null);
-const location = ref(null);
+const inspectionLocationId = ref(null);
 
 const headers = [
   { title: "Date", value: "created_at" },
@@ -60,7 +60,7 @@ const { reports, totalCount, isLoading } = storeToRefs(inspectionStore);
 
 reload();
 
-watch([search, location, page, perPage], () => {
+watch([search, inspectionLocationId, page, perPage], () => {
   reload();
 });
 
@@ -69,7 +69,7 @@ async function reload() {
     page: page.value,
     perPage: perPage.value,
     search: search.value,
-    location: location.value,
+    inspection_location_id: inspectionLocationId.value,
   });
 }
 

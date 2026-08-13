@@ -43,14 +43,14 @@ export const useInspectionStore = defineStore("inspections", {
       search,
       status,
       urgency,
-      location,
+      inspection_location_id,
     }: {
       page: number | null;
       perPage: number | null;
       search: string | null;
       status: string | null;
       urgency: string | null;
-      location: string | null;
+      inspection_location_id: number | null;
     }) {
       this.isLoading = true;
       const api = useApiStore();
@@ -60,7 +60,7 @@ export const useInspectionStore = defineStore("inspections", {
       if (!isEmpty(search)) queryUrl += `search=${search}&`;
       if (!isNil(status)) queryUrl += `status=${status}&`;
       if (!isNil(urgency)) queryUrl += `urgency=${urgency}&`;
-      if (!isNil(location)) queryUrl += `location=${location}&`;
+      if (!isNil(inspection_location_id)) queryUrl += `inspection_location_id=${inspection_location_id}&`;
 
       return api.secureCall("get", queryUrl).then((resp) => {
         this.reports = resp.data;
