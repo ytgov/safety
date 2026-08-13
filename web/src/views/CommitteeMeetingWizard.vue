@@ -121,7 +121,8 @@
                 hide-details />
             </v-col>
             <v-col cols="12" md="4">
-              <LocationSelect v-model="form.inspections_location" label="Location" clearable hide-details />
+              <InspectionLocationSelector v-model="form.inspections_location_id" label="Location" clearable
+                hide-details />
             </v-col>
           </v-row>
 
@@ -228,7 +229,7 @@ import { DateTime } from "luxon";
 import DiscussionTable from "@/components/committee/CommitteeDiscussionTable.vue";
 import DateSelector from "@/components/DateSelector.vue";
 import FlagForNextMeeting from "@/components/committee/FlagForNextMeeting.vue";
-import LocationSelect from "@/components/common/LocationSelect.vue";
+import InspectionLocationSelector from "@/components/InspectionLocationSelector.vue";
 import {
   ASSESSMENT_OPTIONS,
   INSPECTION_RANGE_OPTIONS,
@@ -236,7 +237,7 @@ import {
   inspectionPlace,
   renderMinutesText,
 } from "@/utils/committeeMinutes";
-import { useReportStore } from "@/store/ReportStore";
+import { useInspectionLocationStore } from "@/store/InspectionLocationStore";
 import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
 import { useNotificationStore } from "@/store/NotificationStore";
 
@@ -244,9 +245,9 @@ const route = useRoute();
 const router = useRouter();
 const store = useCommitteeMeetingStore();
 const notify = useNotificationStore();
-const reportStore = useReportStore();
+const inspectionLocationStore = useInspectionLocationStore();
 const { selected: meeting, isLoading } = storeToRefs(store);
-const { locations } = storeToRefs(reportStore);
+const { inspectionlocations } = storeToRefs(inspectionLocationStore);
 
 const step = ref(1);
 const saving = ref(false);
@@ -279,18 +280,18 @@ const form = reactive({
   // filters below decide which rows get snapshotted into the minutes.
   inspections: [],
   inspections_range_days: 30,
-  inspections_location: null,
+  inspections_location_id: null,
   inspections_notes: "",
   assessments: [],
   refusals: [],
 });
 
 // The stored snapshot keeps the location's name so the minutes stay readable without
-// having to resolve the code again at render time.
+// having to resolve the id again at render time.
 const inspectionsLocationName = computed(() => {
-  const code = form.inspections_location;
-  if (!code) return "";
-  return locations.value?.find((l) => l.code === code)?.name ?? code;
+  const id = form.inspections_location_id;
+  if (!id) return "";
+  return inspectionlocations.value?.find((l) => l.id === id)?.name ?? "";
 });
 
 // Steps are dynamic: the method choice is always first and the review questions
@@ -383,7 +384,7 @@ function hydrate(data) {
   form.new_items = list(data.new_items);
   form.inspections = list(data.inspections);
   form.inspections_range_days = data.inspections_range_days ?? 30;
-  form.inspections_location = data.inspections_location ?? null;
+  form.inspections_location_id = data.inspections_location_id ?? null;
   form.inspections_notes = data.inspections_notes ?? "";
   form.assessments = list(data.assessments);
   form.refusals = list(data.refusals);
@@ -398,7 +399,7 @@ async function loadInspections() {
   try {
     form.inspections = await store.loadInspections(meeting.value.committee_id, {
       days: form.inspections_range_days,
-      location: form.inspections_location,
+      inspectionLocationId: form.inspections_location_id,
       asOf: String(meeting.value.meeting_date ?? "").slice(0, 10) || null,
     });
   } finally {
@@ -434,14 +435,14 @@ onMounted(async () => {
   }
 
   // Location names are needed to label the snapshot even before the Inspections step
-  // (and its LocationSelect) has been reached.
-  reportStore.loadLocations();
+  // (and its InspectionLocationSelector) has been reached.
+  inspectionLocationStore.loadInspectionLocations();
 
   // Pull the list fresh against the saved (or default) filters, then start reacting to
   // filter changes — registering the watch afterwards keeps hydrate's own assignments
   // from firing a second, redundant load.
   await loadInspections();
-  watch(() => [form.inspections_range_days, form.inspections_location], loadInspections);
+  watch(() => [form.inspections_range_days, form.inspections_location_id], loadInspections);
 });
 
 // A number input hands back a string; the API only accepts a non-negative integer or null.

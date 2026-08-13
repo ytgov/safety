@@ -241,10 +241,17 @@ function inspectionRangeDays(value: any): number {
   return INSPECTION_RANGE_DAYS.includes(n) ? n : 30;
 }
 
+// inspection_location_id is an integer key; anything else (including a stale location
+// code from an older draft) is treated as "no filter" rather than reaching the database.
+function inspectionLocationFilter(value: any): number | null {
+  const n = Number(trimmed(value));
+  return Number.isInteger(n) && n > 0 ? n : null;
+}
+
 committeeMeetingRouter.get("/inspections/:committee_id", async (req: Request, res: Response) => {
   const { committee_id } = req.params;
   const days = inspectionRangeDays(req.query.days);
-  const location = trimmed(req.query.location) || null;
+  const inspectionLocationId = inspectionLocationFilter(req.query.inspection_location_id);
 
   const committee = await knex("committees").where({ id: committee_id }).first();
   // Committees without a department have nothing to match inspections against.
@@ -267,7 +274,7 @@ committeeMeetingRouter.get("/inspections/:committee_id", async (req: Request, re
     // meeting day itself are included whatever time of day they were logged.
     .where("incidents.reported_at", "<", InsertableDate(end.plus({ days: 1 }).toISODate()))
     .where((q) => {
-      if (location) q.where("incidents.location_code", location);
+      if (inspectionLocationId) q.where("incidents.inspection_location_id", inspectionLocationId);
     })
     .orderBy("incidents.reported_at", "desc")
     .orderBy("incidents.id", "desc")

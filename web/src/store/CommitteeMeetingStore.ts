@@ -137,11 +137,15 @@ export const useCommitteeMeetingStore = defineStore("committeeMeeting", {
     // `asOf` anchors that window on the meeting date instead of today.
     async loadInspections(
       committeeId: number,
-      { days = 30, location = null, asOf = null }: { days?: number; location?: string | null; asOf?: string | null } = {}
+      {
+        days = 30,
+        inspectionLocationId = null,
+        asOf = null,
+      }: { days?: number; inspectionLocationId?: number | null; asOf?: string | null } = {}
     ): Promise<CommitteeMeetingInspection[]> {
       const api = useApiStore();
       const params = new URLSearchParams({ days: `${days}` });
-      if (location) params.set("location", location);
+      if (inspectionLocationId) params.set("inspection_location_id", `${inspectionLocationId}`);
       if (asOf) params.set("as_of", asOf);
       return api
         .secureCall("get", `${COMMITTEE_MEETING_URL}/inspections/${committeeId}?${params.toString()}`)

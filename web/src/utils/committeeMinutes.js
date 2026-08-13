@@ -114,7 +114,7 @@ export function buildMinutesData(form, mode) {
     new_items: guided ? cleanDiscussion(form.new_items, true) : [],
     inspections: guided ? cleanInspections(form.inspections) : [],
     inspections_range_days: guided ? inspectionRangeDays(form.inspections_range_days) : null,
-    inspections_location: guided ? form.inspections_location ?? null : null,
+    inspections_location_id: guided ? form.inspections_location_id ?? null : null,
     inspections_location_name: guided ? (form.inspections_location_name || "").trim() : "",
     inspections_notes: guided ? (form.inspections_notes || "").trim() : "",
     assessments: guided ? cleanAssessments(form.assessments) : [],
