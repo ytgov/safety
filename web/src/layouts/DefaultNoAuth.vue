@@ -50,6 +50,13 @@
               <v-list-item-title style="font-size: 0.9rem !important">Report Inspection</v-list-item-title>
             </v-list-item>
 
+            <v-list-item to="/committee-meetings">
+              <template v-slot:prepend>
+                <v-icon>mdi-account-group</v-icon>
+              </template>
+              <v-list-item-title style="font-size: 0.9rem !important">Committee Meetings</v-list-item-title>
+            </v-list-item>
+
             <v-list-item to="/administration" v-if="isSystemAdmin">
               <template v-slot:prepend>
                 <v-icon>mdi-account-cog</v-icon>

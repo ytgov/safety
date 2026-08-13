@@ -60,6 +60,7 @@ export default {
     headers: [
       { title: "Name", key: "display_name" },
       { title: "Email", key: "email" },
+      { title: "Department", key: "department" },
       { title: "Status", key: "is_active" },
       { title: "Roles", key: "roles" },
     ],

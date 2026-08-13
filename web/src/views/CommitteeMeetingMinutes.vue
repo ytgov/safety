@@ -1,0 +1,325 @@
+<template>
+  <v-breadcrumbs :items="[
+    { title: 'Home', to: '/' },
+    { title: 'Committee Meetings', to: '/committee-meetings' },
+    { title: 'Minutes' },
+  ]" />
+
+  <div v-if="!meeting && isLoading" class="text-center py-12">
+    <v-progress-circular indeterminate />
+  </div>
+
+  <div v-else-if="meeting">
+    <div class="d-flex align-center mb-1">
+      <h1 class="text-h4">{{ meeting.committee_name }} – Meeting Minutes</h1>
+      <v-chip v-if="isComplete" class="ml-3" color="success" size="small" prepend-icon="mdi-lock">Complete</v-chip>
+    </div>
+    <p class="text-body-1 text-medium-emphasis mb-4">
+      <strong>{{ formatDate(meeting.meeting_date) }}</strong>
+      &middot; Co-Chairs: {{ formatCochairs(meeting.cochairs) }}
+      &middot; Members: {{ formatCochairs(meeting.members) }}
+    </p>
+
+    <v-alert v-if="isEmpty && !isComplete" type="info" variant="tonal" class="mb-4">
+      <div class="d-flex align-center flex-wrap ga-3">
+        <div>
+          Setup for this meeting hasn't been finished, so there are no minutes yet.
+        </div>
+        <v-spacer />
+        <v-btn color="primary" variant="flat" prepend-icon="mdi-play" :to="`/committee-meetings/${meeting.id}/wizard`">
+          Resume Setup
+        </v-btn>
+      </div>
+    </v-alert>
+
+    <v-row v-if="meeting.minutes_data" dense>
+      <v-col cols="12">
+        <v-card class="default mb-3">
+          <v-card-item class="py-3 px-5 bg-sun">
+            <div class="d-flex align-center" style="width: 100%">
+              <h4 class="text-h6">Minutes Document</h4>
+              <v-spacer />
+              <v-btn v-if="!isUploadMethod" class="my-0" variant="flat" color="info" prepend-icon="mdi-file-pdf-box"
+                :loading="downloadingPdf" @click="downloadPdf">Download PDF</v-btn>
+            </div>
+          </v-card-item>
+          <v-card-text class="pt-5">
+            <CommitteeMinutesPreview :meeting="meeting" />
+          </v-card-text>
+        </v-card>
+      </v-col>
+    </v-row>
+
+    <v-row dense>
+      <v-col cols="12">
+        <v-card class="default">
+          <v-card-item class="py-3 px-5 bg-sun">
+            <h4 class="text-h6">Upload Files</h4>
+          </v-card-item>
+          <v-card-text class="pt-5">
+            <template v-if="!isComplete">
+              <v-file-input v-model="newFiles" label="Choose file(s)" prepend-icon="" prepend-inner-icon="mdi-paperclip"
+                show-size clearable hide-details multiple />
+
+              <div class="d-flex justify-end">
+                <v-btn color="primary" :loading="uploading" :disabled="!newFiles || newFiles.length === 0"
+                  @click="uploadFiles">Upload</v-btn>
+              </div>
+            </template>
+
+            <template v-if="meeting.files && meeting.files.length > 0">
+              <div class="text-caption text-medium-emphasis text-uppercase mt-4 mb-1">
+                Attached files ({{ meeting.files.length }})
+              </div>
+              <v-list class="border rounded py-0" density="comfortable" lines="two" bg-color="transparent">
+                <template v-for="(f, i) in meeting.files" :key="f.id">
+                  <v-divider v-if="i > 0" />
+                  <v-list-item class="px-3" :title="f.file_name" @click="downloadFile(f)">
+                    <template #prepend>
+                      <v-icon :icon="fileIcon(f)" color="primary" class="mr-3" />
+                    </template>
+                    <v-list-item-title class="text-body-2 text-primary">{{ f.file_name }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ formatSize(f.file_size) }}</v-list-item-subtitle>
+                    <template #append>
+                      <v-btn v-if="!isComplete" icon="mdi-delete" size="small" variant="text" color="red"
+                        @click.stop="removeFile(f)" />
+                    </template>
+                  </v-list-item>
+                </template>
+              </v-list>
+            </template>
+
+            <p v-else-if="isComplete" class="text-medium-emphasis mb-0">No files attached.</p>
+          </v-card-text>
+        </v-card>
+
+        <div class="d-flex justify-end mt-3 ga-2">
+          <v-btn v-if="!isComplete" color="primary" variant="outlined" prepend-icon="mdi-pencil"
+            :to="`/committee-meetings/${meeting.id}/wizard`">
+            {{ isEmpty ? "Resume Setup" : "Edit Setup" }}
+          </v-btn>
+          <v-btn v-if="canMarkComplete && !isComplete" color="success" variant="flat" prepend-icon="mdi-lock"
+            :loading="updatingStatus" @click="confirmComplete = true">
+            Mark Complete
+          </v-btn>
+          <v-btn v-if="isSystemAdmin && isComplete" color="warning" variant="outlined" prepend-icon="mdi-lock-open"
+            :loading="updatingStatus" @click="reopenMeeting">
+            Reopen
+          </v-btn>
+          <v-btn v-if="isSystemAdmin" color="red" variant="outlined" prepend-icon="mdi-delete" :loading="deleting"
+            @click="deleteMeeting">
+            Delete Meeting
+          </v-btn>
+        </div>
+      </v-col>
+    </v-row>
+
+  </div>
+
+  <v-dialog v-model="confirmComplete" width="500px" persistent @keydown.esc="confirmComplete = false">
+    <v-card>
+      <v-toolbar color="primary" density="comfortable">
+        <v-toolbar-title class="text-white">Mark Meeting Complete</v-toolbar-title>
+        <v-spacer />
+        <v-toolbar-items>
+          <v-btn icon="mdi-close" @click="confirmComplete = false" />
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card-text class="pt-5">
+        <p class="mb-2">Once complete, the minutes and attached file are locked and can no longer be edited.</p>
+        <p>Only a System Admin can reopen the meeting.</p>
+      </v-card-text>
+      <v-card-actions class="px-4 pb-4">
+        <v-spacer />
+        <v-btn variant="text" @click="confirmComplete = false">Cancel</v-btn>
+        <v-btn color="success" :loading="updatingStatus" @click="markComplete">Mark Complete</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+
+  <v-dialog v-model="confirmDelete" width="500px" persistent @keydown.esc="confirmDelete = false">
+    <v-card>
+      <v-toolbar color="primary" density="comfortable">
+        <v-toolbar-title class="text-white">Delete Meeting</v-toolbar-title>
+        <v-spacer />
+        <v-toolbar-items>
+          <v-btn icon="mdi-close" @click="confirmDelete = false" />
+        </v-toolbar-items>
+      </v-toolbar>
+      <v-card-text class="pt-5">
+        This will permanently remove the meeting, its minutes, and any attached file.
+      </v-card-text>
+      <v-card-actions class="px-4 pb-4">
+        <v-spacer />
+        <v-btn variant="text" @click="confirmDelete = false">Cancel</v-btn>
+        <v-btn color="red" variant="flat" :loading="deleting" @click="performDelete">Delete</v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-dialog>
+</template>
+
+<script setup>
+import { computed, onMounted, ref } from "vue";
+import { useRoute } from "vue-router";
+import { storeToRefs } from "pinia";
+import { DateTime } from "luxon";
+
+import CommitteeMinutesPreview from "@/components/committee/CommitteeMinutesPreview.vue";
+import { useCommitteeMeetingStore } from "@/store/CommitteeMeetingStore";
+import { useNotificationStore } from "@/store/NotificationStore";
+import { useUserStore } from "@/store/UserStore";
+import { useRouter } from "vue-router";
+
+const route = useRoute();
+const router = useRouter();
+const store = useCommitteeMeetingStore();
+const notify = useNotificationStore();
+const userStore = useUserStore();
+const { selected: meeting, isLoading } = storeToRefs(store);
+const { isSystemAdmin, user: currentUser } = storeToRefs(userStore);
+
+const newFiles = ref([]);
+const uploading = ref(false);
+const deleting = ref(false);
+const confirmDelete = ref(false);
+const updatingStatus = ref(false);
+const confirmComplete = ref(false);
+const downloadingPdf = ref(false);
+
+const isComplete = computed(() => meeting.value?.status === "Complete");
+
+// The generated PDF only carries the guided minutes, so on the upload path it would
+// come out nearly blank — the real minutes live in the attached file instead.
+const isUploadMethod = computed(() => meeting.value?.minutes_data?.method === "upload");
+
+// Nothing was captured: the wizard was abandoned before Finish, so the meeting is a shell.
+const isEmpty = computed(
+  () => !meeting.value?.minutes_data && !meeting.value?.minutes && (meeting.value?.files?.length ?? 0) === 0
+);
+
+const isCurrentUserCochair = computed(() => {
+  const u = currentUser.value;
+  const list = meeting.value?.cochairs || [];
+  if (!u || list.length === 0) return false;
+  const email = (u.email || "").toLowerCase();
+  return list.some((c) => (c.user_id && c.user_id === u.id) || (c.email && c.email.toLowerCase() === email));
+});
+
+const canMarkComplete = computed(() => isSystemAdmin.value || isCurrentUserCochair.value);
+
+onMounted(load);
+
+async function downloadFile(file) {
+  if (!meeting.value || !file) return;
+  await store.downloadFile(meeting.value.id, file.id, file.file_name);
+}
+
+async function downloadPdf() {
+  if (!meeting.value) return;
+  downloadingPdf.value = true;
+  try {
+    const slug = (meeting.value.committee_name ?? "committee").replace(/\s+/g, "-").toLowerCase();
+    const rawDate = meeting.value.meeting_date ?? "";
+    const datePart = typeof rawDate === "string" ? rawDate.slice(0, 10) : rawDate;
+    const name = `${slug}-minutes-${datePart || meeting.value.id}.pdf`;
+    await store.downloadMinutesPdf(meeting.value.id, name);
+  } finally {
+    downloadingPdf.value = false;
+  }
+}
+
+async function load() {
+  await store.load(route.params.id);
+}
+
+function formatDate(d) {
+  if (!d) return "";
+  return DateTime.fromISO(d).toFormat("DDD");
+}
+
+function formatSize(bytes) {
+  if (!bytes && bytes !== 0) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function fileIcon(file) {
+  const type = (file.file_type || "").toLowerCase();
+  const name = (file.file_name || "").toLowerCase();
+  if (type.startsWith("image/")) return "mdi-file-image";
+  if (type === "application/pdf" || name.endsWith(".pdf")) return "mdi-file-pdf-box";
+  if (type.includes("word") || /\.docx?$/.test(name)) return "mdi-file-word";
+  if (type.includes("sheet") || type.includes("excel") || /\.xlsx?$/.test(name)) return "mdi-file-excel";
+  if (/\.(zip|rar|7z)$/.test(name)) return "mdi-folder-zip";
+  return "mdi-file-document";
+}
+
+function formatCochairs(list) {
+  if (!list || list.length === 0) return "None";
+  return list.map((c) => c.display_name || c.email).join(", ");
+}
+
+async function uploadFiles() {
+  if (!meeting.value || !newFiles.value || newFiles.value.length === 0) return;
+  const files = Array.isArray(newFiles.value) ? newFiles.value : [newFiles.value];
+  uploading.value = true;
+  try {
+    await store.uploadFiles(meeting.value.id, files);
+    newFiles.value = [];
+    notify.notify({ text: "File(s) uploaded", variant: "success" });
+    await load();
+  } finally {
+    uploading.value = false;
+  }
+}
+
+async function removeFile(file) {
+  if (!meeting.value || !file) return;
+  await store.deleteFile(meeting.value.id, file.id);
+  notify.notify({ text: "File removed", variant: "success" });
+  await load();
+}
+
+function deleteMeeting() {
+  confirmDelete.value = true;
+}
+
+async function markComplete() {
+  if (!meeting.value) return;
+  updatingStatus.value = true;
+  try {
+    await store.setStatus(meeting.value.id, "Complete");
+    notify.notify({ text: "Meeting marked complete", variant: "success" });
+    confirmComplete.value = false;
+    await load();
+  } finally {
+    updatingStatus.value = false;
+  }
+}
+
+async function reopenMeeting() {
+  if (!meeting.value) return;
+  updatingStatus.value = true;
+  try {
+    await store.setStatus(meeting.value.id, "Draft");
+    notify.notify({ text: "Meeting reopened", variant: "success" });
+    await load();
+  } finally {
+    updatingStatus.value = false;
+  }
+}
+
+async function performDelete() {
+  if (!meeting.value) return;
+  deleting.value = true;
+  try {
+    await store.remove(meeting.value.id);
+    notify.notify({ text: "Meeting deleted", variant: "success" });
+    confirmDelete.value = false;
+    router.push("/committee-meetings");
+  } finally {
+    deleting.value = false;
+  }
+}
+</script>

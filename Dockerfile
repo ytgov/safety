@@ -44,5 +44,6 @@ WORKDIR /home/node/app
 COPY --chown=node:node api/src/web/*.png /home/node/app/dist/web/
 COPY --chown=node:node api/src/templates/* /home/node/app/dist/templates/
 COPY --chown=node:node api/src/templates/email/* /home/node/app/dist/templates/email/
+COPY --chown=node:node api/src/assets/* /home/node/app/dist/assets/
 
 CMD ["sh", "-c", "node ./dist/bin/run-migrations.js && node ./dist/index.js"]
