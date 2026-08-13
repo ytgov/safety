@@ -11,6 +11,7 @@ import {
   actionRouter,
   attachmentRouter,
   committeeRouter,
+  committeeMeetingRouter,
   dataIngestionRouter,
   dataIngestionSourceRouter,
   departmentRouter,
@@ -94,6 +95,7 @@ app.use("/api/role", checkJwt, loadUser, roleRouter);
 app.use("/api/action", checkJwt, loadUser, actionRouter);
 app.use("/api/hazard", checkJwt, loadUser, hazardRouter);
 app.use("/api/committees", checkJwt, loadUser, committeeRouter);
+app.use("/api/committee-meetings", checkJwt, loadUser, committeeMeetingRouter);
 
 app.use("/api/inspection-location", checkJwt, loadUser, inspectionLocationRouter);
 

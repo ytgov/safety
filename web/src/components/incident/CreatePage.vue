@@ -42,24 +42,16 @@
 
         <v-row class="pa-2 pb-6">
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="hazard"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
+            <v-checkbox v-model="report.eventType" value="hazard" class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px" hide-details />
             <div>
               <strong>Hazard Identification</strong><br />
               Something has been observed that could potentially lead to an incident or injury
             </div>
           </v-col>
           <v-col class="d-flex flex-nowrap" cols="12" md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="incident"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
+            <v-checkbox v-model="report.eventType" value="incident" class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px" hide-details />
             <div>
               <strong>Incident Resulting in Loss</strong><br />
               Something has happened and caused an injury, equipment damage, property damage or environmental issue
@@ -67,12 +59,8 @@
           </v-col>
 
           <v-col class="d-flex flex-nowrap" cols="12" md="6" offset-md="6">
-            <v-checkbox
-              v-model="report.eventType"
-              value="noloss"
-              class="flex-grow-0 flex-shrink-0"
-              style="width: 60px; height: 40px"
-              hide-details />
+            <v-checkbox v-model="report.eventType" value="noloss" class="flex-grow-0 flex-shrink-0"
+              style="width: 60px; height: 40px" hide-details />
             <div>
               <strong>No Loss Incident (near miss)</strong><br />
               Something has happened. No damage or injury occurred, but could have
@@ -100,45 +88,45 @@
 
               <v-col cols="12" sm="6">
                 <v-label class="mb-1" style="white-space: inherit">Urgency for supervisor attention</v-label>
-                <v-select v-model="report.urgency" :items="urgencies" item-title="name" item-value="code"></v-select>
+                <v-select v-model="report.urgency" :items="urgencies" item-title="name" item-value="code"
+                  hint="Select the urgency level that best reflects how quickly action is needed to prevent further harm to people or property. Supervisors may adjust the urgency level after review."
+                  persistent-hint>
+                  <template #item="{ item, props }">
+                    <v-list-item v-bind="props" :title="item.raw.name">
+                      <v-list-item-subtitle style="white-space: normal">
+                        {{ item.raw.description }}
+                      </v-list-item-subtitle>
+                    </v-list-item>
+                  </template>
+                </v-select>
+                <em class="text-body-2"></em>
               </v-col>
             </v-row>
           </v-col>
           <v-col cols="12" md="12" class="py-0">
             <v-label class="mb-1" style="white-space: inherit">General location where the event occurred</v-label>
-            <v-autocomplete
-              v-model="report.location_code"
-              :items="locations"
-              :item-title="makeLocationTitle"
-              item-value="code"
-              :rules="[requiredRule]">
+            <v-autocomplete v-model="report.location_code" :items="locations" :item-title="makeLocationTitle"
+              item-value="code" :rules="[requiredRule]">
               <template #item="{ item, props }">
-                <v-list-item
-                  v-bind="props"
-                  :title="item.raw.name"
+                <v-list-item v-bind="props" :title="item.raw.name"
                   :subtitle="`Community: ${item.raw.community}`"></v-list-item>
               </template>
               <template #selection="{ item }"> {{ makeLocationTitle(item.raw) }} </template>
             </v-autocomplete>
           </v-col>
           <v-col cols="12" md="12" class="py-0">
-            <v-label class="mb-1" style="white-space: inherit"
-              >Specific location where the event occurred (such as site or building details and area within)</v-label
-            >
+            <v-label class="mb-1" style="white-space: inherit">Specific location where the event occurred (such as site
+              or
+              building details and area within)</v-label>
             <v-text-field v-model="report.location_detail" :rules="[requiredRule]" />
           </v-col>
           <v-col cols="12" md="12" class="pt-0">
-            <v-label class="mb-1" style="white-space: inherit"
-              >Describe the event in your own words. Please include any details of equipment, materials, environmental
+            <v-label class="mb-1" style="white-space: inherit">Describe the event in your own words. Please include any
+              details of equipment, materials, environmental
               conditions (work area, temperature, noise, chemical, other person, etc.) that may have
-              contributed</v-label
-            >
-            <v-textarea
-              v-model="report.description"
-              class="mb-3"
-              :rules="[requiredRule]"
-              hint="Please do not include names or personal identifiers"
-              persistent-hint />
+              contributed</v-label>
+            <v-textarea v-model="report.description" class="mb-3" :rules="[requiredRule]"
+              hint="Please do not include names or personal identifiers" persistent-hint />
           </v-col>
         </v-row>
 
@@ -152,32 +140,18 @@
           <v-label v-if="report.on_behalf == 'Yes'">Enter their name</v-label>
           <v-text-field v-if="report.on_behalf == 'Yes'" v-model="report.on_behalf_email" />
 
-          <DirectorySelector
-            :label="
-              report.on_behalf == 'Yes' ? 'Search and select their supervisor' : 'Search and select your supervisor'
-            "
-            @selected="handleSupervisorSelect"></DirectorySelector>
+          <DirectorySelector :label="report.on_behalf == 'Yes' ? 'Search and select their supervisor' : 'Search and select your supervisor'
+            " @selected="handleSupervisorSelect"></DirectorySelector>
 
           <ReportUserList v-model="report.additional_people" />
 
           <v-label>Attach supporting images</v-label>
-          <v-file-input
-            v-model="pendingFiles"
-            prepend-icon=""
-            prepend-inner-icon="mdi-camera"
-            :clearable="false"
-            multiple
-            accept="image/*"
-            hide-details></v-file-input>
+          <v-file-input v-model="pendingFiles" prepend-icon="" prepend-inner-icon="mdi-camera" :clearable="false"
+            multiple accept="image/*" hide-details></v-file-input>
 
           <div v-if="attachedFiles.length > 0" class="mt-3 mb-2">
-            <v-chip
-              v-for="(file, idx) in attachedFiles"
-              :key="`${file.name}-${idx}`"
-              class="mr-2 mb-2"
-              color="info"
-              closable
-              @click:close="removeAttachedFile(idx)">
+            <v-chip v-for="(file, idx) in attachedFiles" :key="`${file.name}-${idx}`" class="mr-2 mb-2" color="info"
+              closable @click:close="removeAttachedFile(idx)">
               {{ file.name }}
             </v-chip>
           </div>

@@ -95,6 +95,23 @@ const routes: RouteRecordRaw[] = [
       },
 
       {
+        path: "committee-meetings",
+        component: () => import("@/views/CommitteeMeetings.vue"),
+      },
+      {
+        path: "committee-meetings/new",
+        component: () => import("@/views/CommitteeMeetingCreate.vue"),
+      },
+      {
+        path: "committee-meetings/:id/wizard",
+        component: () => import("@/views/CommitteeMeetingWizard.vue"),
+      },
+      {
+        path: "committee-meetings/:id",
+        component: () => import("@/views/CommitteeMeetingMinutes.vue"),
+      },
+
+      {
         path: "sign-in",
         component: () => import("@/modules/authentication/views/SignIn.vue"),
         meta: {

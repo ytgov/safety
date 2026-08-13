@@ -89,10 +89,14 @@ export const useReportStore = defineStore("reports", {
 
     async loadUrgency() {
       this.urgencies = [
-        { code: "Critical", name: "Critical" },
-        { code: "High", name: "High" },
-        { code: "Medium", name: "Medium" },
-        { code: "Low", name: "Low" },
+        { code: "Critical", name: "Critical", description: "Immediate action required; severe or imminent risk." },
+        {
+          code: "High",
+          name: "High",
+          description: "Urgent attention needed; significant risk, but not an emergency.",
+        },
+        { code: "Medium", name: "Medium", description: "Risk controlled; review and corrective action required." },
+        { code: "Low", name: "Low", description: "Minimal risk; track and address through normal processes." },
       ];
     },
 
