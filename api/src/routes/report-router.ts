@@ -161,9 +161,11 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
   const listQuery = function (q: Knex.QueryBuilder) {
     if (!isNil(search)) {
       q.whereRaw(
-        `LOWER("incidents"."description") like '%${search
+        `(LOWER("incidents"."description") like '%${search
           .toString()
-          .toLowerCase()}%'`,
+          .toLowerCase()}%' OR LOWER("incidents"."identifier") like '%${search
+          .toString()
+          .toLowerCase()}%')`,
       );
     }
     if (!isNil(status)) q.where("status_code", status);
