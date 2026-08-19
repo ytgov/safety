@@ -12,7 +12,7 @@
   <div v-else-if="meeting">
     <div class="d-flex align-center mb-1">
       <h1 class="text-h4">{{ meeting.committee_name }} – Meeting Minutes</h1>
-      <v-chip v-if="isComplete" class="ml-3" color="success" size="small" prepend-icon="mdi-lock">Complete</v-chip>
+      <v-chip v-if="isComplete" class="ml-3 mb-4" color="success" size="small" prepend-icon="mdi-lock">Complete</v-chip>
     </div>
     <p class="text-body-1 text-medium-emphasis mb-4">
       <strong>{{ formatDate(meeting.meeting_date) }}</strong>
