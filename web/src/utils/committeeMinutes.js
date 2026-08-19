@@ -143,6 +143,8 @@ export function renderMinutesText(data, meeting) {
   push(fmtDate(meeting?.meeting_date));
   const cochairs = (meeting?.cochairs || []).map((c) => c.display_name || c.email).filter(Boolean).join(", ");
   if (cochairs) push(`Co-Chairs: ${cochairs}`);
+  const guests = (meeting?.guests || []).map((g) => g.display_name || g.email).filter(Boolean).join(", ");
+  if (guests) push(`Guests: ${guests}`);
   push();
 
   rule();

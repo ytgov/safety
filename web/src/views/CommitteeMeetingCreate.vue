@@ -64,6 +64,25 @@
           </v-list>
 
           <DirectorySelector ref="memberRef" label="Add a member" @selected="onMemberSelected" />
+
+          <v-divider class="my-5" />
+
+          <h3 class="text-h6 mb-4">Guests</h3>
+
+          <v-list v-if="meeting.guests.length > 0" density="compact" class="py-0 mb-3"
+            style="border: 1px #999 solid; border-radius: 4px">
+            <v-list-item v-for="(g, idx) in meeting.guests" :key="idx"
+              :style="{ borderBottom: idx < meeting.guests.length - 1 ? '1px #999 solid' : 'none' }"
+              :title="g.display_name || g.email" :subtitle="g.display_name ? g.email : ''" class="py-3">
+              <template #append>
+                <v-btn color="error" class="my-0" size="x-small" variant="text" @click="removeGuest(idx)">
+                  <v-icon>mdi-close</v-icon>
+                </v-btn>
+              </template>
+            </v-list-item>
+          </v-list>
+
+          <DirectorySelector ref="guestRef" label="Add a guest" @selected="onGuestSelected" />
         </v-col>
       </v-row>
       <v-divider class="my-4" />
@@ -102,12 +121,14 @@ const { committees, isLoading: committeesLoading } = storeToRefs(committeeStore)
 const saving = ref(false);
 const dirRef = ref(null);
 const memberRef = ref(null);
+const guestRef = ref(null);
 
 const meeting = ref({
   committee_id: null,
   meeting_date: new Date(),
   cochairs: [],
   members: [],
+  guests: [],
 });
 
 const canCreate = computed(
@@ -135,6 +156,7 @@ watch(
       meeting.value.members = [];
       return;
     }
+    // Guests are specific to a single meeting, so they aren't carried over.
     const { cochairs, members } = await meetingStore.loadPreviousAttendees(id, meetingDate);
     const mapPerson = (p) => ({
       user_id: p.user_id ?? null,
@@ -177,6 +199,21 @@ function onMemberSelected(person) {
 
 function removeMember(idx) {
   meeting.value.members.splice(idx, 1);
+}
+
+function onGuestSelected(person) {
+  if (!person || !person.email) return;
+  if (meeting.value.guests.some((g) => g.email === person.email)) return;
+  meeting.value.guests.push({
+    user_id: null,
+    email: person.email,
+    display_name: person.display_name || person.long_name || null,
+  });
+  if (guestRef.value && guestRef.value.clear) guestRef.value.clear();
+}
+
+function removeGuest(idx) {
+  meeting.value.guests.splice(idx, 1);
 }
 
 async function create() {

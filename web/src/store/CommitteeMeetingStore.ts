@@ -19,6 +19,17 @@ export interface CommitteeMeetingCochair {
 
 export type CommitteeMeetingMember = CommitteeMeetingCochair;
 
+// Guests attend without sitting on the committee, so they carry no Employee/Employer
+// side -- and may be typed in freehand, in which case there is no email either.
+export interface CommitteeMeetingGuest {
+  id?: number;
+  committee_meeting_id?: number;
+  committee_id?: number;
+  user_id?: number | null;
+  email?: string | null;
+  display_name?: string | null;
+}
+
 export interface CommitteeMeetingFile {
   id: number;
   committee_meeting_id: number;
@@ -59,6 +70,7 @@ export interface CommitteeMeeting {
   id?: number;
   committee_id: number;
   committee_name?: string;
+  committee_department_code?: string | null;
   meeting_date: string;
   minutes?: string | null;
   quorum?: YesNo | null;
@@ -75,6 +87,7 @@ export interface CommitteeMeeting {
   created_at?: string;
   cochairs?: CommitteeMeetingCochair[];
   members?: CommitteeMeetingMember[];
+  guests?: CommitteeMeetingGuest[];
   files?: CommitteeMeetingFile[];
 }
 

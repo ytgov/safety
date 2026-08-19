@@ -69,6 +69,7 @@ interface Meeting {
   worker_vacancy_count?: number | null;
   cochairs?: Person[];
   members?: Person[];
+  guests?: Person[];
   minutes?: string | null;
   minutes_data?: MinutesData | null;
 }
@@ -394,8 +395,11 @@ export function buildMinutesPdf(meeting: Meeting, stream: NodeJS.WritableStream)
   doc.text(`Date: ${formatLongDate(meeting.meeting_date)}`);
   const cochairs = names(meeting.cochairs);
   const members = names(meeting.members);
+  const guests = names(meeting.guests);
   doc.text(`Co-Chairs: ${cochairs || "—"}`);
   doc.text(`Members: ${members || "—"}`);
+  // Most meetings have no guests, so the line only appears when someone attended as one.
+  if (guests) doc.text(`Guests: ${guests}`);
   doc.fillColor("#000000").moveDown(0.5);
 
   // Quorum surfaces in a small table right at the top for every meeting, followed by

@@ -122,7 +122,7 @@
             </v-col>
             <v-col cols="12" md="4">
               <InspectionLocationSelector v-model="form.inspections_location_id" label="Location" clearable
-                hide-details />
+                hide-details :department="committeeDepartmentCode" :disabled="!committeeDepartmentCode" />
             </v-col>
           </v-row>
 
@@ -285,6 +285,10 @@ const form = reactive({
   assessments: [],
   refusals: [],
 });
+
+// Inspections are pulled for the committee's department, so the location list is scoped
+// to that department too rather than offering every location in the system.
+const committeeDepartmentCode = computed(() => meeting.value?.committee_department_code ?? null);
 
 // The stored snapshot keeps the location's name so the minutes stay readable without
 // having to resolve the id again at render time.

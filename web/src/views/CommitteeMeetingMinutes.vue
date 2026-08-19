@@ -18,6 +18,9 @@
       <strong>{{ formatDate(meeting.meeting_date) }}</strong>
       &middot; Co-Chairs: {{ formatCochairs(meeting.cochairs) }}
       &middot; Members: {{ formatCochairs(meeting.members) }}
+      <template v-if="meeting.guests && meeting.guests.length">
+        &middot; Guests: {{ formatCochairs(meeting.guests) }}
+      </template>
     </p>
 
     <v-alert v-if="isEmpty && !isComplete" type="info" variant="tonal" class="mb-4">

@@ -132,6 +132,21 @@ function representingOf(person: any): string {
   return person?.representing === "Employer" ? "Employer" : "Employee";
 }
 
+// Guests are recorded by name only -- no committee side. They may be typed in freehand
+// (an outside visitor) so an email is optional; when one is given we still link the
+// matching user so the row lines up with directory-picked attendees.
+async function guestFields(
+  guest: any
+): Promise<{ user_id: number | null; email: string | null; display_name: string | null }> {
+  const email = trimmed(guest?.email) || null;
+  let user_id = guest?.user_id ?? null;
+  if (!user_id && email) {
+    const match = await knex("users").whereRaw(`LOWER("email") = ?`, [email.toLowerCase()]).first();
+    if (match) user_id = match.id;
+  }
+  return { user_id, email, display_name: trimmed(guest?.display_name) || null };
+}
+
 async function isCochair(meetingId: number | string, req: any): Promise<boolean> {
   const email = req.user?.email?.toLowerCase();
   const userId = req.user?.id;
@@ -154,6 +169,7 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
 
   const cochairs = await knex("committee_meeting_cochairs");
   const members = await knex("committee_meeting_members");
+  const guests = await knex("committee_meeting_guests");
   const files = await knex("committee_meeting_files").select(
     "id",
     "committee_meeting_id",
@@ -167,6 +183,7 @@ committeeMeetingRouter.get("/", async (req: Request, res: Response) => {
     normalizeMeetingDate(m);
     m.cochairs = cochairs.filter((c) => c.committee_meeting_id === m.id);
     m.members = members.filter((mem) => mem.committee_meeting_id === m.id);
+    m.guests = guests.filter((g) => g.committee_meeting_id === m.id);
     m.files = files.filter((f) => f.committee_meeting_id === m.id);
   }
 
@@ -300,12 +317,19 @@ committeeMeetingRouter.get("/:id", async (req: Request, res: Response) => {
   const item = await knex("committee_meetings")
     .leftJoin("committees", "committee_meetings.committee_id", "committees.id")
     .where("committee_meetings.id", id)
-    .select("committee_meetings.*", "committees.name as committee_name", meetingDateText())
+    .select(
+      "committee_meetings.*",
+      "committees.name as committee_name",
+      // The wizard narrows its inspection location list to the committee's own department.
+      "committees.department_code as committee_department_code",
+      meetingDateText()
+    )
     .first();
   if (!item) return res.status(404).json({ error: "Meeting not found" });
 
   item.cochairs = await knex("committee_meeting_cochairs").where({ committee_meeting_id: id });
   item.members = await knex("committee_meeting_members").where({ committee_meeting_id: id });
+  item.guests = await knex("committee_meeting_guests").where({ committee_meeting_id: id });
   item.files = await knex("committee_meeting_files")
     .where({ committee_meeting_id: id })
     .select("id", "committee_meeting_id", "added_date", "added_by_email", "file_name", "file_type", "file_size");
@@ -326,6 +350,7 @@ committeeMeetingRouter.get("/:id/minutes.pdf", async (req: Request, res: Respons
   normalizeMeetingDate(item);
   item.cochairs = await knex("committee_meeting_cochairs").where({ committee_meeting_id: id });
   item.members = await knex("committee_meeting_members").where({ committee_meeting_id: id });
+  item.guests = await knex("committee_meeting_guests").where({ committee_meeting_id: id });
 
   res.setHeader("Content-Type", "application/pdf");
   res.setHeader("Content-Disposition", `attachment; filename="meeting-minutes-${id}.pdf"`);
@@ -345,7 +370,7 @@ committeeMeetingRouter.get("/:id/files/:fileId", async (req: Request, res: Respo
 });
 
 committeeMeetingRouter.post("/", async (req: any, res: Response) => {
-  const { committee_id, meeting_date, cochairs, members } = req.body;
+  const { committee_id, meeting_date, cochairs, members, guests } = req.body;
 
   const inserted = await knex("committee_meetings")
     .insert({
@@ -397,12 +422,22 @@ committeeMeetingRouter.post("/", async (req: any, res: Response) => {
     }
   }
 
+  if (isArray(guests)) {
+    for (const g of guests) {
+      await knex("committee_meeting_guests").insert({
+        committee_meeting_id: meeting.id,
+        committee_id,
+        ...(await guestFields(g)),
+      });
+    }
+  }
+
   return res.json({ data: meeting });
 });
 
 committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
   const { id } = req.params;
-  const { meeting_date, minutes, minutes_data, cochairs, members } = req.body;
+  const { meeting_date, minutes, minutes_data, cochairs, members, guests } = req.body;
 
   const existing = await knex("committee_meetings").where({ id }).first();
   if (!existing) return res.status(404).json({ error: "Meeting not found" });
@@ -468,6 +503,20 @@ committeeMeetingRouter.put("/:id", async (req: any, res: Response) => {
           email: m.email ?? null,
           display_name: m.display_name ?? null,
           representing: representingOf(m),
+        });
+      }
+    }
+  }
+
+  if (isArray(guests)) {
+    const meeting = await knex("committee_meetings").where({ id }).first();
+    if (meeting) {
+      await knex("committee_meeting_guests").where({ committee_meeting_id: id }).delete();
+      for (const g of guests) {
+        await knex("committee_meeting_guests").insert({
+          committee_meeting_id: id,
+          committee_id: meeting.committee_id,
+          ...(await guestFields(g)),
         });
       }
     }
@@ -553,6 +602,7 @@ committeeMeetingRouter.delete("/:id", async (req: Request, res: Response) => {
   const { id } = req.params;
   await knex("committee_meeting_cochairs").where({ committee_meeting_id: id }).delete();
   await knex("committee_meeting_members").where({ committee_meeting_id: id }).delete();
+  await knex("committee_meeting_guests").where({ committee_meeting_id: id }).delete();
   await knex("committee_meeting_files").where({ committee_meeting_id: id }).delete();
   await knex("committee_meetings").where({ id }).delete();
   return res.json({ data: "success" });
